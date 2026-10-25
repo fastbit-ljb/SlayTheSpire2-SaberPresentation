@@ -58,12 +58,13 @@ internal static class TestHarness
             Settings.Current.NoblePhantasmCards = ["BLUDGEON", "FIEND_FIRE", "PACTS_END"];
             Settings.Current.UseCznEffects = true;
             Assert("czn_pack_detection", CznAssets.Available == WithCzn);
-            Assert("global_ui_audio_attaches_after_tree_ready", Runtime.Descendants(game).Any(n => n.Name.ToString().StartsWith("CznStyleGlobalUiAudio")));
+            var foreign = new[] { "CznCore", "CznStyleUI", "CznMainMenu", "CznEnemySkin", "CznNineCharacter" };
+            Assert("no_foreign_runtime_assemblies", !AppDomain.CurrentDomain.GetAssemblies().Any(a => foreign.Contains(a.GetName().Name)));
+            Assert("no_czn_shared_settings_registry", AppDomain.CurrentDomain.GetData("CznModConfig.SharedSettingsExtensions.v1") == null);
             if (StandaloneOnly)
             {
                 var mods = MegaCrit.Sts2.Core.Modding.ModManager.GetLoadedMods().ToArray();
                 Assert("only_one_native_mod_installed", mods.Length == 1 && mods[0].manifest?.id == "SaberPresentation");
-                Assert("three_bundled_libraries_initialized", Standalone.LibrariesLoaded == 3);
                 Assert("zero_manifest_dependencies", mods[0].manifest!.dependencies?.Count == 0);
             }
             if (CommandLineHelper.HasArg("saber-menu-test"))
@@ -73,7 +74,8 @@ internal static class TestHarness
                 await Fx.Delay(2);
                 await CaptureAfter("standalone_main_menu", 0.2);
                 Assert("native_main_menu_created", game.MainMenu != null);
-                Assert("native_main_menu_has_saber_lobby", Runtime.Descendants(game.MainMenu!).OfType<Polygon2D>().Any(n => n.Texture?.ResourcePath.Contains("saber_ready_cast") == true));
+                Assert("native_main_menu_no_theme_host", !Runtime.Descendants(game.MainMenu!).Any(n => n.Name.ToString().Contains("Czn") || n.Name.ToString().Contains("SaberLobby")));
+                Assert("no_custom_lobby_resource", !ResourceLoader.Exists("res://SaberPresentation/scenes/saber_lobby.tscn"));
                 Log.Info("[SaberTest] MENU CHECKS PASSED");
                 return;
             }
@@ -94,27 +96,20 @@ internal static class TestHarness
             var state = CombatManager.Instance.DebugOnlyGetState()!;
             var node = player.Creature.GetCreatureNode()!;
             Assert("enemy_skin_module_absent", !AppDomain.CurrentDomain.GetAssemblies().Any(a => a.GetName().Name == "CznEnemySkin"));
-            Assert("original_card_art_default", !Settings.Current.SaberCardArt);
+            Assert("card_art_override_not_installed", AccessTools.TypeByName("SaberPresentation.SaberCardArtPatch") == null);
             Assert("saber_detected", Runtime.IsSaber(player.Creature));
             Assert("saber_identity_icon_preserved", player.Character.IconTexture is AtlasTexture);
-            foreach (string raster in new[] { "saber_card_atlas", "saber_vfx_atlas", "saber_ready_attack", "saber_ready_cast", "camelot_stage", "saber_defeat", "saber_attack_sequence" })
+            foreach (string raster in new[] { "saber_vfx_atlas", "saber_ready_attack", "saber_ready_cast", "camelot_stage", "saber_defeat", "saber_attack_sequence" })
                 Assert("raster_decodes_" + raster, Art.Texture(raster).GetWidth() >= 1000);
             await VerifyInteractions(game, node);
             await VerifyHoverDuringReturn(game, node, state, player);
+            await VerifyNativeUi(game, player);
             if (CommandLineHelper.HasArg("saber-fix-smoke"))
             {
-                var counter = Runtime.Descendants(game).OfType<NEnergyCounter>().Single();
-                EnergyPresentation.SetNativeDisplay(false);
-                await Fx.Delay(0.2);
-                Assert("energy_toggle_switches_style", !counter.GetNode<Control>("Label").Visible);
-                EnergyPresentation.SetNativeDisplay(true);
-                await Fx.Delay(0.2);
-                Assert("energy_toggle_restores_native_readout", counter.GetNode<Control>("Label").IsVisibleInTree());
                 Assert("actual_1920x1080_render", game.GetViewport().GetTexture().GetWidth() == 1920 && game.GetViewport().GetTexture().GetHeight() == 1080);
                 Log.Info("[SaberTest] FIX SMOKE CHECKS PASSED");
                 return;
             }
-            await VerifyCznSurfaces(game);
             var home = node.Visuals.Body.Position;
             Log.Info("[SaberTest] Loaded animations: " + string.Join(", ", node.Visuals.SpineBody!.GetSkeleton()!.GetData().GetAnimationNames()));
             Assert("voice_attack_decodes", Voice.Length("attack_1") > 0);
@@ -326,14 +321,8 @@ internal static class TestHarness
         await Fx.Delay(0.5);
         Assert("native_card_play_animates_portrait", ReadyPresentation.ActionFramesPlayed - framesBefore >= 3);
         Assert("native_strike_damage_preserved", enemyHp - enemy.CurrentHp == 6);
-        if (WithTheme)
-        {
-            var assemblies = AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetName().Name).ToArray();
-            Assert("czn_style_ui_loaded", assemblies.Contains("CznStyleUI"));
-            Assert("czn_main_menu_loaded", assemblies.Contains("CznMainMenu"));
-            Assert("original_enemy_presentation_kept", !assemblies.Contains("CznEnemySkin"));
-        }
     }
+
     private static async Task VerifyHoverDuringReturn(NGame game, NCreature actor, CombatState state, Player player)
     {
         var home = actor.Visuals.Body.Position;
@@ -353,30 +342,25 @@ internal static class TestHarness
         }
         await CaptureAfter("fixed_energy_native_cards_and_actor_home", 0.3);
     }
-    private static async Task VerifyCznSurfaces(NGame game)
+    private static async Task VerifyNativeUi(NGame game, Player player)
     {
-        if (WithCzn)
+        var nodes = Runtime.Descendants(game).ToArray();
+        Assert("no_czn_hud_menu_or_audio_nodes", !nodes.Any(n => n.Name.ToString().StartsWith("Czn")));
+        var gold = nodes.Single(n => n.GetType().Name == "NTopBarGold");
+        var label = gold.GetNode<Label>("%GoldLabel");
+        Assert("native_gold_label_visible_and_accurate", label.IsVisibleInTree() && label.Text == player.Gold.ToString());
+        var textures = Runtime.Descendants(gold).OfType<TextureRect>().Where(n => n.Texture != null).ToArray();
+        Assert("native_gold_icon_preserved", textures.Length > 0 && textures.All(n => !n.Texture.ResourcePath.Contains("Czn")));
+        var ui = NCombatRoom.Instance!.Ui;
+        foreach (var holder in Runtime.Descendants(ui.Hand).OfType<NHandCardHolder>().Where(h => h.CardNode != null))
         {
-            var registry = AccessTools.TypeByName("CznCore.Settings.SharedSettingsExtensionRegistry")!;
-            var categories = (System.Collections.IEnumerable)AccessTools.Method(registry, "GetCategories").Invoke(null, null)!;
-            Assert("czn_settings_accept_saber_controls", categories.Cast<object>().Any(c =>
-                (string)c.GetType().GetProperty("Id")!.GetValue(c)! == "saber_presentation"));
+            var card = holder.CardNode!;
+            Assert("native_card_frame_" + holder.CardModel!.Id.Entry, card.GetNode<TextureRect>("%Frame").Texture == holder.CardModel.Frame);
         }
-        var lobby = ResourceLoader.Load<PackedScene>("res://SaberPresentation/scenes/saber_lobby.tscn").Instantiate<Control>();
-        var layer = new CanvasLayer { Layer = 90, Name = "SaberLobbyVerification" };
-        game.AddChild(layer);
-        layer.AddChild(lobby);
-        await CaptureAfter("saber_live_lobby", 0.3);
-        Assert("saber_live_lobby_loaded", lobby.GetChildCount() == 2 && lobby.GetChild(1) is Polygon2D);
-        layer.QueueFree();
-        await Fx.Delay(0.1);
-        if (WithTheme)
-        {
-            var catalog = AccessTools.TypeByName("CznMainMenu.MainMenuCatalog")!;
-            AccessTools.Method(catalog, "EnsureAvailableBackgroundsResolved").Invoke(null, null);
-            object?[] args = ["skin_lobby_saber", null];
-            Assert("czn_main_menu_discovers_saber_lobby", (bool)AccessTools.Method(catalog, "TryGetBackground").Invoke(null, args)!);
-        }
+        Assert("native_energy_counter_retained", Runtime.Descendants(ui.EnergyCounterContainer).OfType<NEnergyCounter>().Single().IsVisibleInTree());
+        Assert("native_end_turn_button_retained", ui.EndTurnButton.IsVisibleInTree());
+        Assert("no_ui_assets_in_character_payload", !ResourceLoader.Exists("res://CznStyleUI/CznStyleUI.cs") && !ResourceLoader.Exists("res://SaberPresentation/scenes/saber_lobby.tscn"));
+        await CaptureAfter("native_ui_character_presentation", 0.15);
     }
     internal static void OnImpact(string id, Creature attacker)
     {

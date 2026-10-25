@@ -1,115 +1,19 @@
 {
-  "format": 1,
+  "format": 2,
   "externalModDependencies": [],
   "nativeModEntries": 1,
-  "localizationTablesMerged": 30,
-  "localizationOverridesInModuleOrder": [
-    {
-      "table": "eng/settings.json",
-      "key": "audio_settings_header",
-      "provider": "CznStyleUI"
-    },
-    {
-      "table": "eng/settings.json",
-      "key": "multiplayer_settings_header",
-      "provider": "CznStyleUI"
-    },
-    {
-      "table": "jpn/settings.json",
-      "key": "audio_settings_header",
-      "provider": "CznStyleUI"
-    },
-    {
-      "table": "jpn/settings.json",
-      "key": "multiplayer_settings_header",
-      "provider": "CznStyleUI"
-    },
-    {
-      "table": "kor/settings.json",
-      "key": "audio_settings_header",
-      "provider": "CznStyleUI"
-    },
-    {
-      "table": "kor/settings.json",
-      "key": "multiplayer_settings_header",
-      "provider": "CznStyleUI"
-    },
-    {
-      "table": "zhs/settings.json",
-      "key": "audio_settings_header",
-      "provider": "CznStyleUI"
-    },
-    {
-      "table": "zhs/settings.json",
-      "key": "multiplayer_settings_header",
-      "provider": "CznStyleUI"
-    },
-    {
-      "table": "zht/settings.json",
-      "key": "audio_settings_header",
-      "provider": "CznStyleUI"
-    },
-    {
-      "table": "zht/settings.json",
-      "key": "multiplayer_settings_header",
-      "provider": "CznStyleUI"
-    }
+  "runtimeAssemblies": [
+    "SaberPresentation"
   ],
-  "libraries": [
-    {
-      "id": "CznCore",
-      "version": "1.0.1",
-      "author": "Pelleas",
-      "workshop": "https://steamcommunity.com/sharedfiles/filedetails/?id=3826011578",
-      "files": [
-        {
-          "file": "bundled/CznCore.dll",
-          "bytes": 1417216,
-          "sha256": "3e8c7e13ff85e2ddbbba24dd3a011cf8741197de5bd2d99b797252ea91bd4322"
-        },
-        {
-          "file": "bundled/CznCore.pck",
-          "bytes": 52615710,
-          "sha256": "92eb2b1672c7d4d8945aa882bba3acc938027ddd52a1c4414771f2b4254bb8b6"
-        }
-      ]
-    },
-    {
-      "id": "CznStyleUI",
-      "version": "3.0.2-beta",
-      "author": "Pelleas",
-      "workshop": "https://steamcommunity.com/sharedfiles/filedetails/?id=3771060891",
-      "files": [
-        {
-          "file": "bundled/CznStyleUI.dll",
-          "bytes": 730112,
-          "sha256": "04e9d05c0543593192d97bd75ada0a715e4905e1aa8c18f2d979ee14659c6788"
-        },
-        {
-          "file": "bundled/CznStyleUI.pck",
-          "bytes": 178476820,
-          "sha256": "ef390be283883000c2bfe66559099e3b3136746951c92b3e54cab78fbf82d786"
-        }
-      ]
-    },
-    {
-      "id": "CznMainMenu",
-      "version": "1.0.1-beta",
-      "author": "Pelleas",
-      "workshop": "https://steamcommunity.com/sharedfiles/filedetails/?id=3774940754",
-      "files": [
-        {
-          "file": "bundled/CznMainMenu.dll",
-          "bytes": 111104,
-          "sha256": "ad3d52b853368bc80cb592e4580a7607d0267e5b1e869e6f6e888c68abdc1a49"
-        },
-        {
-          "file": "bundled/CznMainMenu.pck",
-          "bytes": 759624818,
-          "sha256": "7597b8af756ad0e687f62b0c5f6db771d83269ef6764c26c38b5e09020ee4e33"
-        }
-      ]
-    }
+  "libraries": [],
+  "nativeUiPreserved": true,
+  "localizationTablesMerged": 0,
+  "excludedModules": [
+    "CznStyleUI",
+    "CznMainMenu",
+    "CznEnemySkin",
+    "CznCore.dll",
+    "CznNineCharacter.dll"
   ],
   "saberSkin": {
     "author": "会画画的Small_day",
@@ -117,11 +21,50 @@
     "sourceSha256": "9f3d59b753287099eba3f90ace50585b040a7a3d8edd57e833d6b0d8ff53be23",
     "includedResources": 38
   },
-  "nineEffects": {
-    "author": "Pelleas",
-    "workshop": "https://steamcommunity.com/sharedfiles/filedetails/?id=3815657213",
-    "sourceSha256": "bcbc6934fe63af78c0fc722ebcee7d7faa54ce3657b8de5f0e31bd28e6787bb1",
-    "includesGameplayAssembly": false,
+  "effectSourcePacks": [
+    {
+      "id": "CznCore",
+      "author": "Pelleas",
+      "version": "1.0.1",
+      "workshop": "https://steamcommunity.com/sharedfiles/filedetails/?id=3826011578",
+      "sourceSha256": "92eb2b1672c7d4d8945aa882bba3acc938027ddd52a1c4414771f2b4254bb8b6"
+    },
+    {
+      "id": "CznNineCharacter",
+      "author": "Pelleas",
+      "version": "2.0.0-beta",
+      "workshop": "https://steamcommunity.com/sharedfiles/filedetails/?id=3815657213",
+      "sourceSha256": "bcbc6934fe63af78c0fc722ebcee7d7faa54ce3657b8de5f0e31bd28e6787bb1"
+    }
+  ],
+  "characterEffects": {
+    "seedResources": [
+      "CznCore/animations/common/system_buff_shield_b_skel_data.tres",
+      "CznCore/animations/common/system_buff_shield_f1_skel_data.tres",
+      "CznCore/animations/common/system_buff_shield_f2_skel_data.tres",
+      "CznCore/animations/common/system_hit_shield_player_f1_skel_data.tres",
+      "CznCore/animations/common/system_hit_shield_player_f2_skel_data.tres",
+      "CznCore/animations/common/system_break_shield_player_skel_data.tres",
+      "CznCore/animations/common/system_eff_buff_skel_data.tres",
+      "CznCore/audio/sfx/system_buff_shield.ogg",
+      "CznCore/audio/sfx/system_eff_buff.ogg",
+      "CznNineCharacter/animations/basic_effects/close_combat_step_player_move_skel_data.tres",
+      "CznNineCharacter/animations/basic_effects/close_combat_step_player_arrive_skel_data.tres",
+      "CznNineCharacter/animations/basic_effects/nine_30047_attack_play1_self_f_skel_data.tres",
+      "CznNineCharacter/animations/basic_effects/nine_30047_attack_play2_self_f_1_skel_data.tres",
+      "CznNineCharacter/animations/basic_effects/nine_30047_u2_attack_play_f_1_skel_data.tres",
+      "CznNineCharacter/animations/basic_effects/nine_30047_attack_play1_target_b_skel_data.tres",
+      "CznNineCharacter/animations/basic_effects/nine_30047_attack_play2_target_b_skel_data.tres",
+      "CznNineCharacter/animations/basic_effects/nine_30047_u1_attack_play_target_b_skel_data.tres",
+      "CznNineCharacter/animations/basic_effects/nine_30047_u3_attack_play_target_f_1_skel_data.tres",
+      "CznNineCharacter/audio/sfx/se_30047_attack_play1.ogg",
+      "CznNineCharacter/audio/sfx/se_30047_u1_attack_play.ogg",
+      "CznNineCharacter/audio/sfx/se_30047_ug_attack.ogg",
+      "CznNineCharacter/animations/cinematic/nine_30047_ug_intro_sword_skel_data.tres",
+      "CznNineCharacter/animations/cinematic/nine_30047_ug_target_b_skel_data.tres",
+      "CznNineCharacter/animations/cinematic/nine_30047_ug_target_f_skel_data.tres"
+    ],
+    "includesForeignAssembly": false,
     "resources": [
       {
         "path": ".godot/imported/close_combat_step_player_arrive.atlas-b99010e9.spatlas",
@@ -258,6 +201,234 @@
       {
         "path": ".godot/imported/se_30047_ug_attack.ogg-61249c9d31d44191eae5677562b62892.oggvorbisstr",
         "sha256": "8b9c059afe0d2d694685b4c8230da16aefbc83e47353197e12e2476c39796aff"
+      },
+      {
+        "path": ".godot/imported/system_break_shield_player.atlas-51de8a1e.spatlas",
+        "sha256": "67d672b9521a3300342b45ada4e9a7fa855f1f75af32078642887f1ce03ab89e"
+      },
+      {
+        "path": ".godot/imported/system_break_shield_player.png-60dfe178ec765443e453ac5091c8ccc7.ctex",
+        "sha256": "ad6ac43a10a5eb352aa527e1f024480fe9ece409615869322abe35e36c6c5438"
+      },
+      {
+        "path": ".godot/imported/system_break_shield_player.skel-4df9e8c9.spskel",
+        "sha256": "ba91868cef5f58db5195cb9acbea6d9c6a4d0f9e6df2f9d1bd8b6950c5bd0c55"
+      },
+      {
+        "path": ".godot/imported/system_buff_shield_b.atlas-d1e09bf1.spatlas",
+        "sha256": "ecd52a1299c4b36c57f3dd93ad049a0e1538d34a6e029e057d0173565fa11bec"
+      },
+      {
+        "path": ".godot/imported/system_buff_shield_f1.atlas-7736337c.spatlas",
+        "sha256": "11a42b763da9a00ae558c66b764c0b1031c73c8531f27d9ffe7d88381373afca"
+      },
+      {
+        "path": ".godot/imported/system_buff_shield_f2.atlas-46de29e1.spatlas",
+        "sha256": "2bd4ef3b744123ad60259e2156021326e539428705a935ad26c77c3645080736"
+      },
+      {
+        "path": ".godot/imported/system_eff_buff.atlas-c2aec79b.spatlas",
+        "sha256": "8a37083e54c3315aed28a69fd85944296cbef6e1dd59b335a5d0163f941c8275"
+      },
+      {
+        "path": ".godot/imported/system_eff_buff.ogg-164aff91706ffddbeaae4ffc0410214a.oggvorbisstr",
+        "sha256": "82f875e177501d275925265cc7bdcc691173ebe01fa99219248968c2e998d564"
+      },
+      {
+        "path": ".godot/imported/system_eff_buff.png-459b1ba34b9fdb6d11bb0186cf9a52bc.ctex",
+        "sha256": "f8775af516cfc28b7e432cb8bb439a867cffae24f5e3e8e9a575091593163c2a"
+      },
+      {
+        "path": ".godot/imported/system_eff_buff.skel-344bf044.spskel",
+        "sha256": "0258c216360f4142846c4bfcdd4923f514cca2ddab7b37f411efc081ae441278"
+      },
+      {
+        "path": ".godot/imported/system_hit_shield_player_f1.atlas-a32ea711.spatlas",
+        "sha256": "455b684e8d0bd2b6b184117a0ad927424891c59648d94c082412f485f3935f54"
+      },
+      {
+        "path": ".godot/imported/system_hit_shield_player_f1.png-9b243432808bbabead1a6df0947ec0ad.ctex",
+        "sha256": "38c01ec15afb96f377f24766902e7422d802992ac4d54c0c297c3193ebc3076f"
+      },
+      {
+        "path": ".godot/imported/system_hit_shield_player_f1.skel-dfd4a99a.spskel",
+        "sha256": "e0e8e096646e54f1f318c87fce2e535109f0bc094271997cd9d965bc21a4437f"
+      },
+      {
+        "path": ".godot/imported/system_hit_shield_player_f2.atlas-92c6bd8c.spatlas",
+        "sha256": "610902832bceafe900505abea9ee20da94cc9ae04259f4817a32bfe109179b56"
+      },
+      {
+        "path": ".godot/imported/system_hit_shield_player_f2.png-918944d8ca205de9655db9b6a7de47d6.ctex",
+        "sha256": "8bbc6f02d006c3d5987499142cdb3bd3483ebf959de7ca6d02abbec91ceac038"
+      },
+      {
+        "path": ".godot/imported/system_hit_shield_player_f2.skel-5940db34.spskel",
+        "sha256": "f95710b583bf6041112d986f3df17c5f676821123dff961b0d412df42711ed9c"
+      },
+      {
+        "path": "CznCore/animations/common/system_break_shield_player.atlas.import",
+        "sha256": "7247d8bf638b831c611d71719be4f32d261ccb67cb04d3d2288be45d7e54900c"
+      },
+      {
+        "path": "CznCore/animations/common/system_break_shield_player.png.import",
+        "sha256": "e8d0812a7e0368952f392546e3de19c313b5e16def3ba719a9a68536f0016650"
+      },
+      {
+        "path": "CznCore/animations/common/system_break_shield_player.skel.import",
+        "sha256": "2f29c7fd5187aa272e2cb6d5e0fe63366ef13fba89c64626dc04f522a14fe4b9"
+      },
+      {
+        "path": "CznCore/animations/common/system_break_shield_player_skel_data.tres",
+        "sha256": "6c4ce2d5f26a70208d39dabb01c15bfa4860d65fe4800bd44802d49e682c3c3f"
+      },
+      {
+        "path": "CznCore/animations/common/system_buff_shield_b.atlas.import",
+        "sha256": "a2ee351e8f67b44905f20dcaa9e6a4d70e6460e2401ab1df20276096666b3d4b"
+      },
+      {
+        "path": "CznCore/animations/common/system_buff_shield_b.png.import",
+        "sha256": "9548e98b53155aff2571b235cd187adc0f443351b8993ec68a9f92399538e950"
+      },
+      {
+        "path": "CznCore/animations/common/system_buff_shield_b.skel.import",
+        "sha256": "46daff3628920d33a7989f725ad65dcb6f269e065be5d61fc2397c2eb4f31543"
+      },
+      {
+        "path": "CznCore/animations/common/system_buff_shield_b_skel_data.tres",
+        "sha256": "d2357d8c6b05e8e96d91e20284a3c6c6a2642200ab2b3db0e4f0455bbb5a1f57"
+      },
+      {
+        "path": "CznCore/animations/common/system_buff_shield_f1.atlas.import",
+        "sha256": "8f4038bf5de77e71d8ba99e39c0fc90da251ac149c14ccb34d2e09623761b46a"
+      },
+      {
+        "path": "CznCore/animations/common/system_buff_shield_f1.png.import",
+        "sha256": "c1ac1ee1aa9a5c8d40d96ffac306511770c124dbf08180c6c2fc5dfa6d93ec3b"
+      },
+      {
+        "path": "CznCore/animations/common/system_buff_shield_f1.skel.import",
+        "sha256": "98dfb5c99102b471ae8bbc6fa907f27b853cf9047b0d4858bac9e5a5263cf1d8"
+      },
+      {
+        "path": "CznCore/animations/common/system_buff_shield_f1_skel_data.tres",
+        "sha256": "c2d1bf4ec8f2c8c88727464c508158203ca7849dfc7e4633861090b4225fd38f"
+      },
+      {
+        "path": "CznCore/animations/common/system_buff_shield_f2.atlas.import",
+        "sha256": "35ec1550a3491b41ac8267ee6566b3b5d8d819077b9a1547ad80cdd0b2d073ac"
+      },
+      {
+        "path": "CznCore/animations/common/system_buff_shield_f2.png.import",
+        "sha256": "d621aa82f91ec805761251d03df35c36fdb912e342cbbb5a822a5ae6680a003a"
+      },
+      {
+        "path": "CznCore/animations/common/system_buff_shield_f2.skel.import",
+        "sha256": "ccda4375c365071b443cad864e79990210919b573338945d77dcae6fc78cfbbf"
+      },
+      {
+        "path": "CznCore/animations/common/system_buff_shield_f2_skel_data.tres",
+        "sha256": "3ce3cd3213b29f8307f9d0942587a9a5c3e52b3a78c3fb09445a6eb03518b14b"
+      },
+      {
+        "path": "CznCore/animations/common/system_eff_buff.atlas.import",
+        "sha256": "fc8da9f5acc73cddbec50e4591d03a1cb5a6886bef811742d7de917564925e07"
+      },
+      {
+        "path": "CznCore/animations/common/system_eff_buff.png.import",
+        "sha256": "1c8d8db90301dda67bae4c8ba23bff16586ef54b3e0e6f03c2a26c929999bef3"
+      },
+      {
+        "path": "CznCore/animations/common/system_eff_buff.skel.import",
+        "sha256": "012ed864387541d01f209fc3695b56c049ddc7c7a8e69d42f9e3fda08d11613a"
+      },
+      {
+        "path": "CznCore/animations/common/system_eff_buff_skel_data.tres",
+        "sha256": "1c2f38f132d122056beb077153eb9ba03b3a01d90b64c1f8a315c59f6409eab0"
+      },
+      {
+        "path": "CznCore/animations/common/system_hit_shield_player_f1.atlas.import",
+        "sha256": "2f58504a443901522823a2800bbd9c3bba34569b33e0dbffc2de69d62eaa30af"
+      },
+      {
+        "path": "CznCore/animations/common/system_hit_shield_player_f1.png.import",
+        "sha256": "7502039a97874a181e47803ae23a9784c96c4f27d7bcb38cda2b73824eee6db5"
+      },
+      {
+        "path": "CznCore/animations/common/system_hit_shield_player_f1.skel.import",
+        "sha256": "b279df45223c8195cc44e4b089e0b05fd13f46547ecf13d5c8814abc41f83d11"
+      },
+      {
+        "path": "CznCore/animations/common/system_hit_shield_player_f1_skel_data.tres",
+        "sha256": "97bf81d138c5a96ae8d223ea3c3c4b67fed3b6a6f93ce2de2c02bbeee9b6d193"
+      },
+      {
+        "path": "CznCore/animations/common/system_hit_shield_player_f2.atlas.import",
+        "sha256": "89618ba37988c8e649e019ee90c78abaf67302af6e0cfae0966bbc2c630bc8b5"
+      },
+      {
+        "path": "CznCore/animations/common/system_hit_shield_player_f2.png.import",
+        "sha256": "f3b38993dca56a96e265afa5a75d242d1fa60b95ce6aa1e7d81eacd82091fcd0"
+      },
+      {
+        "path": "CznCore/animations/common/system_hit_shield_player_f2.skel.import",
+        "sha256": "d0e627e7b7c4dcd5ab7eebb87d665b4031c081be43a787ca12cf2c2da4c5463d"
+      },
+      {
+        "path": "CznCore/animations/common/system_hit_shield_player_f2_skel_data.tres",
+        "sha256": "2ed9e07ac9d11090a394085385e7758bf4c89cb46e13a8cfa7623e936ab39e64"
+      },
+      {
+        "path": "CznCore/audio/sfx/system_buff_shield.ogg.import",
+        "sha256": "66688eb547bca6a1bc42c69bd1f035a15ecf1f241e3af94b167c55cd4dd62712"
+      },
+      {
+        "path": "CznCore/audio/sfx/system_eff_buff.ogg.import",
+        "sha256": "eeecdcef35ebd6ef3764d8dc88c15925e0bbab586c58509f6fceed9196aaaffa"
+      },
+      {
+        "path": "CznCore/shared_imports/melee_steps/3b9dbee30a668b6a2bb1a46c.ctex",
+        "sha256": "3b9dbee30a668b6a2bb1a46cd0f3d74c2e221e9b0a49957b5005d6601d7981a1"
+      },
+      {
+        "path": "CznCore/shared_imports/melee_steps/5eb5e13e55ef5dbdb2b490df.spskel",
+        "sha256": "5eb5e13e55ef5dbdb2b490df76344cc50050611a9979e1c23dd1c8b3ae30be3f"
+      },
+      {
+        "path": "CznCore/shared_imports/melee_steps/b64172d18928046974c04f4d.ctex",
+        "sha256": "b64172d18928046974c04f4d0f971fb074c248cdcdf78cf6ef0113029f6cc1ac"
+      },
+      {
+        "path": "CznCore/shared_imports/melee_steps/c00327c87f07c941aa91108e.spskel",
+        "sha256": "c00327c87f07c941aa91108ec575ba41938c78fa85edc8c56b860fa63c9a6399"
+      },
+      {
+        "path": "CznCore/shared_imports/shield/15060a38ef3c744bcdb6f4d4.spskel",
+        "sha256": "15060a38ef3c744bcdb6f4d481bb71fbbaabcf31353fd394e1c2592845c8287d"
+      },
+      {
+        "path": "CznCore/shared_imports/shield/4eeba16c70cf2620aa842e2d.ctex",
+        "sha256": "4eeba16c70cf2620aa842e2df10e209f7063ce27c2bcddf4ec8e5192a8669775"
+      },
+      {
+        "path": "CznCore/shared_imports/shield/5ade5e3e3d75f593e4c9b5fc.spskel",
+        "sha256": "5ade5e3e3d75f593e4c9b5fcca0821197cc6fcb4f6f71060383f725edf479c95"
+      },
+      {
+        "path": "CznCore/shared_imports/shield/7418b718ec6be5dc67200213.oggvorbisstr",
+        "sha256": "7418b718ec6be5dc672002138a24ae041c82b396802ccfbd8e6a11252af77369"
+      },
+      {
+        "path": "CznCore/shared_imports/shield/955728250c48355df3f073cc.ctex",
+        "sha256": "955728250c48355df3f073cc7bf2c8b8356df055b04ec412aad05451891fc42f"
+      },
+      {
+        "path": "CznCore/shared_imports/shield/c9f63c38457dfd1ee020d017.ctex",
+        "sha256": "c9f63c38457dfd1ee020d0173e4027177f77399b1b71dbd52b6eba677eded3ea"
+      },
+      {
+        "path": "CznCore/shared_imports/shield/e571590cf472db600d26e173.spskel",
+        "sha256": "e571590cf472db600d26e1731ea0e38ff6c88f9f2edbc187e1e9d7851a89efdb"
       },
       {
         "path": "CznNineCharacter/animations/basic_effects/close_combat_step_player_arrive.atlas.import",
@@ -467,8 +638,8 @@
   },
   "ownPack": {
     "file": "SaberPresentation.pck",
-    "resources": 199,
-    "bytes": 34274250,
-    "sha256": "b100ce070c5c852e69a490a2aec07aef4179f2a583c9c2ea60dc87914ccd4990"
+    "resources": 222,
+    "bytes": 34902673,
+    "sha256": "43bfa2bfb6be2c40d70892bf3d7df24a00dadc132363a954bd60d2f23977e1dc"
   }
 }

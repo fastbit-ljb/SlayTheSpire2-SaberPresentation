@@ -12,9 +12,7 @@ public sealed class Settings
     public bool UseCznEffects { get; set; } = true;
     public bool CardHoverPresentation { get; set; } = true;
     public bool ReadyBodyMotion { get; set; } = true;
-    public bool SaberCardArt { get; set; }
-    public bool NativeEnergyDisplay { get; set; } = true;
-    public int ConfigRevision { get; set; }
+    public int ConfigRevision { get; set; } = 2;
     public bool HoverVoice { get; set; } = true;
     public bool PreferSaber { get; set; } = true;
     public float PortraitScale { get; set; } = 1f;
@@ -23,7 +21,6 @@ public sealed class Settings
     public float PortraitOffsetY { get; set; }
     public bool Cinematics { get; set; } = true;
     public bool KillingBlowExcalibur { get; set; } = true;
-    public bool StandaloneDefaultsApplied { get; set; }
     public bool ScreenShake { get; set; } = true;
     public bool ScreenFlash { get; set; } = true;
     public bool JapaneseVoice { get; set; } = true;
@@ -50,12 +47,9 @@ public sealed class Settings
             Current.PortraitScale = Math.Clamp(Current.PortraitScale, 0.5f, 1.5f);
             Current.PortraitOpacity = Math.Clamp(Current.PortraitOpacity, 0.1f, 1);
             Current.NoblePhantasmCards ??= [];
-            if (Current.ConfigRevision < 1)
-            {
-                Current.SaberCardArt = false;
-                Current.NativeEnergyDisplay = true;
-                Current.ConfigRevision = 1;
-            }
+            // Obsolete UI/theme switches are ignored when reading old JSON
+            // and disappear on save. Card artwork and general UI stay native.
+            Current.ConfigRevision = 2;
             System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(path)!);
             System.IO.File.WriteAllText(path, JsonSerializer.Serialize(Current, new JsonSerializerOptions { WriteIndented = true }));
         }

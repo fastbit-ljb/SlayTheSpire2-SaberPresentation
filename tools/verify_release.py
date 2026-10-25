@@ -5,6 +5,8 @@ from pathlib import Path
 import subprocess
 import zipfile
 
+from pck_tool import read_pck
+
 ROOT = Path(__file__).resolve().parents[1]
 INSTALL = Path(r"D:\L\Game\Steam\steamapps\common\Slay the Spire 2\mods\SaberPresentation")
 
@@ -37,7 +39,16 @@ def main():
                 assert sha_stream(entry) == digest, "ZIP mismatch: " + relative
             assert sha(INSTALL / relative) == digest, "Installed mismatch: " + relative
             artifacts.append({"file": relative, "sha256": digest, "zipMatches": True, "installedMatches": True})
-        assert not any(n.endswith("CznNineCharacter.dll") or n.endswith("saber.json") or "CznEnemySkin" in n for n in z.namelist())
+        assert [n for n in z.namelist() if n.endswith(".dll")] == ["SaberPresentation/SaberPresentation.dll"]
+        assert [n for n in z.namelist() if n.endswith(".pck")] == ["SaberPresentation/SaberPresentation.pck"]
+    assert lock["libraries"] == [] and lock["nativeUiPreserved"]
+    assert not list(INSTALL.glob("bundled/*.dll")) and not list(INSTALL.glob("bundled/*.pck"))
+    pack = read_pck(INSTALL / "SaberPresentation.pck")
+    assert not any(any(term in p for term in ("CznStyleUI", "CznMainMenu", "CznEnemySkin", "/localization/", "saber_card_atlas", "saber_lobby")) for p in pack["files"])
+    assert len(lock["characterEffects"]["seedResources"]) == 24
+    for item in lock["characterEffects"]["resources"]:
+        from pck_tool import extract
+        assert hashlib.sha256(extract(pack, item["path"])).hexdigest() == item["sha256"]
     classes = subprocess.check_output([r"D:\L\Study\modbulid\tools\ilspycmd.exe", "-l", "c",
                                       str(INSTALL / "SaberPresentation.dll")], text=True, encoding="utf-8")
     assert "SaberPresentation.TestHarness" not in classes
@@ -47,7 +58,7 @@ def main():
         source = ROOT / "build" / folder / "results.json"
         results = json.loads(source.read_text(encoding="utf-8"))
         assert results and all(r["passed"] for r in results), folder + " failed"
-        required = "native_main_menu_has_saber_lobby" if folder == "verification-menu" else (
+        required = "native_main_menu_no_theme_host" if folder == "verification-menu" else (
             "actual_1920x1080_render" if folder == "verification-fix-hd" else "aoe_two_kills_one_cg")
         assert any(r["check"] == required for r in results), "Stale suite evidence: " + folder
         suites.append({"suite": folder, "passed": len(results), "failed": 0, "checks": results})
@@ -56,7 +67,9 @@ def main():
               "packageBytes": archive.stat().st_size, "packageSha256": sha(archive),
               "verifiedArtifacts": artifacts, "tests": suites,
               "totalPassed": sum(s["passed"] for s in suites),
-              "excludedModules": ["CznEnemySkin"],
+              "excludedModules": lock["excludedModules"],
+              "foreignRuntimeAssemblies": [], "nativeUiPreserved": True,
+              "bundledCharacterEffectDependencies": len(lock["characterEffects"]["resources"]),
               "cardArtDefault": "Original game portraits; custom card art paused",
               "energyDisplay": "Native current/max energy, raised above the hand and portrait",
               "hoverBattlePose": "Natural idle_loop; no frozen attack frame",

@@ -14,7 +14,6 @@ internal static class CardFocusPatch
 {
     private static void Postfix(NHandCardHolder __instance)
     {
-        if (__instance.CardNode != null) SaberCardArtPatch.Apply(__instance.CardNode);
         ReadyPresentation.Focus(__instance.CardModel);
     }
 }
@@ -63,19 +62,5 @@ internal static class PlayedCardPresentationPatch
         ReadyPresentation.Play(__instance);
         if (__instance.Type is CardType.Skill or CardType.Power)
             __instance.Owner!.Creature.GetCreatureNode()?.SetAnimationTrigger("Cast");
-    }
-}
-[HarmonyPatch(typeof(NCard), "UpdatePortrait")]
-internal static class SaberCardArtPatch
-{
-    [HarmonyPriority(Priority.Last)]
-    private static void Postfix(NCard __instance) => Apply(__instance);
-    internal static void Apply(NCard __instance)
-    {
-        var card = __instance.Model;
-        if (!Settings.Current.Enabled || !Settings.Current.SaberCardArt || card?.Owner?.Character is not MegaCrit.Sts2.Core.Models.Characters.Ironclad
-            || (!Settings.Current.PreferSaber && !Runtime.IsSaber(card.Owner.Creature))
-            || card.Type is CardType.Curse or CardType.Status) return;
-        if (__instance.GetNodeOrNull<TextureRect>("%Portrait") is { } portrait) portrait.Texture = Art.Card(card);
     }
 }

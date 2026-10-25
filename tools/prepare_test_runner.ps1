@@ -25,7 +25,7 @@ $bundledTarget = Join-Path $testMods 'SaberPresentation\bundled'
 New-Item -ItemType Directory -Path $bundledTarget -Force | Out-Null
 $lock = Get-Content -LiteralPath (Join-Path $projectRoot 'STANDALONE_COMPONENTS.json') -Raw | ConvertFrom-Json
 $payloadNames = @($lock.libraries | ForEach-Object { $_.files | ForEach-Object { Split-Path -Leaf $_.file } })
-foreach ($oldName in @('CznEnemySkin.dll','CznEnemySkin.pck')) {
+foreach ($oldName in @('CznCore.dll','CznCore.pck','CznStyleUI.dll','CznStyleUI.pck','CznMainMenu.dll','CznMainMenu.pck','CznEnemySkin.dll','CznEnemySkin.pck')) {
     $oldTarget = Join-Path $bundledTarget $oldName
     if (Test-Path -LiteralPath $oldTarget) { Remove-Item -LiteralPath $oldTarget -Force }
 }

@@ -6,7 +6,6 @@ from pathlib import Path
 from pck_tool import extract, read_pck
 
 ROOT = Path(__file__).resolve().parents[1]
-WORKSHOP = Path(r"D:\L\Game\Steam\steamapps\workshop\content\2868840")
 
 PACKS = [
     ("CznCore", "3826011578", [
@@ -51,47 +50,31 @@ PACKS = [
 
 
 def main():
+    lock = json.loads((ROOT / "STANDALONE_COMPONENTS.json").read_text(encoding="utf-8"))
+    pack = read_pck(ROOT / "build/SaberPresentation.pck")
+    assert hashlib.sha256(pack["data"]).hexdigest() == lock["ownPack"]["sha256"]
     sources = []
     for name, workshop_id, groups in PACKS:
-        folder = WORKSHOP / workshop_id
-        manifest = json.loads((folder / f"{name}.json").read_text(encoding="utf-8-sig"))
-        pack = read_pck(folder / f"{name}.pck")
+        original = next(source for source in lock["effectSourcePacks"] if source["id"] == name)
         resources = []
         for prefix, suffix, names in groups:
             for filename, purpose in names.items():
-                path = f"res://{name}/{prefix}{filename}{suffix}"
-                packed = path if path in pack["files"] else path + ".import"
-                data = extract(pack, packed)  # Fails if the installed source changed.
-                resources.append({
-                    "resource": path, "purpose": purpose, "packedEntry": packed,
-                    "sha256": hashlib.sha256(data).hexdigest(),
-                })
-        sources.append({
-            "id": name, "version": manifest["version"], "author": manifest["author"],
-            "workshop": f"https://steamcommunity.com/sharedfiles/filedetails/?id={workshop_id}",
-            "pckSha256": hashlib.sha256(pack["data"]).hexdigest(),
-            "resources": resources,
-        })
+                logical = f"{name}/{prefix}{filename}{suffix}"
+                packed = next((logical + suffix for suffix in ("", ".import", ".remap") if logical + suffix in pack["files"]), None)
+                assert packed, logical
+                resources.append({"resource": "res://" + logical, "purpose": purpose, "packedEntry": packed,
+                    "sha256": hashlib.sha256(extract(pack, packed)).hexdigest()})
+        sources.append({"id": name, "version": original["version"], "author": original["author"],
+            "workshop": original["workshop"], "pckSha256": original["sourceSha256"], "resources": resources})
     output = {
-        "integration": "Self-contained private payload; original sources used at build time only",
+        "integration": "Character-only resource dependency closure in our single PCK; native game UI and menus",
         "bundledCznAssets": True, "directCznAssemblyReferences": False,
         "adaptation": "Route-specific layers, adjusted placement/scale/playback speed and warm tint; Saber JP voices retained",
-        "sources": sources,
+        "sources": sources, "runtimeModules": [], "foreignRuntimeAssemblies": [],
+        "dependencyResourceCount": len(lock["characterEffects"]["resources"])
     }
-    output["runtimeModules"] = []
-    for name, workshop_id in [("CznStyleUI", "3771060891"), ("CznMainMenu", "3774940754"),
-                              ("CznEnemySkin", "3783041069"), ("ChizuruIroncladSkin", "3826011833")]:
-        folder = WORKSHOP / workshop_id
-        manifest = json.loads((folder / f"{name}.json").read_text(encoding="utf-8-sig"))
-        output["runtimeModules"].append({
-            "id": name, "version": manifest["version"], "author": manifest["author"],
-            "workshop": f"https://steamcommunity.com/sharedfiles/filedetails/?id={workshop_id}",
-            "dllSha256": hashlib.sha256((folder / f"{name}.dll").read_bytes()).hexdigest(),
-            "pckBytes": (folder / f"{name}.pck").stat().st_size,
-            "integration": "Compatibility verification only; not bundled" if name == "ChizuruIroncladSkin" else "Unmodified private bundled presentation module",
-        })
     (ROOT / "CZN_ASSETS.json").write_text(json.dumps(output, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(f"Recorded {sum(len(s['resources']) for s in sources)} runtime resources from {len(sources)} installed packs")
+    print(f"Recorded {sum(len(s['resources']) for s in sources)} character effect seeds; zero foreign runtime modules")
 
 
 if __name__ == "__main__":

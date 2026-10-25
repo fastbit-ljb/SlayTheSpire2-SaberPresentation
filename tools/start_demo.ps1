@@ -17,6 +17,10 @@ New-Item -ItemType Directory -Path $modRoot -Force | Out-Null
 Copy-Item -LiteralPath (Join-Path $projectRoot 'build\demo-dll\SaberPresentation.dll'),(Join-Path $projectRoot 'SaberPresentation.json'),(Join-Path $projectRoot 'build\SaberPresentation.pck') -Destination $modRoot -Force
 $bundles = Join-Path $modRoot 'bundled'
 New-Item -ItemType Directory -Path $bundles -Force | Out-Null
+foreach ($oldName in @('CznCore.dll','CznCore.pck','CznStyleUI.dll','CznStyleUI.pck','CznMainMenu.dll','CznMainMenu.pck','CznEnemySkin.dll','CznEnemySkin.pck')) {
+    $oldTarget = Join-Path $bundles $oldName
+    if (Test-Path -LiteralPath $oldTarget) { Remove-Item -LiteralPath $oldTarget -Force }
+}
 $lock = Get-Content -LiteralPath (Join-Path $projectRoot 'STANDALONE_COMPONENTS.json') -Raw | ConvertFrom-Json
 $payloadNames = @($lock.libraries | ForEach-Object { $_.files | ForEach-Object { Split-Path -Leaf $_.file } })
 foreach ($file in Get-ChildItem -LiteralPath (Join-Path $projectRoot 'build\bundled') -File | Where-Object Name -in $payloadNames) {
@@ -36,7 +40,7 @@ $demoData = Join-Path $env:APPDATA 'SlayTheSpire2-SaberPresentation-Demo'
 if (-not (Test-Path -LiteralPath $demoData)) {
     New-Item -ItemType Directory -Path $demoData -Force | Out-Null
     $testData = Join-Path $env:APPDATA 'SlayTheSpire2-SaberPresentation-Test'
-    foreach ($folder in @('default','mod_configs','CznModConfig')) {
+    foreach ($folder in @('default','mod_configs')) {
         $source = Join-Path $testData $folder
         if (Test-Path -LiteralPath $source) { Copy-Item -LiteralPath $source -Destination $demoData -Recurse -Force }
     }

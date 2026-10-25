@@ -68,7 +68,7 @@ def main():
     # Keep the raster artwork and alpha intact; slice frames with AtlasTexture.
     image_paths = [assets / "images/artoria.png"]
     image_paths += [assets / "generated" / (name + ".png") for name in
-        ["saber_card_atlas", "saber_vfx_atlas", "saber_ready_attack", "saber_ready_cast", "camelot_stage", "saber_defeat", "saber_attack_sequence"]
+        ["saber_vfx_atlas", "saber_ready_attack", "saber_ready_cast", "camelot_stage", "saber_defeat", "saber_attack_sequence"]
         if (assets / "generated" / (name + ".png")).exists()]
     for image_path in image_paths:
         im = Image.open(image_path).convert("RGBA")
@@ -82,9 +82,6 @@ def main():
         files[res_path + ".import"] = ('[remap]\nimporter="texture"\ntype="CompressedTexture2D"\n'
             f'path="res://.godot/imported/{ctex}"\n\n[deps]\nsource_file="res://{res_path}"\n'
             f'dest_files=["res://.godot/imported/{ctex}"]\n\n[params]\n').encode()
-    for scene_path in (assets / "scenes").glob("*"):
-        if scene_path.suffix in (".gd", ".tscn"):
-            files["SaberPresentation/scenes/" + scene_path.name] = scene_path.read_bytes()
     out = ROOT / "build/SaberPresentation.pck"
     out.parent.mkdir(exist_ok=True)
     write_pck(out, files)

@@ -22,9 +22,8 @@ public static class Entry
     {
         Settings.Load();
         Standalone.Initialize();
-        CznInterop.Register();
         new Harmony("local.saber.presentation").PatchAll(typeof(Entry).Assembly);
-        Log.Info("[SaberPresentation] JP combat presentation 0.3.1 initialized.");
+        Log.Info("[SaberPresentation] JP character presentation 0.3.2 initialized; original game UI retained.");
 #if SABER_TEST
         if (MegaCrit.Sts2.Core.Helpers.CommandLineHelper.HasArg("saber-test"))
             _ = MegaCrit.Sts2.Core.Helpers.TaskHelper.RunSafely(TestHarness.Run(MegaCrit.Sts2.Core.Nodes.NGame.Instance!));

@@ -28,7 +28,7 @@ $bundledPackage = Join-Path $packageRoot 'bundled'
 New-Item -ItemType Directory -Path $bundledPackage -Force | Out-Null
 $componentLock = Get-Content -LiteralPath (Join-Path $projectRoot 'STANDALONE_COMPONENTS.json') -Raw | ConvertFrom-Json
 $payloadFiles = @($componentLock.libraries | ForEach-Object { $_.files | ForEach-Object { Join-Path $projectRoot ('build\' + $_.file) } })
-Copy-Item -LiteralPath $payloadFiles -Destination $bundledPackage -Force
+if ($payloadFiles.Count -gt 0) { Copy-Item -LiteralPath $payloadFiles -Destination $bundledPackage -Force }
 $zip = Join-Path $projectRoot "dist\SaberPresentation-$version.zip"
 Compress-Archive -LiteralPath $packageRoot -DestinationPath $zip -CompressionLevel Fastest -Force
 if ($Install) {
@@ -39,11 +39,11 @@ if ($Install) {
     Copy-Item -LiteralPath $artifacts -Destination $installRoot -Force
     $bundledInstall = Join-Path $installRoot 'bundled'
     New-Item -ItemType Directory -Path $bundledInstall -Force | Out-Null
-    foreach ($removed in @('CznEnemySkin.dll','CznEnemySkin.pck')) {
+    foreach ($removed in @('CznCore.dll','CznCore.pck','CznStyleUI.dll','CznStyleUI.pck','CznMainMenu.dll','CznMainMenu.pck','CznEnemySkin.dll','CznEnemySkin.pck')) {
         $removedPath = Join-Path $bundledInstall $removed
         if (Test-Path -LiteralPath $removedPath) { Remove-Item -LiteralPath $removedPath -Force }
     }
-    Copy-Item -LiteralPath (Get-ChildItem -LiteralPath $bundledPackage -File).FullName -Destination $bundledInstall -Force
+    if ($payloadFiles.Count -gt 0) { Copy-Item -LiteralPath $payloadFiles -Destination $bundledInstall -Force }
     Copy-Item -LiteralPath (Join-Path $packageRoot 'STANDALONE_COMPONENTS.json'),(Join-Path $packageRoot 'THIRD_PARTY_NOTICES.md'),(Join-Path $packageRoot 'README.md') -Destination $installRoot -Force
     Write-Output "Installed: $installRoot"
 }
