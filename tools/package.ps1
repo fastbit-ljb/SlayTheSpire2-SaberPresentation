@@ -23,7 +23,7 @@ Copy-Item -LiteralPath (Join-Path $projectRoot 'CZN_PARITY.md') -Destination $pa
 Copy-Item -LiteralPath (Join-Path $projectRoot 'assets\generated\provenance.json') -Destination (Join-Path $packageRoot 'GENERATED_ASSETS.json') -Force
 Copy-Item -LiteralPath (Join-Path $projectRoot 'assets\generated\PROMPTS.md') -Destination $packageRoot -Force
 Copy-Item -LiteralPath (Join-Path $projectRoot 'assets\generated\PROMPTS_ANIME_V2.md') -Destination $packageRoot -Force
-Copy-Item -LiteralPath (Join-Path $projectRoot 'assets\generated\PROMPTS_RIG.md'),(Join-Path $projectRoot 'NINE_PORTRAIT_REVIEW.md') -Destination $packageRoot -Force
+Copy-Item -LiteralPath (Join-Path $projectRoot 'assets\generated\PROMPTS_RIG.md'),(Join-Path $projectRoot 'NINE_PORTRAIT_REVIEW.md'),(Join-Path $projectRoot 'CHIZURU_PRESENTATION_REVIEW.md') -Destination $packageRoot -Force
 Copy-Item -LiteralPath (Join-Path $projectRoot 'STANDALONE_COMPONENTS.json'),(Join-Path $projectRoot 'THIRD_PARTY_NOTICES.md') -Destination $packageRoot -Force
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'enable_standalone.ps1') -Destination (Join-Path $packageRoot 'ENABLE_STANDALONE.ps1') -Force
 $bundledPackage = Join-Path $packageRoot 'bundled'

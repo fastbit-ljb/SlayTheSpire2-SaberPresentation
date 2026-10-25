@@ -1,6 +1,4 @@
 using Godot;
-using MegaCrit.Sts2.Core.Entities.Cards;
-
 namespace SaberPresentation;
 
 // A single cutout character: native Bone2D transforms deform weighted meshes.
@@ -12,16 +10,17 @@ internal sealed class PortraitRig
     private readonly Dictionary<string, Bone2D> _bones = [];
     private readonly AnimationPlayer _main, _secondary;
     private readonly List<Polygon2D> _layers = [];
-    private bool _playing;
+    private readonly PortraitArms _arms;
+#if SABER_TEST
+    private bool _exporting;
+#endif
     internal string Clip { get; private set; } = "b_idle";
-    internal int RenderSamples { get; private set; }
-    internal bool IsReady => _layers.Count == 3 && _skeleton.GetBoneCount() >= 20;
+    internal bool IsReady => _layers.Count == 2 && _arms.Ready && _skeleton.GetBoneCount() >= 24;
     internal string Source => _layers[0].Texture.ResourcePath;
     internal Vector2 Resolution => _layers[0].Texture.GetSize();
     internal int BoneCount => _skeleton.GetBoneCount();
     internal Vector2 MotionSample => _bones["RibbonTip"].GlobalPosition;
-    internal Vector2 SwordTip => _bones["Wrist"].ToGlobal(Registered(2, new Vector2(995, 40)) - new Vector2(365, 314));
-    internal string TextureSignature => string.Join(",", _layers.Select(p => p.Texture.GetInstanceId()));
+    internal string TextureSignature => string.Join(",", _layers.Select(p => p.Texture.GetInstanceId())) + "," + _arms.Signature;
 
     internal PortraitRig(Node2D parent)
     {
@@ -44,7 +43,11 @@ internal sealed class PortraitRig
         Bone("RibbonTip", "Ribbon", new(105, 95));
         Bone("Shoulder", "Torso", new(105, -10));
         Bone("Elbow", "Shoulder", new(-180, -79));
-        Bone("Wrist", "Elbow", new(-55, -152));
+        Bone("Wrist", "Elbow", new(-76, -101));
+        Bone("RearShoulder", "Torso", new(-105, -110));
+        Bone("RearElbow", "RearShoulder", new(150, 0));
+        Bone("RearWrist", "RearElbow", new(170, 0));
+        Bone("Grip", "Torso", new(-130, -241));
         Bone("SkirtLeft", "Root", new(-190, 170));
         Bone("SkirtLeftTip", "SkirtLeft", new(-40, 280));
         Bone("SkirtRight", "Root", new(220, 145));
@@ -52,14 +55,19 @@ internal sealed class PortraitRig
 
         Layer("saber_rig_body_v1", 0, BodyWeights);
         Layer("saber_rig_head_v1", 1, HeadWeights);
-        Layer("saber_rig_arms_v1", 2, ArmWeights);
+        _layers[1].ZIndex = 2;
+        _arms = new PortraitArms(_bones);
         _main = Player("CharacterMotion");
+        _main.MixerApplied += _arms.Solve;
         var library = new AnimationLibrary();
         library.AddAnimation("b_idle", Idle());
-        library.AddAnimation("card_attack", Attack());
-        library.AddAnimation("card_casting", Cast());
         _main.AddAnimationLibrary("saber", library);
-        _main.AnimationFinished += _ => { _playing = false; IdlePose(); };
+        _main.AnimationFinished += _ => {
+#if SABER_TEST
+            if (_exporting) return;
+#endif
+            IdlePose();
+        };
         _secondary = Player("HairAndClothMotion");
         var cloth = new AnimationLibrary();
         cloth.AddAnimation("wind", Secondary());
@@ -118,20 +126,9 @@ internal sealed class PortraitRig
             ["HairRight"] = hairR * (1 - ribbon) * (1 - tip), ["HairRightTip"] = hairR * (1 - ribbon) * tip,
             ["Bangs"] = bangs, ["Ahoge"] = ahoge };
     }
-    private Dictionary<string, float> ArmWeights(Vector2 p)
-    {
-        // All blade/hand vertices share a rigid wrist; deformation is confined
-        // to the sleeve/elbow overlap. No stretched sword or rubber fingers.
-        float wrist = 1 - Smooth(345, 450, p.Y);
-        float upper = Smooth(470, 535, p.Y);
-        if (p.Y < 330) wrist = 1;
-        return new() { ["Shoulder"] = upper, ["Elbow"] = (1 - upper) * (1 - wrist),
-            ["Wrist"] = (1 - upper) * wrist };
-    }
-
     private void Layer(string texture, int z, Func<Vector2, Dictionary<string, float>> weights)
     {
-        int columns = z == 1 ? 64 : 32, rows = z == 1 ? 96 : 48;
+        int columns = z == 1 ? 64 : z == 2 ? 48 : 32, rows = z == 1 ? 96 : z == 2 ? 72 : 48;
         var points = new Vector2[(columns + 1) * (rows + 1)];
         var uv = new Vector2[points.Length];
         var boneWeights = _bones.Keys.ToDictionary(k => k, _ => new float[points.Length]);
@@ -168,6 +165,18 @@ internal sealed class PortraitRig
 
     private Animation New(float length, bool loop = false) => new() { Length = length,
         LoopMode = loop ? Animation.LoopModeEnum.Linear : Animation.LoopModeEnum.None };
+    private static Animation Retimed(Animation animation, float factor)
+    {
+        for (int track = 0; track < animation.GetTrackCount(); track++)
+        {
+            var keys = Enumerable.Range(0, animation.TrackGetKeyCount(track))
+                .Select(k => (time: animation.TrackGetKeyTime(track, k), value: animation.TrackGetKeyValue(track, k))).ToArray();
+            for (int k = keys.Length - 1; k >= 0; k--) animation.TrackRemoveKey(track, k);
+            foreach (var key in keys) animation.TrackInsertKey(track, key.time * factor, key.value);
+        }
+        animation.Length *= factor;
+        return animation;
+    }
     private void Rotate(Animation animation, string bone, params (float t, float degrees)[] keys)
     {
         int track = animation.AddTrack(Animation.TrackType.Value);
@@ -186,88 +195,56 @@ internal sealed class PortraitRig
     private Animation Idle()
     {
         var a = New(3.2f, true);
-        Rotate(a, "Torso", (0, -0.8f), (1.6f, 0.8f), (3.2f, -0.8f));
-        Rotate(a, "Neck", (0, 0.3f), (1.6f, -0.4f), (3.2f, 0.3f));
-        Rotate(a, "Head", (0, -0.4f), (1.6f, 0.6f), (3.2f, -0.4f));
-        Rotate(a, "Shoulder", (0, -1.3f), (1.6f, 1.5f), (3.2f, -1.3f));
-        Rotate(a, "Wrist", (0, 0.6f), (1.6f, -0.5f), (3.2f, 0.6f));
-        Rotate(a, "Elbow", (0, 0), (3.2f, 0));
-        Move(a, "Elbow", (0, 0, 0), (3.2f, 0, 0));
-        Move(a, "Wrist", (0, 0, 0), (3.2f, 0, 0));
-        Move(a, "Root", (0, 0, 2), (1.6f, 0, -4), (3.2f, 0, 2));
+        Rotate(a, "Torso", (0, -2.2f), (.8f, -.5f), (1.6f, 2.2f), (2.4f, .3f), (3.2f, -2.2f));
+        Rotate(a, "Neck", (0, 1.6f), (.9f, -.5f), (1.8f, -2), (2.6f, .8f), (3.2f, 1.6f));
+        Rotate(a, "Head", (0, -1.8f), (1, .2f), (1.9f, 2.3f), (2.7f, -.5f), (3.2f, -1.8f));
+        Move(a, "Head", (0, -2, 1), (1.7f, 3, -4), (3.2f, -2, 1));
+        Move(a, "Grip", (0, -3, 3), (1.7f, 4, -7), (3.2f, -3, 3));
+        Rotate(a, "Grip", (0, -.8f), (1.8f, 1.2f), (3.2f, -.8f));
+        Move(a, "Root", (0, -5, 5), (1.6f, 5, -9), (3.2f, -5, 5));
         Rotate(a, "HairFlow", (0, 0), (3.2f, 0));
-        return a;
-    }
-    private Animation Attack()
-    {
-        var a = New(1.14f);
-        Rotate(a, "Torso", (0, 0), (.2f, -3), (.43f, 4), (.62f, 5), (.86f, 2), (1.14f, 0));
-        Rotate(a, "Neck", (0, 0), (.2f, 2), (.46f, -4), (.72f, -2), (1.14f, 0));
-        Rotate(a, "Head", (0, 0), (.24f, -2), (.48f, -3), (.8f, 1), (1.14f, 0));
-        Rotate(a, "Shoulder", (0, 0), (.2f, -6), (.28f, -6), (.43f, 18), (.62f, 20), (.86f, 6), (1.14f, 0));
-        Rotate(a, "Elbow", (0, 0), (.2f, -2), (.43f, 3), (.62f, 2), (.86f, -1), (1.14f, 0));
-        Rotate(a, "Wrist", (0, 0), (.22f, -8), (.28f, -7), (.43f, 1), (.62f, -2), (.86f, -1), (1.14f, 0));
-        Move(a, "Elbow", (0, 0, 0), (1.14f, 0, 0));
-        Move(a, "Wrist", (0, 0, 0), (1.14f, 0, 0));
-        Move(a, "Root", (0, 0, 0), (.22f, -12, 14), (.43f, 36, 3), (.62f, 40, 5), (.86f, 12, 2), (1.14f, 0, 0));
-        Rotate(a, "HairFlow", (0, 0), (.24f, 3), (.50f, -6), (.72f, -3), (.93f, 2), (1.14f, 0));
-        return a;
-    }
-    private Animation Cast()
-    {
-        var a = New(1.22f);
-        Rotate(a, "Torso", (0, 0), (.35f, -3), (.68f, 2), (1.22f, 0));
-        Rotate(a, "Neck", (0, 0), (.35f, 1), (.7f, -2), (1.22f, 0));
-        Rotate(a, "Head", (0, 0), (.38f, -2.5f), (.72f, -1), (1.22f, 0));
-        Rotate(a, "Shoulder", (0, 0), (.34f, -8), (.68f, 7), (.94f, 3), (1.22f, 0));
-        Rotate(a, "Wrist", (0, 0), (.36f, -2), (.7f, 4), (1.22f, 0));
-        Rotate(a, "Elbow", (0, 0), (1.22f, 0));
-        Move(a, "Elbow", (0, 0, 0), (1.22f, 0, 0));
-        Move(a, "Wrist", (0, 0, 0), (1.22f, 0, 0));
-        Move(a, "Root", (0, 0, 0), (.38f, -5, -8), (.7f, 10, -5), (1.22f, 0, 0));
-        Rotate(a, "HairFlow", (0, 0), (.4f, -2), (.78f, 3), (1.22f, 0));
-        return a;
+        return Retimed(a, .7f);
     }
     private Animation Secondary()
     {
         var a = New(4.8f, true);
-        Rotate(a, "HairLeft", (0, -1.5f), (1.2f, 2.8f), (2.4f, 0), (3.6f, -2.5f), (4.8f, -1.5f));
-        Rotate(a, "HairLeftTip", (0, 1), (1.45f, -5), (2.65f, -1), (3.85f, 5), (4.8f, 1));
-        Rotate(a, "HairRight", (0, 1.5f), (1.2f, -2.2f), (2.4f, -2.8f), (3.6f, 2.4f), (4.8f, 1.5f));
-        Rotate(a, "HairRightTip", (0, -1), (1.45f, 5), (2.65f, 2), (3.85f, -6), (4.8f, -1));
+        Rotate(a, "HairLeft", (0, -3), (1.2f, 5), (2.4f, 0), (3.6f, -4), (4.8f, -3));
+        Rotate(a, "HairLeftTip", (0, 2), (1.45f, -9), (2.65f, -2), (3.85f, 10), (4.8f, 2));
+        Rotate(a, "HairRight", (0, 3), (1.2f, -4), (2.4f, -5), (3.6f, 4.5f), (4.8f, 3));
+        Rotate(a, "HairRightTip", (0, -2), (1.45f, 10), (2.65f, 4), (3.85f, -11), (4.8f, -2));
         Rotate(a, "Bangs", (0, -.5f), (1.1f, 1.1f), (2.5f, -.8f), (3.8f, .6f), (4.8f, -.5f));
         Rotate(a, "Ahoge", (0, -1), (1.35f, 3), (2.65f, -2), (3.95f, 2), (4.8f, -1));
-        Rotate(a, "Ribbon", (0, -2), (1.2f, 3), (2.4f, 1), (3.6f, -3), (4.8f, -2));
-        Rotate(a, "RibbonTip", (0, 3), (1.2f, -4), (2.4f, -1), (3.6f, 4), (4.8f, 3));
+        Rotate(a, "Ribbon", (0, -4), (1.2f, 6), (2.4f, 2), (3.6f, -6), (4.8f, -4));
+        Rotate(a, "RibbonTip", (0, 6), (1.2f, -8), (2.4f, -2), (3.6f, 8), (4.8f, 6));
         Rotate(a, "SkirtLeft", (0, -1), (1.2f, 1.7f), (2.4f, 0), (3.6f, -2), (4.8f, -1));
         Rotate(a, "SkirtLeftTip", (0, 1), (1.2f, -2), (2.4f, -.8f), (3.6f, 2), (4.8f, 1));
         Rotate(a, "SkirtRight", (0, 1), (1.2f, -1.4f), (2.4f, -.7f), (3.6f, 2), (4.8f, 1));
         Rotate(a, "SkirtRightTip", (0, -1), (1.2f, 2), (2.4f, .8f), (3.6f, -2), (4.8f, -1));
-        return a;
+        return Retimed(a, .7f);
     }
 
     internal void IdlePose()
     {
-        if (_playing || _main.CurrentAnimation == "saber/b_idle") return;
+        if (_main.CurrentAnimation == "saber/b_idle") return;
         Clip = "b_idle";
         _main.Play("saber/b_idle", customBlend: 0.12);
     }
-    internal double Play(CardType type)
-    {
-        Clip = type == CardType.Attack ? "card_attack" : "card_casting";
-        _playing = true;
-        _main.Play("saber/" + Clip, customBlend: 0.10);
-        return type == CardType.Attack ? 1.14 : 1.22;
-    }
-    internal void Sample() { if (_playing) RenderSamples++; }
 #if SABER_TEST
-    internal void ExportPose(string clip, double seconds)
+    internal void ExportHeadOnly(bool enabled)
     {
+        _layers[0].Visible = !enabled;
+        _arms.SetVisible(!enabled);
+    }
+    internal void ExportPose(string clip, double seconds, double? secondarySeconds = null)
+    {
+        _exporting = true;
+        Clip = clip;
         _main.Set("callback_mode_process", 2);
         _secondary.Set("callback_mode_process", 2);
         _main.Play("saber/" + clip, customBlend: 0);
         _main.Seek(seconds, update: true);
-        _secondary.Seek(seconds % 4.8, update: true);
+        _secondary.Seek((secondarySeconds ?? seconds) % 3.36, update: true);
+        _arms.Solve();
     }
 #endif
 }

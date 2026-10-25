@@ -23,10 +23,10 @@ public static class Entry
         Settings.Load();
         Standalone.Initialize();
         new Harmony("local.saber.presentation").PatchAll(typeof(Entry).Assembly);
-        Log.Info("[SaberPresentation] JP character presentation 0.3.4 initialized; continuous portrait rig; original game UI retained.");
+        Log.Info("[SaberPresentation] JP character presentation 0.3.5 initialized; animated battle-ready portrait with layered in-world attacks; original game UI retained.");
 #if SABER_TEST
         if (MegaCrit.Sts2.Core.Helpers.CommandLineHelper.HasArg("saber-test"))
-            _ = MegaCrit.Sts2.Core.Helpers.TaskHelper.RunSafely(TestHarness.Run(MegaCrit.Sts2.Core.Nodes.NGame.Instance!));
+            _ = MegaCrit.Sts2.Core.Helpers.TaskHelper.RunSafely(SaberTestBootstrapPatch.StartWhenReady());
 #endif
 #if SABER_DEMO
         if (MegaCrit.Sts2.Core.Helpers.CommandLineHelper.HasArg("saber-demo"))
@@ -34,6 +34,24 @@ public static class Entry
 #endif
     }
 }
+
+#if SABER_TEST
+[HarmonyPatch(typeof(MegaCrit.Sts2.Core.Nodes.NGame), "_Ready")]
+internal static class SaberTestBootstrapPatch
+{
+    internal static async Task StartWhenReady()
+    {
+        while (MegaCrit.Sts2.Core.Nodes.NGame.Instance == null) await Task.Delay(50);
+        await TestHarness.Run(MegaCrit.Sts2.Core.Nodes.NGame.Instance);
+    }
+
+    private static void Postfix(MegaCrit.Sts2.Core.Nodes.NGame __instance)
+    {
+        if (MegaCrit.Sts2.Core.Helpers.CommandLineHelper.HasArg("saber-test"))
+            _ = MegaCrit.Sts2.Core.Helpers.TaskHelper.RunSafely(TestHarness.Run(__instance));
+    }
+}
+#endif
 
 // Check the actual loaded skeleton, so another Ironclad skin cannot receive
 // Saber animation names, dashes or voice even if the Saber mod is installed.

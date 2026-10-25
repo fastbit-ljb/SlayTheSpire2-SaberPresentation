@@ -9,8 +9,9 @@ using MegaCrit.Sts2.Core.Nodes.Rooms;
 
 namespace SaberPresentation;
 
-// Card focus holds one continuous character. Card use runs to completion before
-// the overlay leaves, matching Nine's idle -> card animation -> out lifecycle.
+// The large battle-ready portrait is an idle presentation layer. On card play it
+// retracts quickly and the in-world Saber body plus foreground/background VFX
+// perform the attack, matching the structure used by the CZN skins.
 internal static class ReadyPresentation
 {
     private static NCombatRoom? _room;
@@ -31,15 +32,17 @@ internal static class ReadyPresentation
     internal static string? RigClip => _rig?.Clip;
     internal static string? TextureSignature => _rig?.TextureSignature;
     internal static Vector2 MeshSample => _rig?.MotionSample ?? Vector2.Zero;
-    internal static int ActionFramesPlayed => _rig?.RenderSamples ?? 0;
-    internal static bool ActionSwordTipsSafe { get; private set; } = true;
     internal static bool Visible => Valid(_portrait) && _portrait!.Visible && _portrait.Modulate.A > 0.5f;
     internal static bool Targeting => _targeting;
     internal static bool BodyReady => _readyBody;
+    internal static string? BodyPoseClip { get; private set; }
+    internal static float BodyPoseProgress { get; private set; }
     internal static CardModel? Card => _card;
     internal static int Pose => _pose;
     internal static int FocusCount { get; private set; }
     internal static int PlayCount { get; private set; }
+    internal static int RetractionCount { get; private set; }
+    internal static bool ActionRetracted { get; private set; }
 #if SABER_TEST
     internal static void ExportPose(string clip, double seconds) => _rig?.ExportPose(clip, seconds);
 #endif
@@ -68,19 +71,13 @@ internal static class ReadyPresentation
     {
         if (!Valid(_portrait)) return;
         var size = _portrait!.GetViewport().GetVisibleRect().Size;
-        _portrait.GlobalScale = Vector2.One * (size.Y * 1.17f / 1536 * Settings.Current.PortraitScale);
-        _home = new Vector2(size.X * 0.135f + Settings.Current.PortraitOffsetX, size.Y * 1.29f + Settings.Current.PortraitOffsetY);
+        _portrait.GlobalScale = Vector2.One * (size.Y * 0.86f / 1536 * Settings.Current.PortraitScale);
+        _home = new Vector2(size.X * 0.115f + Settings.Current.PortraitOffsetX, size.Y * 1.06f + Settings.Current.PortraitOffsetY);
     }
     private static void Tick()
     {
         if (!Visible || _rig == null) return;
         ApplyLayout();
-        _rig.Sample();
-        if (_acting)
-        {
-            Rect2 safe = _portrait!.GetViewport().GetVisibleRect().Grow(-25);
-            ActionSwordTipsSafe &= safe.HasPoint(_rig.SwordTip);
-        }
     }
     internal static void Focus(CardModel? card, bool targeting = false)
     {
@@ -96,6 +93,8 @@ internal static class ReadyPresentation
         _rig!.IdlePose();
         _transition?.Kill();
         _portrait!.Show();
+        _portrait.Rotation = 0;
+        ActionRetracted = false;
         if (_portrait.Modulate.A < 0.03f) _portrait.Position = _home + Vector2.Left * 180;
         _transition = _portrait.CreateTween().SetParallel();
         _transition.TweenProperty(_portrait, "position", _home, 0.24).SetTrans(Tween.TransitionType.Cubic).SetEase(Tween.EaseType.Out);
@@ -111,13 +110,22 @@ internal static class ReadyPresentation
     {
         if (!Settings.Current.ReadyBodyMotion || !Valid(_actor) || _acting || Runtime.IsAttacking(card.Owner.Creature)) return;
         _readyBody = true;
-        _actor!.SetAnimationTrigger(_pose == 0 ? "SaberReadyAttack" : "SaberReadyCast");
-        using var track = _actor.Visuals.SpineBody?.GetAnimationState().GetCurrent(0);
-        track?.SetTimeScale(1);
+        BodyPoseClip = _pose == 0 ? "attack" : "cast";
+        BodyPoseProgress = _pose == 0 ? 0.30f : 0.90f;
+        var spine = _actor!.Visuals.SpineBody;
+        if (spine == null || !spine.HasAnimation(BodyPoseClip)) return;
+        var state = spine.GetAnimationState();
+        state.SetAnimation(BodyPoseClip, false);
+        using var track = state.GetCurrent(0);
+        if (track == null) return;
+        track.SetMixDuration(0);
+        track.SetTrackTime(track.GetAnimationDuration() * BodyPoseProgress);
+        track.SetTimeScale(0);
     }
     internal static void Unfocus(CardModel? card)
     {
         if (card != _card || _targeting || _acting) return;
+        RestoreBody();
         int token = ++_generation;
         _ = TaskHelper.RunSafely(HideDelayed(token, 0.10));
     }
@@ -144,11 +152,31 @@ internal static class ReadyPresentation
         _actionCard = card;
         int token = ++_generation;
         _transition?.Kill();
+        ReleaseBodyForPlay();
+        if (!Visible || _card != card)
+        {
+            _acting = false;
+            _actionCard = _card = null;
+            ActionRetracted = true;
+            if (Valid(_portrait)) _portrait!.Hide();
+            return;
+        }
         _portrait!.Show();
         _portrait.Position = _home;
+        _portrait.Rotation = 0;
         _portrait.Modulate = new Color(1, 1, 1, Settings.Current.PortraitOpacity);
-        double duration = _rig!.Play(card!.Type);
-        _ = TaskHelper.RunSafely(EndAction(token, duration));
+        _rig!.IdlePose();
+        ActionRetracted = false;
+        RetractionCount++;
+        // A fast silhouette turn/step out keeps the hands and blade rigid. The
+        // actual swing belongs to the combat body, as in Chizuru and Nine.
+        _transition = _portrait.CreateTween().SetParallel();
+        _transition.TweenProperty(_portrait, "position", _home + new Vector2(-255, 14), 0.15)
+            .SetTrans(Tween.TransitionType.Cubic).SetEase(Tween.EaseType.In);
+        _transition.TweenProperty(_portrait, "rotation", Mathf.DegToRad(-2.4f), 0.12)
+            .SetTrans(Tween.TransitionType.Cubic).SetEase(Tween.EaseType.In);
+        _transition.TweenProperty(_portrait, "modulate:a", 0f, 0.12);
+        _ = TaskHelper.RunSafely(EndAction(token, 0.17));
     }
     private static async Task EndAction(int token, double duration)
     {
@@ -156,7 +184,9 @@ internal static class ReadyPresentation
         if (token != _generation) return;
         _acting = false;
         _actionCard = null;
-        Hide();
+        _card = null;
+        ActionRetracted = true;
+        if (Valid(_portrait)) _portrait!.Hide();
     }
     internal static void Hide()
     {
@@ -164,7 +194,8 @@ internal static class ReadyPresentation
         RestoreBody();
         if (!Valid(_portrait)) return;
         _transition?.Kill();
-        _transition = _portrait!.CreateTween().SetParallel();
+        _portrait!.Rotation = 0;
+        _transition = _portrait.CreateTween().SetParallel();
         _transition.TweenProperty(_portrait, "position:x", _home.X - 180, 0.21).SetTrans(Tween.TransitionType.Cubic).SetEase(Tween.EaseType.In);
         _transition.TweenProperty(_portrait, "modulate:a", 0f, 0.16);
     }
@@ -172,15 +203,31 @@ internal static class ReadyPresentation
     {
         if (!_readyBody) return;
         _readyBody = false;
+        BodyPoseClip = null;
+        BodyPoseProgress = 0;
         if (!Valid(_actor)) return;
-        using var track = _actor!.Visuals.SpineBody?.GetAnimationState().GetCurrent(0);
+        var spine = _actor!.Visuals.SpineBody;
+        if (spine == null || _actor.Entity.IsDead || Runtime.IsAttacking(_actor.Entity)) return;
+        var state = spine.GetAnimationState();
+        state.SetAnimation("idle_loop", true);
+        using var track = state.GetCurrent(0);
+        track?.SetMixDuration(0.12f);
         track?.SetTimeScale(1);
-        if (!_actor.Entity.IsDead && !Runtime.IsAttacking(_actor.Entity)) _actor.SetAnimationTrigger("Idle");
+    }
+    private static void ReleaseBodyForPlay()
+    {
+        if (!_readyBody) return;
+        _readyBody = false;
+        BodyPoseClip = null;
+        BodyPoseProgress = 0;
+        using var track = _actor?.Visuals.SpineBody?.GetAnimationState().GetCurrent(0);
+        track?.SetTimeScale(1);
     }
     internal static void Cleanup()
     {
         _generation++;
         _targeting = _acting = false;
+        ActionRetracted = false;
         RestoreBody();
         if (GodotObject.IsInstanceValid(_tree)) _tree!.ProcessFrame -= Tick;
         if (GodotObject.IsInstanceValid(_room)) _room!.TreeExiting -= Cleanup;

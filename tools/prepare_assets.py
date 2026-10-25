@@ -103,7 +103,7 @@ def main():
     image_paths = [assets / "images/artoria.png"]
     image_paths += [assets / "generated" / (name + ".png") for name in
         ["saber_vfx_atlas", "saber_ready_attack", "saber_ready_cast",
-         "saber_rig_body_v1", "saber_rig_head_v1", "saber_rig_arms_v1",
+         "saber_rig_body_v1", "saber_rig_head_v1", "saber_arm_parts_v1",
          "camelot_stage", "saber_defeat"]
         if (assets / "generated" / (name + ".png")).exists()]
     for image_path in image_paths:

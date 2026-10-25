@@ -1,0 +1,470 @@
+{
+  "reference": "Local CznNineCharacter 2.0.0-beta native Spine scene; no Nine runtime DLL loaded",
+  "scene": "res://CznNineCharacter/scenes/nine_battle_ready.tscn",
+  "samplesPerClip": 31,
+  "boneCount": 355,
+  "totalSamples": 33015,
+  "rawSampleSha256": "32e6067b7089922bb5563a553e6d649e1da52fc212cc10980c9f81b946ad7729",
+  "note": "Core screen-space transforms only. Do not retarget hidden offscreen effect/control bones or reuse this as Saber anatomy.",
+  "animations": [
+    {
+      "clip": "b_idle",
+      "seconds": 2.1333,
+      "coreMotion": [
+        {
+          "bone": "root",
+          "horizontalSpan": 0,
+          "verticalSpan": 0,
+          "samples": [
+            {
+              "time": 0,
+              "x": 165,
+              "y": 727,
+              "angle": 0
+            },
+            {
+              "time": 0.35555,
+              "x": 165,
+              "y": 727,
+              "angle": 0
+            },
+            {
+              "time": 0.7111,
+              "x": 165,
+              "y": 727,
+              "angle": 0
+            },
+            {
+              "time": 1.06665,
+              "x": 165,
+              "y": 727,
+              "angle": 0
+            },
+            {
+              "time": 1.4222,
+              "x": 165,
+              "y": 727,
+              "angle": 0
+            },
+            {
+              "time": 1.77775,
+              "x": 165,
+              "y": 727,
+              "angle": 0
+            },
+            {
+              "time": 2.1333,
+              "x": 165,
+              "y": 727,
+              "angle": 0
+            }
+          ]
+        },
+        {
+          "bone": "bone3",
+          "horizontalSpan": 5.561,
+          "verticalSpan": 17.485,
+          "samples": [
+            {
+              "time": 0,
+              "x": 161.265,
+              "y": 697.788,
+              "angle": 0
+            },
+            {
+              "time": 0.35555,
+              "x": 158.982,
+              "y": 704.965,
+              "angle": 0
+            },
+            {
+              "time": 0.7111,
+              "x": 156.751,
+              "y": 711.983,
+              "angle": 0
+            },
+            {
+              "time": 1.06665,
+              "x": 156.971,
+              "y": 711.284,
+              "angle": 0
+            },
+            {
+              "time": 1.4222,
+              "x": 159.254,
+              "y": 704.107,
+              "angle": 0
+            },
+            {
+              "time": 1.77775,
+              "x": 161.485,
+              "y": 697.089,
+              "angle": 0
+            },
+            {
+              "time": 2.1333,
+              "x": 161.265,
+              "y": 697.788,
+              "angle": 0
+            }
+          ]
+        },
+        {
+          "bone": "hand_ik",
+          "horizontalSpan": 3.871,
+          "verticalSpan": 25.746,
+          "samples": [
+            {
+              "time": 0,
+              "x": 74.567,
+              "y": 726.926,
+              "angle": -2.731
+            },
+            {
+              "time": 0.35555,
+              "x": 73.04,
+              "y": 733.642,
+              "angle": -3.214
+            },
+            {
+              "time": 0.7111,
+              "x": 73.27,
+              "y": 746.333,
+              "angle": -4.035
+            },
+            {
+              "time": 1.06665,
+              "x": 75.381,
+              "y": 752.672,
+              "angle": -4.386
+            },
+            {
+              "time": 1.4222,
+              "x": 76.828,
+              "y": 746.235,
+              "angle": -3.915
+            },
+            {
+              "time": 1.77775,
+              "x": 76.512,
+              "y": 733.228,
+              "angle": -3.074
+            },
+            {
+              "time": 2.1333,
+              "x": 74.567,
+              "y": 726.926,
+              "angle": -2.731
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "clip": "card_attack",
+      "seconds": 0.4667,
+      "coreMotion": [
+        {
+          "bone": "root",
+          "horizontalSpan": 0,
+          "verticalSpan": 0,
+          "samples": [
+            {
+              "time": 0,
+              "x": 165,
+              "y": 727,
+              "angle": 0
+            },
+            {
+              "time": 0.07778,
+              "x": 165,
+              "y": 727,
+              "angle": 0
+            },
+            {
+              "time": 0.15557,
+              "x": 165,
+              "y": 727,
+              "angle": 0
+            },
+            {
+              "time": 0.23335,
+              "x": 165,
+              "y": 727,
+              "angle": 0
+            },
+            {
+              "time": 0.31113,
+              "x": 165,
+              "y": 727,
+              "angle": 0
+            },
+            {
+              "time": 0.38892,
+              "x": 165,
+              "y": 727,
+              "angle": 0
+            },
+            {
+              "time": 0.4667,
+              "x": 165,
+              "y": 727,
+              "angle": 0
+            }
+          ]
+        },
+        {
+          "bone": "bone3",
+          "horizontalSpan": 75.93,
+          "verticalSpan": 35.302,
+          "samples": [
+            {
+              "time": 0,
+              "x": 159.517,
+              "y": 695.736,
+              "angle": 0
+            },
+            {
+              "time": 0.07778,
+              "x": 153.987,
+              "y": 699.057,
+              "angle": 0
+            },
+            {
+              "time": 0.15557,
+              "x": 134.288,
+              "y": 710.879,
+              "angle": 0
+            },
+            {
+              "time": 0.23335,
+              "x": 113.344,
+              "y": 723.452,
+              "angle": 0
+            },
+            {
+              "time": 0.31113,
+              "x": 107.76,
+              "y": 726.805,
+              "angle": 0
+            },
+            {
+              "time": 0.38892,
+              "x": 182.493,
+              "y": 692.059,
+              "angle": 0
+            },
+            {
+              "time": 0.4667,
+              "x": 183.69,
+              "y": 691.503,
+              "angle": 0
+            }
+          ]
+        },
+        {
+          "bone": "hand_ik",
+          "horizontalSpan": 83.696,
+          "verticalSpan": 100.375,
+          "samples": [
+            {
+              "time": 0,
+              "x": 73.094,
+              "y": 723.06,
+              "angle": -2.531
+            },
+            {
+              "time": 0.07778,
+              "x": 61.274,
+              "y": 742.641,
+              "angle": -4.171
+            },
+            {
+              "time": 0.15557,
+              "x": 40.113,
+              "y": 779.606,
+              "angle": -7.217
+            },
+            {
+              "time": 0.23335,
+              "x": 17.392,
+              "y": 787.552,
+              "angle": -8.379
+            },
+            {
+              "time": 0.31113,
+              "x": 6.258,
+              "y": 755.048,
+              "angle": -6.617
+            },
+            {
+              "time": 0.38892,
+              "x": 81.612,
+              "y": 700.6,
+              "angle": -0.89
+            },
+            {
+              "time": 0.4667,
+              "x": 89.954,
+              "y": 700.867,
+              "angle": -0.614
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "clip": "card_casting",
+      "seconds": 0.4667,
+      "coreMotion": [
+        {
+          "bone": "root",
+          "horizontalSpan": 0,
+          "verticalSpan": 0,
+          "samples": [
+            {
+              "time": 0,
+              "x": 165,
+              "y": 727,
+              "angle": 0
+            },
+            {
+              "time": 0.07778,
+              "x": 165,
+              "y": 727,
+              "angle": 0
+            },
+            {
+              "time": 0.15557,
+              "x": 165,
+              "y": 727,
+              "angle": 0
+            },
+            {
+              "time": 0.23335,
+              "x": 165,
+              "y": 727,
+              "angle": 0
+            },
+            {
+              "time": 0.31113,
+              "x": 165,
+              "y": 727,
+              "angle": 0
+            },
+            {
+              "time": 0.38892,
+              "x": 165,
+              "y": 727,
+              "angle": 0
+            },
+            {
+              "time": 0.4667,
+              "x": 165,
+              "y": 727,
+              "angle": 0
+            }
+          ]
+        },
+        {
+          "bone": "bone3",
+          "horizontalSpan": 65.787,
+          "verticalSpan": 22.912,
+          "samples": [
+            {
+              "time": 0,
+              "x": 159.517,
+              "y": 695.736,
+              "angle": 0
+            },
+            {
+              "time": 0.07778,
+              "x": 168.274,
+              "y": 709.991,
+              "angle": 0
+            },
+            {
+              "time": 0.15557,
+              "x": 160.683,
+              "y": 715.109,
+              "angle": 0
+            },
+            {
+              "time": 0.23335,
+              "x": 124.749,
+              "y": 701.959,
+              "angle": 0
+            },
+            {
+              "time": 0.31113,
+              "x": 112.364,
+              "y": 697.426,
+              "angle": 0
+            },
+            {
+              "time": 0.38892,
+              "x": 108.568,
+              "y": 696.037,
+              "angle": 0
+            },
+            {
+              "time": 0.4667,
+              "x": 107.745,
+              "y": 695.736,
+              "angle": 0
+            }
+          ]
+        },
+        {
+          "bone": "hand_ik",
+          "horizontalSpan": 61.68,
+          "verticalSpan": 22.397,
+          "samples": [
+            {
+              "time": 0,
+              "x": 70.455,
+              "y": 726.161,
+              "angle": 0.407
+            },
+            {
+              "time": 0.07778,
+              "x": 76.909,
+              "y": 735.308,
+              "angle": 0.078
+            },
+            {
+              "time": 0.15557,
+              "x": 62.311,
+              "y": 734.313,
+              "angle": -0.368
+            },
+            {
+              "time": 0.23335,
+              "x": 23.756,
+              "y": 726.102,
+              "angle": -1.153
+            },
+            {
+              "time": 0.31113,
+              "x": 19.245,
+              "y": 737.197,
+              "angle": -1.945
+            },
+            {
+              "time": 0.38892,
+              "x": 19.168,
+              "y": 741.881,
+              "angle": -2.224
+            },
+            {
+              "time": 0.4667,
+              "x": 19.207,
+              "y": 742.893,
+              "angle": -2.283
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

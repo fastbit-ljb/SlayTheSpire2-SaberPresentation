@@ -211,9 +211,20 @@
       "mode": "RGBA",
       "sha256": "c06bd6904c7d7f260996efbe459e638dc4c6366ad325a6cba4822d412cf1c935",
       "usage": "Continuous rig arms/gauntlets/full sword; simultaneously visible layer",
-      "includedInGame": true,
+      "includedInGame": false,
       "prompt": "PROMPTS_RIG.md#saber_rig_arms_v1",
       "reference": "user-approved saber_ready_attack.png"
+    },
+    {
+      "file": "saber_arm_parts_v1.png",
+      "dimensions": [1536, 1024],
+      "mode": "RGBA",
+      "sha256": "d7348d9c915cc839a14903954006853f4b6a4647a042a2a7f8094a42759efa49",
+      "usage": "Five-piece rigid arm, gauntlet, two-hand grip and full-sword atlas for the continuous idle rig",
+      "includedInGame": true,
+      "generator": "Built-in image_gen.imagegen",
+      "prompt": "PROMPTS_RIG.md#saber_arm_parts_v1",
+      "reference": "generated/saber_rig_arms_v1.png"
     }
   ],
   "referenceSources": [

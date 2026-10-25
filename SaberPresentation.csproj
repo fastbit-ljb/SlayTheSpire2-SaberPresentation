@@ -7,7 +7,7 @@
     <AssemblyName>SaberPresentation</AssemblyName>
     <RootNamespace>SaberPresentation</RootNamespace>
     <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
-    <Version>0.3.4</Version>
+    <Version>0.3.5</Version>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="build/**/*.cs;dist/**/*.cs" />
