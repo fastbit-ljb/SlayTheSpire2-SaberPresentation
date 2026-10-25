@@ -22,6 +22,7 @@ Copy-Item -LiteralPath (Join-Path $projectRoot 'CZN_ASSETS.json'),(Join-Path $pr
 Copy-Item -LiteralPath (Join-Path $projectRoot 'CZN_PARITY.md') -Destination $packageRoot -Force
 Copy-Item -LiteralPath (Join-Path $projectRoot 'assets\generated\provenance.json') -Destination (Join-Path $packageRoot 'GENERATED_ASSETS.json') -Force
 Copy-Item -LiteralPath (Join-Path $projectRoot 'assets\generated\PROMPTS.md') -Destination $packageRoot -Force
+Copy-Item -LiteralPath (Join-Path $projectRoot 'assets\generated\PROMPTS_ANIME_V2.md') -Destination $packageRoot -Force
 Copy-Item -LiteralPath (Join-Path $projectRoot 'STANDALONE_COMPONENTS.json'),(Join-Path $projectRoot 'THIRD_PARTY_NOTICES.md') -Destination $packageRoot -Force
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'enable_standalone.ps1') -Destination (Join-Path $packageRoot 'ENABLE_STANDALONE.ps1') -Force
 $bundledPackage = Join-Path $packageRoot 'bundled'

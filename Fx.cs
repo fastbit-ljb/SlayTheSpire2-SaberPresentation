@@ -11,6 +11,9 @@ internal static class Fx
 {
     private static CanvasItemMaterial? _add;
     private static Font? _font;
+    internal static Vector2 LastExcaliburOrigin { get; private set; }
+    internal static Vector2 LastExcaliburOriginSize { get; private set; }
+    internal static bool LastCutInUsedVideo { get; private set; }
     public static Node Container(Node owner) => (Node?)NCombatRoom.Instance?.CombatVfxContainer ?? owner.GetParent();
     private static CanvasItemMaterial Add => _add ??= new CanvasItemMaterial { BlendMode = CanvasItemMaterial.BlendModeEnum.Add };
     private static Vector2 Local(Node parent, Vector2 global) => parent is CanvasItem canvas
@@ -82,12 +85,15 @@ internal static class Fx
     }
     public static void Excalibur(Node parent, Vector2 from, Vector2[] targets, double hold = 0.13)
     {
-        Vector2 end = targets.OrderByDescending(p => p.X).FirstOrDefault(from + Vector2.Right * 700) + Vector2.Right * 260;
+        LastExcaliburOrigin = from;
+        LastExcaliburOriginSize = new Vector2(128, 156);
+        Vector2 aim = targets.OrderByDescending(p => p.X).FirstOrDefault(from + Vector2.Right * 700);
+        Vector2 end = new(aim.X + 280, aim.Y);
         Vector2 axis = Local(parent, end) - Local(parent, from);
-        axis.Y *= 0.22f;
         Vector2 mid = from + (end - from) * 0.5f;
-        Painted(parent, mid, 2, new Vector2(axis.Length() * 1.18f, 370), 0.48, axis.Angle(), repeat: Math.Max(1, (int)Math.Ceiling(hold / 0.48)));
-        Painted(parent, from, 1, new Vector2(340, 420), 0.48);
+        Painted(parent, mid, 2, new Vector2(axis.Length() * 1.12f, 245), 0.48, axis.Angle(), repeat: Math.Max(1, (int)Math.Ceiling(hold / 0.48)));
+        var muzzle = Painted(parent, from, 1, LastExcaliburOriginSize, 0.34);
+        muzzle.Modulate = new Color(1, 0.94f, 0.72f, 0.82f);
         foreach (var target in targets)
         {
             Painted(parent, target, 1, new Vector2(400, 400), 0.52);
@@ -108,15 +114,45 @@ internal static class Fx
         tween.TweenProperty(flash, "color:a", 0f, 0.18);
         tween.TweenCallback(Callable.From(layer.QueueFree));
     }
-    public static async Task CutIn(Node owner, bool holdForPreview = false, double duration = 1.24)
+    internal static bool HasExcaliburVideo => Art.ExcaliburVideo != null;
+    public static async Task<bool> CutIn(Node owner, bool holdForPreview = false, double duration = 1.24)
     {
-        if (!Valid(owner)) return;
+        if (!Valid(owner)) return false;
+        using var music = AnimeMusic.PauseForCinematic();
         ReadyPresentation.Hide();
         var layer = new CanvasLayer { Name = "SaberExcaliburCutIn", Layer = 70 };
         owner.AddChild(layer);
         try
         {
             var size = owner.GetViewport().GetVisibleRect().Size;
+            LastCutInUsedVideo = false;
+            if (Art.ExcaliburVideo is { } stream)
+            {
+                var backdrop = new ColorRect { Color = Colors.Black, Size = size,
+                    MouseFilter = Control.MouseFilterEnum.Ignore };
+                layer.AddChild(backdrop);
+                var video = new VideoStreamPlayer { Name = "SaberOfficialExcaliburAnimation", Stream = stream,
+                    Size = size, MouseFilter = Control.MouseFilterEnum.Ignore };
+                video.Set("expand", true);
+                layer.AddChild(video);
+                video.Play();
+                await Delay(0.08);
+                if (video.IsPlaying())
+                {
+                    LastCutInUsedVideo = true;
+#if SABER_TEST
+                    _ = TaskHelper.RunSafely(TestHarness.CaptureAfter("excalibur_video", 0.55));
+#endif
+                    while (Valid(video) && video.IsPlaying())
+                    {
+                        if (!holdForPreview && Input.IsActionJustPressed("ui_cancel")) video.Stop();
+                        await Delay(0.05);
+                    }
+                    return true;
+                }
+                video.QueueFree();
+                backdrop.QueueFree();
+            }
             var stage = new Control { Size = size, MouseFilter = Control.MouseFilterEnum.Ignore, Modulate = new Color(1, 1, 1, 0) };
             layer.AddChild(stage);
             var bg = new TextureRect { Texture = Art.Texture("camelot_stage"), Size = size,
@@ -143,12 +179,13 @@ internal static class Fx
             LabelAt(text, "対城宝具  ·  A++", 19, new Color(0.75f, 0.82f, 0.95f), new Vector2(0, 190));
             stage.CreateTween().TweenProperty(stage, "modulate:a", 1f, 0.12);
             portrait.CreateTween().TweenProperty(portrait, "position:x", size.X * 0.46f, 0.35).SetTrans(Tween.TransitionType.Cubic).SetEase(Tween.EaseType.Out);
-            if (holdForPreview) return;
+            if (holdForPreview) return false;
 #if SABER_TEST
             _ = TaskHelper.RunSafely(TestHarness.CaptureAfter("excalibur_cutin", 0.5));
 #endif
             await Delay(Math.Max(0.12, duration - 0.19));
             if (Valid(stage)) { stage.CreateTween().TweenProperty(stage, "modulate:a", 0f, 0.18); await Delay(0.19); }
+            return false;
         }
         finally { if (!holdForPreview && GodotObject.IsInstanceValid(layer)) layer.QueueFree(); }
     }

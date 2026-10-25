@@ -1,0 +1,15 @@
+{
+  "acquisition": "https://www.bilibili.com/video/BV1HJ411j7Er/",
+  "title": "Fate Stay Night UBW 2015 Ost.-Emiya 30分钟 Extended",
+  "original": "https://www.youtube.com/watch?v=S87sMt-5Qr0",
+  "audioId": 30280,
+  "bandwidth": 127145,
+  "work": "EMIYA_UBW Extended — Fate/stay night [Unlimited Blade Works] Original Soundtrack",
+  "composer": "James Harris",
+  "arranger": "Hideyuki Fukasawa",
+  "label": "Aniplex Inc.",
+  "sourceSha256": "13f2688a85c38fd7ab44eb4ca22627c3bacb363a0a539db785e2b065c8660b1a",
+  "processing": "Complete public 30-minute instrumental loop; -18 LUFS / -1.5 dBTP; MP3 VBR q3; short end fades",
+  "runtime": "Offline loop; Saber runs only; game master/BGM controls; voice ducking; paused during cinematics",
+  "sha256": "8ea572e2c8650c8140b98761ce5427ddf3124e200974968782227afb17ebb805"
+}

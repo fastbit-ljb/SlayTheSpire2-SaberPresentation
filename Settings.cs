@@ -26,6 +26,8 @@ public sealed class Settings
     public bool JapaneseVoice { get; set; } = true;
     public float VoiceVolume { get; set; } = 0.9f;
     public float EffectsVolume { get; set; } = 0.6f;
+    public bool AnimeBackgroundMusic { get; set; } = true;
+    public float MusicVolume { get; set; } = 0.85f;
     public string[] NoblePhantasmCards { get; set; } = ["BLUDGEON", "FIEND_FIRE", "PACTS_END"];
     public static Settings Current { get; private set; } = new();
     public const string Path = "user://mod_configs/SaberPresentation.json";
@@ -44,6 +46,7 @@ public sealed class Settings
                 Current = JsonSerializer.Deserialize<Settings>(System.IO.File.ReadAllText(path)) ?? new();
             Current.VoiceVolume = Math.Clamp(Current.VoiceVolume, 0, 1);
             Current.EffectsVolume = Math.Clamp(Current.EffectsVolume, 0, 1);
+            Current.MusicVolume = Math.Clamp(Current.MusicVolume, 0, 1);
             Current.PortraitScale = Math.Clamp(Current.PortraitScale, 0.5f, 1.5f);
             Current.PortraitOpacity = Math.Clamp(Current.PortraitOpacity, 0.1f, 1);
             Current.NoblePhantasmCards ??= [];

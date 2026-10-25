@@ -1,7 +1,7 @@
 {
   "generator": "Built-in image_gen.imagegen",
   "date": "2026-10-25",
-  "pixelEdits": "None; native GPU atlas/frame slicing",
+  "pixelEdits": "None; generated alpha preserved, animated with native GPU meshes and source-resolution action textures",
   "assets": [
     {
       "file": "camelot_stage.png",
@@ -18,7 +18,7 @@
     },
     {
       "file": "saber_attack_sequence.png",
-      "usage": "Three used attack poses from four generated cells",
+      "usage": "Legacy motion storyboard; live actions use separate source-resolution anime-v4 images",
       "includedInGame": true,
       "dimensions": [
         1254,
@@ -32,7 +32,7 @@
     {
       "file": "saber_card_atlas.png",
       "usage": "Six card illustrations",
-      "includedInGame": true,
+      "includedInGame": false,
       "dimensions": [
         1536,
         1024
@@ -106,6 +106,98 @@
       "sha256": "3ab0afc39beabb1d3e437e25abd6c92c0d156be21f5c32d21f02a73586c48588",
       "prompt": "PROMPTS.md#saber_vfx_atlas",
       "reference": null
+    },
+    {
+      "file": "saber_ready_attack_anime_v2.png",
+      "dimensions": [
+        1024,
+        1536
+      ],
+      "mode": "RGBA",
+      "sha256": "5a6ba144a9919f2652b67986f79eec20f50118a89f433fc5085e6df0b66e84a9",
+      "usage": "Anime attack-ready hover portrait",
+      "includedInGame": false,
+      "generator": "Built-in image_gen.imagegen",
+      "prompt": "PROMPTS_ANIME_V2.md#saber_ready_attack_anime_v2",
+      "reference": "references/saber_tsukudani_reference.jpg and approved anime-v1 artwork"
+    },
+    {
+      "file": "saber_ready_cast_anime_v2.png",
+      "dimensions": [
+        1024,
+        1536
+      ],
+      "mode": "RGBA",
+      "sha256": "bd1e591ead0ebb623af1700bf25af9695724eb229c835681b5325e77402f36e5",
+      "usage": "Anime skill-ready hover portrait",
+      "includedInGame": false,
+      "generator": "Built-in image_gen.imagegen",
+      "prompt": "PROMPTS_ANIME_V2.md#saber_ready_cast_anime_v2",
+      "reference": "references/saber_tsukudani_reference.jpg and approved anime-v1 artwork"
+    },
+    {
+      "file": "saber_slash_anime_v2.png",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "mode": "RGBA",
+      "sha256": "25ff15c4b21c2aaae4570a53abee48b99df12225cbb3bad8c50a939fd0f14ee8",
+      "usage": "Full-blade wide slash action",
+      "includedInGame": false,
+      "generator": "Built-in image_gen.imagegen",
+      "prompt": "PROMPTS_ANIME_V2.md#saber_slash_anime_v2",
+      "reference": "generated/saber_ready_attack_anime_v2.png; cropped draft repaired to wide canvas"
+    },
+    {
+      "file": "saber_recover_anime_v2.png",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "mode": "RGBA",
+      "sha256": "73e791b03cbcfd077fdfd3e7bf1379595014f4b051b05303add4f874add365e6",
+      "usage": "Full-blade wide follow-through action",
+      "includedInGame": false,
+      "generator": "Built-in image_gen.imagegen",
+      "prompt": "PROMPTS_ANIME_V2.md#saber_recover_anime_v2",
+      "reference": "generated/saber_ready_attack_anime_v2.png; cropped draft repaired to wide canvas"
+    },
+    {
+      "file": "saber_slash_anime_v4.png",
+      "dimensions": [1536, 1024],
+      "mode": "RGBA",
+      "sha256": "ece3a985dd8f9b74f4a0e587014e7fecef3a54fc03f316c97e18ec80e9cd332f",
+      "usage": "Cool silver/blue anime slash; complete pointed blade",
+      "includedInGame": true,
+      "generator": "Built-in image_gen.imagegen",
+      "prompt": "PROMPTS_ANIME_V2.md#saber_slash_anime_v4--saber_recover_anime_v4",
+      "reference": "approved saber_ready_attack.png, V3 action, user game screenshot"
+    },
+    {
+      "file": "saber_recover_anime_v4.png",
+      "dimensions": [1536, 1024],
+      "mode": "RGBA",
+      "sha256": "42d54ee858a0d9193f7180df5e576d2f8d974f899406cc27f3f4cd2bbdd83b97",
+      "usage": "Cool silver/blue anime follow-through; complete pointed blade",
+      "includedInGame": true,
+      "generator": "Built-in image_gen.imagegen",
+      "prompt": "PROMPTS_ANIME_V2.md#saber_slash_anime_v4--saber_recover_anime_v4",
+      "reference": "approved saber_ready_attack.png, V3 action, user game screenshot"
+    }
+  ],
+  "referenceSources": [
+    {
+      "file": "saber_tsukudani_reference.jpg",
+      "dimensions": [
+        5457,
+        5009
+      ],
+      "sha256": "37af7cc80ad66d49794d482aad19e95a5311c3fb2f1322b8d10549765c46dda3",
+      "url": "https://www.zerochan.net/4375855",
+      "imageUrl": "https://static.zerochan.net/Saber.%28Fate.stay.night%29.full.4375855.jpg",
+      "credit": "Tsukudani (Ore624), as credited by the reference index",
+      "usage": "Anime illustration detail reference; excluded from game PCK"
     }
   ]
 }

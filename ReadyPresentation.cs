@@ -18,6 +18,7 @@ internal static class ReadyPresentation
     private static Node2D? _portrait;
     private static Polygon2D[] _planes = [];
     private static Sprite2D? _actionSprite;
+    private static ShaderMaterial? _actionFade;
     private static CardModel? _actionCard;
     private static Vector2[] _base = [], _uv = [];
     private static SceneTree? _tree;
@@ -27,7 +28,11 @@ internal static class ReadyPresentation
     private static ulong _lastVoice;
     private static Tween? _transition;
     private static Vector2 _home;
-    private const int Columns = 12, Rows = 24;
+    private const int Columns = 32, Rows = 48;
+    private static ShaderMaterial? _swordLight;
+    internal static bool AnimePortraitReady => _planes.Length == 2 && _planes.All(Valid);
+    internal static string? PortraitSource => _planes.Length > 0 ? _planes[0].Texture.ResourcePath : null;
+    internal static Vector2 PortraitResolution => _planes.Length > 0 ? _planes[0].Texture.GetSize() : Vector2.Zero;
     internal static bool Visible => _portrait is { } portrait && GodotObject.IsInstanceValid(portrait) && portrait.Visible && portrait.Modulate.A > 0.5f;
     internal static bool Targeting => _targeting;
     internal static bool BodyReady => _readyBody;
@@ -36,6 +41,7 @@ internal static class ReadyPresentation
     internal static int FocusCount { get; private set; }
     internal static int PlayCount { get; private set; }
     internal static int ActionFramesPlayed { get; private set; }
+    internal static bool ActionSwordTipsSafe { get; private set; } = true;
 
     private static bool Valid(Node? node) => node != null && GodotObject.IsInstanceValid(node) && node.IsInsideTree();
     private static bool Accept(CardModel? card) => card?.Owner != null && LocalContext.IsMe(card.Owner)
@@ -70,16 +76,36 @@ internal static class ReadyPresentation
         _planes = Enumerable.Range(0, 2).Select(i => {
             var plane = new Polygon2D { Name = "PortraitMesh" + i, Polygon = _base, UV = _uv,
                 Polygons = (Godot.Collections.Array)faces, Texture = Art.Texture(i == 0 ? "saber_ready_attack" : "saber_ready_cast"),
+                TextureFilter = CanvasItem.TextureFilterEnum.Linear,
                 Modulate = new Color(1, 1, 1, i == 0 ? 1 : 0) };
             _portrait.AddChild(plane);
             return plane;
         }).ToArray();
-        var actionTexture = Art.Texture("saber_attack_sequence");
-        Vector2 cell = actionTexture.GetSize() / 2;
-        float actionScale = 1536 / cell.Y;
-        _actionSprite = new Sprite2D { Name = "SaberPortraitAttackAnimation", Texture = actionTexture,
-            Hframes = 2, Vframes = 2, Centered = false, Scale = Vector2.One * actionScale,
-            Position = new Vector2(-cell.X * 0.5f, -cell.Y) * actionScale, Visible = false };
+        _swordLight = new ShaderMaterial { Shader = new Shader { Code = """
+            shader_type canvas_item;
+            uniform float phase = 0.0;
+            void fragment() {
+                vec4 tex = texture(TEXTURE, UV);
+                float warm = smoothstep(0.1, 0.32, tex.r - tex.b);
+                float blade = 1.0 - smoothstep(0.18, 0.25, UV.y);
+                float sweep = pow(max(0.0, cos((UV.x + phase) * 11.0)), 16.0);
+                tex.rgb += vec3(0.12, 0.095, 0.035) * warm * blade * sweep;
+                COLOR = tex * COLOR;
+            }
+            """ } };
+        _planes[0].Material = _swordLight;
+        _actionFade = new ShaderMaterial { Shader = new Shader { Code = """
+            shader_type canvas_item;
+            void fragment() {
+                vec4 tex = texture(TEXTURE, UV);
+                float body = 1.0 - smoothstep(0.72, 0.90, UV.x);
+                tex.a *= 1.0 - smoothstep(0.92, 1.0, UV.y) * body;
+                COLOR = tex * COLOR;
+            }
+            """ } };
+        _actionSprite = new Sprite2D { Name = "SaberPortraitAttackAnimation", Texture = Art.Texture("saber_ready_attack"),
+            Centered = false, Position = new Vector2(-512, -1536), Visible = false,
+            TextureFilter = CanvasItem.TextureFilterEnum.Linear };
         _portrait.AddChild(_actionSprite);
         _tree = _room.GetTree();
         _tree.ProcessFrame += Tick;
@@ -100,22 +126,48 @@ internal static class ReadyPresentation
         if (!Valid(_portrait) || !_portrait!.Visible || _portrait.Modulate.A < 0.001f) return;
         ApplyLayout();
         float t = Time.GetTicksMsec() / 1000f;
-        var vertices = new Vector2[_base.Length];
-        for (int i = 0; i < vertices.Length; i++)
+        for (int pose = 0; pose < _planes.Length; pose++)
         {
-            Vector2 point = _base[i];
-            float h = -point.Y / 1536;
-            float cloth = Math.Clamp((0.66f - h) * 2.8f, 0, 1);
-            float hair = Math.Clamp((h - 0.65f) * 3.5f, 0, 1);
-            point.X += MathF.Sin(t * 1.9f) * 2.5f * h;
-            point.X += MathF.Sin(t * 2.5f + point.Y * 0.007f + point.X * 0.003f) * 9 * cloth;
-            point.X += MathF.Sin(t * 2.2f + point.X * 0.008f) * 2.5f * hair;
-            point.Y += MathF.Sin(t * 1.9f) * 3.8f * h;
-            vertices[i] = point;
+            var plane = _planes[pose];
+            if (!Valid(plane) || plane.Modulate.A < 0.002f) continue;
+            var vertices = new Vector2[_base.Length];
+            for (int i = 0; i < vertices.Length; i++) vertices[i] = AnimatePortrait(_base[i], pose, t);
+            plane.Polygon = vertices;
         }
-        foreach (var plane in _planes) if (Valid(plane)) plane.Polygon = vertices;
-        // Breath and fabric animation continue independently of the native
-        // battle actor; neither its hitbox nor its health bar is moved.
+        _swordLight?.SetShaderParameter("phase", t * -0.24f);
+    }
+
+    private static float Ramp(float low, float high, float value)
+    {
+        float x = Math.Clamp((value - low) / (high - low), 0, 1);
+        return x * x * (3 - 2 * x);
+    }
+
+    private static Vector2 AnimatePortrait(Vector2 point, int pose, float time)
+    {
+        // The approved anime artwork is the actual visible character. Dense,
+        // smoothly weighted vertices animate separate cloth and ribbon regions;
+        // the face, fingers, armor and blade keep their shape.
+        float x = point.X + 512, y = point.Y + 1536;
+        float waist = pose == 0 ? 700 : 500;
+        float upper = 1 - Ramp(waist - 120, waist + 60, y);
+        float breath = MathF.Sin(time * 1.65f);
+        Vector2 pivot = new(0, waist - 1536);
+        point = pivot + (point - pivot).Rotated(breath * 0.0018f * upper);
+        point += new Vector2(breath * 1.6f, breath * -3.1f) * upper;
+
+        float dress = Ramp(waist + 30, waist + 210, y) * (1 - Ramp(1280, 1490, y));
+        float dressEdge = Ramp(120, 430, Math.Abs(x - 480));
+        float wave = MathF.Sin(time * 2.25f - y * 0.005f + x * 0.003f);
+        point.X += wave * 11f * dress * dressEdge;
+        point.Y += MathF.Sin(time * 2.25f - y * 0.005f + x * 0.003f + 0.6f) * 4.5f * dress * dressEdge;
+
+        float ribbon = pose == 0
+            ? Ramp(600, 780, x) * Ramp(330, 460, y) * (1 - Ramp(580, 670, y))
+            : (1 - Ramp(360, 440, x)) * Ramp(160, 225, y) * (1 - Ramp(285, 335, y));
+        point += new Vector2(MathF.Sin(time * 2.8f + x * 0.013f) * 8,
+            MathF.Cos(time * 2.8f + x * 0.013f) * 4) * ribbon;
+        return point;
     }
 
     internal static void Focus(CardModel? card, bool targeting = false)
@@ -131,7 +183,8 @@ internal static class ReadyPresentation
         int pose = card!.Type == MegaCrit.Sts2.Core.Entities.Cards.CardType.Attack ? 0 : 1;
         _pose = pose;
         _transition?.Kill();
-        _portrait!.Show();
+        _portrait!.Rotation = 0;
+        _portrait.Show();
         if (Valid(_actionSprite)) _actionSprite!.Hide();
         _transition = _portrait.CreateTween().SetParallel();
         if (_portrait.Modulate.A < 0.03f) _portrait.Position = _home + Vector2.Left * 180;
@@ -204,13 +257,23 @@ internal static class ReadyPresentation
         if (!Valid(_actionSprite)) return;
         foreach (var plane in _planes) plane.Modulate = new Color(1, 1, 1, 0);
         _actionSprite!.Show();
-        // Three painted poses: wind-up, forward slash and follow-through. The
-        // final sheet cell is unused; the next hover restores the ready mesh.
-        for (int frame = 0; frame < 3 && token == _generation && Valid(_actionSprite); frame++)
+        // Each action is a full-resolution source, rather than an enlarged cell
+        // from a sprite sheet. Wide action canvases include the complete blade.
+        for (int frame = 0; frame < 4 && token == _generation && Valid(_actionSprite); frame++)
         {
-            _actionSprite.Frame = frame;
+            string texture = frame == 1 ? "saber_slash_anime_v4" : frame == 2 ? "saber_recover_anime_v4" : "saber_ready_attack";
+            _actionSprite.Texture = Art.Texture(texture);
+            _actionSprite.Position = frame == 1 ? new Vector2(-512, -1390) : frame == 2 ? new Vector2(-500, -1360) : new Vector2(-512, -1536);
+            _actionSprite.Scale = Vector2.One * (frame == 2 ? 0.95f : 1f);
+            _actionSprite.Material = frame is 1 or 2 ? _actionFade : null;
+            if (frame is 1 or 2)
+            {
+                Vector2 tip = _actionSprite.ToGlobal(frame == 1 ? new Vector2(1518, 378) : new Vector2(1510, 955));
+                Rect2 safe = _portrait!.GetViewport().GetVisibleRect().Grow(-25);
+                ActionSwordTipsSafe &= safe.HasPoint(tip);
+            }
             ActionFramesPlayed++;
-            await Fx.Delay(0.11);
+            await Fx.Delay(frame == 1 ? 0.08 : 0.09);
         }
     }
     private static async Task EndAction(int token)
@@ -240,7 +303,7 @@ internal static class ReadyPresentation
         track?.SetTimeScale(1);
         if (!_actor.Entity.IsDead && !Runtime.IsAttacking(_actor.Entity)) _actor.SetAnimationTrigger("Idle");
     }
-    internal static Vector2 MeshSample => _planes.Length > 0 && Valid(_planes[0]) ? _planes[0].Polygon[20] : Vector2.Zero;
+    internal static Vector2 MeshSample => _planes.Length > 0 && Valid(_planes[0]) ? _planes[0].Polygon[36 * (Columns + 1) + 29] : Vector2.Zero;
     internal static void Cleanup()
     {
         _generation++;
@@ -253,6 +316,8 @@ internal static class ReadyPresentation
         _screen = _portrait = null;
         _room = null; _actor = null; _card = null; _tree = null;
         _planes = [];
+        _swordLight = null;
+        _actionFade = null;
         _actionSprite = null; _actionCard = null;
     }
 }

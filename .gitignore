@@ -3,3 +3,5 @@ obj/
 build/
 __pycache__/
 dist/
+assets/video/*.mp4
+assets/music/*_source.m4a

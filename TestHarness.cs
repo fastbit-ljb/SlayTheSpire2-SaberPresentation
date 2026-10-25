@@ -48,7 +48,10 @@ internal static class TestHarness
         System.IO.Directory.CreateDirectory(Output);
         try
         {
-            if (!OS.GetUserDataDir().EndsWith("SlayTheSpire2-SaberPresentation-Test", StringComparison.Ordinal))
+            bool isolatedByEnvironment = System.Environment.GetEnvironmentVariable("SABER_TEST_ISOLATED") == "1"
+                && OS.GetUserDataDir().Contains("SaberPresentation", StringComparison.OrdinalIgnoreCase);
+            if (!OS.GetUserDataDir().EndsWith("SlayTheSpire2-SaberPresentation-Test", StringComparison.Ordinal)
+                && !isolatedByEnvironment)
                 throw new Exception("Refusing to test outside the isolated user directory.");
             await game.GameStartupComplete;
             if (CommandLineHelper.HasArg("saber-fix-smoke")) DisplayServer.WindowSetSize(new Vector2I(1920, 1080));
@@ -76,6 +79,7 @@ internal static class TestHarness
                 Assert("native_main_menu_created", game.MainMenu != null);
                 Assert("native_main_menu_no_theme_host", !Runtime.Descendants(game.MainMenu!).Any(n => n.Name.ToString().Contains("Czn") || n.Name.ToString().Contains("SaberLobby")));
                 Assert("no_custom_lobby_resource", !ResourceLoader.Exists("res://SaberPresentation/scenes/saber_lobby.tscn"));
+                Assert("anime_music_absent_from_main_menu", !Runtime.Descendants(game).Any(n => n.Name == "SaberAnimeMusic"));
                 Log.Info("[SaberTest] MENU CHECKS PASSED");
                 return;
             }
@@ -101,6 +105,9 @@ internal static class TestHarness
             Assert("saber_identity_icon_preserved", player.Character.IconTexture is AtlasTexture);
             foreach (string raster in new[] { "saber_vfx_atlas", "saber_ready_attack", "saber_ready_cast", "camelot_stage", "saber_defeat", "saber_attack_sequence" })
                 Assert("raster_decodes_" + raster, Art.Texture(raster).GetWidth() >= 1000);
+            Assert("official_excalibur_video_decodes", Art.ExcaliburVideo != null);
+            Assert("animated_defeat_video_decodes", Art.DefeatVideo != null);
+            await VerifyMusic();
             await VerifyInteractions(game, node);
             await VerifyHoverDuringReturn(game, node, state, player);
             await VerifyNativeUi(game, player);
@@ -201,7 +208,9 @@ internal static class TestHarness
             Assert("native_player_death_resolves", player.Creature.IsDead);
             await Fx.Delay(4.5);
             Assert("native_game_over_triggers_saber_cg", OutcomeCount > 0);
-            await Fx.Delay(1.8);
+            Assert("game_over_uses_animated_defeat_cg", ContextPresentation.LastDefeatUsedVideo);
+            for (int i = 0; i < 120 && Runtime.Descendants(game).Any(n => n.Name == "SaberOutcome"); i++) await Fx.Delay(0.1);
+            Assert("defeat_video_advances_beyond_single_frame", ContextPresentation.LastDefeatVideoSeconds > 8.5);
             Assert("game_over_cg_cleans_up", !Runtime.Descendants(game).Any(n => n.Name == "SaberOutcome"));
             Log.Info("[SaberTest] ALL CHECKS PASSED");
         }
@@ -216,6 +225,38 @@ internal static class TestHarness
             await Fx.Delay(0.3);
             game.GetTree().Quit();
         }
+    }
+
+    private static async Task VerifyMusic()
+    {
+        var controller = MegaCrit.Sts2.Core.Nodes.Audio.NRunMusicController.Instance!;
+        Assert("anime_bgm_instrumental_decodes", AnimeMusic.Length > 1800);
+        Assert("anime_bgm_owned_by_saber_run", AnimeMusic.Owns(controller) && AnimeMusic.Playing);
+        Assert("native_run_music_suppressed", controller.Get("_currentTrack").AsString() == "");
+        double before = AnimeMusic.Position;
+        controller.UpdateMusic();
+        await Fx.Delay(0.3);
+        Assert("anime_bgm_does_not_restart_on_update", AnimeMusic.Position > before);
+        var audio = SaveManager.Instance.SettingsSave;
+        float master = audio.VolumeMaster, bgm = audio.VolumeBgm;
+        audio.VolumeMaster = 1; audio.VolumeBgm = 1;
+        await Fx.Delay(1.7);
+        float baseline = AnimeMusic.Gain;
+        AnimeMusic.DuckVoice(0.5);
+        await Fx.Delay(0.18);
+        Assert("anime_bgm_ducks_for_japanese_voice", AnimeMusic.Gain < baseline * 0.35f);
+        using (AnimeMusic.PauseForCinematic())
+        {
+            double paused = AnimeMusic.Position;
+            await Fx.Delay(0.25);
+            Assert("anime_bgm_pauses_for_cg", AnimeMusic.PausedForCg && Math.Abs(AnimeMusic.Position - paused) < 0.10);
+        }
+        await Fx.Delay(0.2);
+        Assert("anime_bgm_resumes_after_cg", !AnimeMusic.PausedForCg && AnimeMusic.Playing);
+        audio.VolumeBgm = 0;
+        await Fx.Delay(0.5);
+        Assert("anime_bgm_obeys_game_music_mute", AnimeMusic.Gain < 0.001f);
+        audio.VolumeMaster = master; audio.VolumeBgm = bgm;
     }
     private static void Assert(string check, bool passed)
     {
@@ -239,6 +280,9 @@ internal static class TestHarness
         await strike.OnPlayWrapper(new BlockingPlayerChoiceContext(), target, true,
             new ResourceInfo { EnergySpent = 0, EnergyValue = 1, StarsSpent = 0, StarValue = 0 }, true);
         Assert("real_lethal_strike_triggers_excalibur_once", target.IsDead && Runtime.KillingBlowCount == 1);
+        Assert("killing_blow_uses_animated_cg", Fx.LastCutInUsedVideo);
+        Assert("excalibur_starts_ahead_of_saber", Fx.LastExcaliburOrigin.X > Runtime.Center(player.Creature.GetCreatureNode()!).X + 55);
+        Assert("excalibur_muzzle_does_not_cover_saber", Fx.LastExcaliburOriginSize.X <= 140 && Fx.LastExcaliburOriginSize.Y <= 170);
         Assert("full_jp_charge_finishes_before_release", Runtime.LastChargeDuration >= Voice.Length("np_charge") - 0.05);
         await Fx.Delay(0.6);
         var twin = state.CreateCard(ModelDb.Card<TwinStrike>(), player);
@@ -265,11 +309,15 @@ internal static class TestHarness
         attack.EmitSignal(Control.SignalName.FocusEntered);
         await CaptureAfter("hover_attack", 0.35);
         Assert("native_card_focus_shows_portrait", ReadyPresentation.Visible && ReadyPresentation.Card == attack.CardModel);
+        Assert("hover_uses_anime_portrait_art", ReadyPresentation.AnimePortraitReady
+            && ReadyPresentation.PortraitSource?.EndsWith("/saber_ready_attack.png") == true);
+        Assert("hover_native_art_resolution", ReadyPresentation.PortraitResolution.X >= 1024 && ReadyPresentation.PortraitResolution.Y >= 1536);
+        Assert("hover_does_not_clone_battle_or_selection_spine", !Runtime.Descendants(game).Any(n => n.Name.ToString().Contains("HoverSpine")));
         Assert("hover_model_keeps_natural_idle", ReadyPresentation.BodyReady &&
             actor.Visuals.SpineBody!.GetAnimationState().GetCurrentAnimationDuration() > 1.6f);
-        Vector2 sample = ReadyPresentation.MeshSample;
-        await Fx.Delay(0.2);
-        Assert("portrait_mesh_is_animated", sample.DistanceTo(ReadyPresentation.MeshSample) > 0.01f);
+        Vector2 portraitSample = ReadyPresentation.MeshSample;
+        await Fx.Delay(0.28);
+        Assert("anime_cloth_animates_while_hovered", portraitSample.DistanceTo(ReadyPresentation.MeshSample) > 0.01f);
         var art = attack.CardNode!.GetNode<TextureRect>("%Portrait").Texture;
         string artPath = art is AtlasTexture atlas ? atlas.Atlas.ResourcePath : art.ResourcePath;
         Assert("original_card_portrait_preserved", !artPath.Contains("saber_card_atlas", StringComparison.OrdinalIgnoreCase));
@@ -319,7 +367,8 @@ internal static class TestHarness
         await attack.CardModel!.OnPlayWrapper(new BlockingPlayerChoiceContext(), enemy, true,
             new ResourceInfo { EnergySpent = 0, EnergyValue = 1, StarsSpent = 0, StarValue = 0 }, true);
         await Fx.Delay(0.5);
-        Assert("native_card_play_animates_portrait", ReadyPresentation.ActionFramesPlayed - framesBefore >= 3);
+        Assert("native_card_play_animates_portrait", ReadyPresentation.ActionFramesPlayed - framesBefore >= 4);
+        Assert("animated_action_sword_tips_inside_viewport", ReadyPresentation.ActionSwordTipsSafe);
         Assert("native_strike_damage_preserved", enemyHp - enemy.CurrentHp == 6);
     }
 

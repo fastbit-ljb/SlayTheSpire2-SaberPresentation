@@ -59,6 +59,7 @@ internal static class Voice
         channel.Player.VolumeLinear = GameVolume * Settings.Current.VoiceVolume * 1.6f;
         channel.ProtectedUntil = priority ? Time.GetTicksMsec() + (ulong)(clip.GetLength() * 1000) : 0;
         channel.Player.Play();
+        AnimeMusic.DuckVoice(clip.GetLength() + 0.12);
     }
 
     public static void PlaySequence(Node owner, string[] names, bool priority = false) =>

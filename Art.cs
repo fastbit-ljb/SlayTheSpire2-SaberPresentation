@@ -8,6 +8,8 @@ internal static class Art
 {
     private static readonly Dictionary<string, Texture2D> Textures = [];
     private static AtlasTexture? _icon;
+    private static VideoStream? _excaliburVideo;
+    private static VideoStream? _defeatVideo;
     internal static Texture2D Icon => _icon ??= new AtlasTexture {
         Atlas = Texture("saber_ready_cast"), Region = new Rect2(310, 25, 400, 400), FilterClip = true
     };
@@ -16,6 +18,10 @@ internal static class Art
         if (Textures.TryGetValue(name, out var texture)) return texture;
         return Textures[name] = ResourceLoader.Load<Texture2D>($"res://SaberPresentation/generated/{name}.png");
     }
+    internal static VideoStream? ExcaliburVideo => _excaliburVideo ??=
+        ResourceLoader.Load<VideoStream>("res://SaberPresentation/video/excalibur_np.ogv");
+    internal static VideoStream? DefeatVideo => _defeatVideo ??=
+        ResourceLoader.Load<VideoStream>("res://SaberPresentation/video/saber_defeat.ogv");
     internal static bool IsNoblePhantasm(CardModel card) =>
         Settings.Current.NoblePhantasmCards.Contains(card.Id.Entry, StringComparer.OrdinalIgnoreCase);
     internal static Texture2D Frame(int row, int frame)

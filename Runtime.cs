@@ -218,7 +218,7 @@ internal static class Runtime
         {
             if (session.Hit == 0)
             {
-                Fx.Excalibur(container, Center(session.Node), nodes.Select(Center).ToArray(), Math.Clamp(HitCount(session.Command) * 0.43, 0.13, 1.8));
+                Fx.Excalibur(container, WeaponPoint(session.Node), nodes.Select(Center).ToArray(), Math.Clamp(HitCount(session.Command) * 0.43, 0.13, 1.8));
             }
             else foreach (var target in nodes) Fx.Slash(container, Center(target), true, session.Hit);
         }
@@ -256,16 +256,18 @@ internal static class Runtime
 #if SABER_TEST
             if (KillingBlowCount == 1) _ = TaskHelper.RunSafely(TestHarness.CaptureFinisherSequence());
 #endif
-            Voice.Play(session.Node, "np_charge", priority: true);
-            double duration = Math.Max(1.24, Voice.Length("np_charge"));
+            bool usesVideo = Fx.HasExcaliburVideo;
+            if (!usesVideo) Voice.Play(session.Node, "np_charge", priority: true);
+            double duration = usesVideo ? 17.0 : Math.Max(1.24, Voice.Length("np_charge"));
             ulong started = Time.GetTicksMsec();
-            await Fx.CutIn(session.Node, duration: duration);
+            usesVideo = await Fx.CutIn(session.Node, duration: duration);
             LastChargeDuration = (Time.GetTicksMsec() - started) / 1000.0;
+            if (!usesVideo) Voice.PlaySequence(session.Node, ["np_release", "np_end"], priority: true);
         }
         if (!Valid(session.Node)) return;
         session.Node.SetAnimationTrigger("SaberHeavy");
-        Voice.PlaySequence(session.Node, ["np_release", "np_end"], priority: true);
-        Fx.Excalibur(container, Center(session.Node), [target], 0.65);
+        if (!Settings.Current.Cinematics) Voice.PlaySequence(session.Node, ["np_release", "np_end"], priority: true);
+        Fx.Excalibur(container, WeaponPoint(session.Node), [target], 0.65);
 #if SABER_TEST
         _ = TaskHelper.RunSafely(TestHarness.CaptureAfter("killing_blow_excalibur", 0.08));
 #endif
@@ -394,6 +396,30 @@ internal static class Runtime
         if (_actors.TryGetValue(node.Entity, out var actor) && actor.Attack is { } session && Valid(session.Body))
             center += session.Body.GlobalPosition - ((Node2D)session.Body.GetParent()).ToGlobal(session.Home);
         return center;
+    }
+    internal static Vector2 WeaponPoint(NCreature node)
+    {
+        Vector2 center = Center(node);
+        var spine = node.Visuals.SpineBody;
+        if (spine != null)
+        {
+            Vector2 best = Vector2.Zero;
+            bool found = false;
+            foreach (string name in new[] { "wuqi3", "wuqi2o", "Ys_wuqi2", "Ys_wuqi1", "jian", "Ys_rjian4", "Ys_rjian3" })
+            {
+                Transform2D? bone = spine.GetGlobalBoneTransform(name);
+                if (bone is not { } transform) continue;
+                Vector2 candidate = transform.Origin;
+                float distance = candidate.DistanceTo(center);
+                if (distance < 15 || distance > 520 || candidate.X < center.X - 45) continue;
+                Vector2 direction = transform.X.LengthSquared() > 0.001f ? transform.X.Normalized() : Vector2.Right;
+                candidate += direction * Math.Clamp(Math.Abs(node.Visuals.Body.GlobalScale.X) * 65f, 35f, 115f);
+                if (!found || candidate.X > best.X) { best = candidate; found = true; }
+            }
+            if (found) return best;
+        }
+        float scale = Math.Max(0.75f, Math.Abs(node.GetGlobalTransform().Scale.X));
+        return center + new Vector2(145f * scale, -48f * scale);
     }
     private static bool Valid(Node node) => GodotObject.IsInstanceValid(node) && node.IsInsideTree();
     private static void CaptureHome(Actor actor, Node2D body)

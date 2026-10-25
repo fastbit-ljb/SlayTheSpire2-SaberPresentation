@@ -14,6 +14,8 @@ namespace SaberPresentation;
 
 internal static class ContextPresentation
 {
+    internal static bool LastDefeatUsedVideo { get; private set; }
+    internal static double LastDefeatVideoSeconds { get; private set; }
     internal static bool Applies(Player? player) => SaberSkin.Active && player?.Character is Ironclad && LocalContext.IsMe(player);
     internal static void Speak(Player? player, string category, int variants)
     {
@@ -21,6 +23,7 @@ internal static class ContextPresentation
     }
     internal static async Task Outcome(Node parent, bool victory)
     {
+        using var music = AnimeMusic.PauseForCinematic();
         var layer = new CanvasLayer { Name = "SaberOutcome", Layer = 52 };
         parent.AddChild(layer);
 #if SABER_TEST
@@ -30,6 +33,44 @@ internal static class ContextPresentation
         try
         {
             var size = parent.GetViewport().GetVisibleRect().Size;
+            LastDefeatUsedVideo = false;
+            LastDefeatVideoSeconds = 0;
+            if (!victory && Art.DefeatVideo is { } defeatStream)
+            {
+                var backdrop = new ColorRect { Color = Colors.Black, Size = size,
+                    MouseFilter = Control.MouseFilterEnum.Stop };
+                layer.AddChild(backdrop);
+                var video = new VideoStreamPlayer { Name = "SaberAnimatedDefeatCg", Stream = defeatStream,
+                    Size = size, MouseFilter = Control.MouseFilterEnum.Ignore };
+                video.Set("expand", true);
+                layer.AddChild(video);
+                var defeatTitle = new Label { Text = "DEFEAT", Position = size * new Vector2(0.075f, 0.76f),
+                    Modulate = new Color(0.76f, 0.86f, 1, 0), MouseFilter = Control.MouseFilterEnum.Ignore };
+                defeatTitle.AddThemeFontSizeOverride("font_size", 62);
+                defeatTitle.AddThemeColorOverride("font_color", new Color(0.76f, 0.86f, 1));
+                layer.AddChild(defeatTitle);
+                video.Play();
+                await Fx.Delay(0.08);
+                if (video.IsPlaying())
+                {
+                    LastDefeatUsedVideo = true;
+#if SABER_TEST
+                    _ = TaskHelper.RunSafely(TestHarness.CaptureAfter("defeat_cg_mid", 3.6));
+                    _ = TaskHelper.RunSafely(TestHarness.CaptureAfter("defeat_cg_late", 6.6));
+#endif
+                    defeatTitle.CreateTween().TweenProperty(defeatTitle, "modulate:a", 0.92f, 0.35).SetDelay(0.35);
+                    while (GodotObject.IsInstanceValid(video) && video.IsPlaying())
+                    {
+                        LastDefeatVideoSeconds = video.StreamPosition;
+                        if (Input.IsActionJustPressed("ui_cancel")) video.Stop();
+                        await Fx.Delay(0.05);
+                    }
+                    return;
+                }
+                video.QueueFree();
+                backdrop.QueueFree();
+                defeatTitle.QueueFree();
+            }
             var picture = new TextureRect { Texture = Art.Texture(victory ? "camelot_stage" : "saber_defeat"), Size = size,
                 ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.KeepAspectCovered,
                 MouseFilter = Control.MouseFilterEnum.Ignore, Modulate = new Color(1, 1, 1, 0) };
