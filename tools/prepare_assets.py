@@ -66,22 +66,30 @@ def main():
     (assets / "sources.json").write_text(json.dumps({"api": API, "locale": "JP", "servantId": 100100,
         "referenceVideo": "https://www.bilibili.com/video/BV1wA4m1A7ZD/", "assets": records}, indent=2), encoding="utf-8")
     files = {f"SaberPresentation/{rel}": (assets / rel).read_bytes() for rel in sources if rel.endswith(".mp3")}
-    # Texture is imported as embedded lossless WebP for the game's export template.
-    im = Image.open(assets / "images/artoria.png").convert("RGBA")
-    buff = io.BytesIO()
-    im.save(buff, format="WEBP", lossless=True)
-    webp = buff.getvalue()
-    res_path = "SaberPresentation/images/artoria.png"
-    ctex = "saber_artoria-" + hashlib.md5(res_path.encode()).hexdigest() + ".ctex"
-    header = b"GST2" + struct.pack("<IIIIIIIIIHHIII", 1, *im.size, 0, 0, 0, 0, 0, 2, *im.size, 0, 5, len(webp))
-    files[".godot/imported/" + ctex] = header + webp
-    files[res_path + ".import"] = ('[remap]\nimporter="texture"\ntype="CompressedTexture2D"\n'
-        f'path="res://.godot/imported/{ctex}"\n\n[deps]\nsource_file="res://{res_path}"\n'
-        f'dest_files=["res://.godot/imported/{ctex}"]\n\n[params]\n').encode()
+    # Keep the raster artwork and alpha intact; slice frames with AtlasTexture.
+    image_paths = [assets / "images/artoria.png"]
+    image_paths += [assets / "generated" / (name + ".png") for name in
+        ["saber_card_atlas", "saber_vfx_atlas", "saber_ready_attack", "saber_ready_cast", "camelot_stage", "saber_defeat", "saber_attack_sequence"]
+        if (assets / "generated" / (name + ".png")).exists()]
+    for image_path in image_paths:
+        im = Image.open(image_path).convert("RGBA")
+        buff = io.BytesIO()
+        im.save(buff, format="WEBP", lossless=True)
+        webp = buff.getvalue()
+        res_path = "SaberPresentation/" + image_path.relative_to(assets).as_posix()
+        ctex = "saber_" + image_path.stem + "-" + hashlib.md5(res_path.encode()).hexdigest() + ".ctex"
+        header = b"GST2" + struct.pack("<IIIIIIIIIHHIII", 1, *im.size, 0, 0, 0, 0, 0, 2, *im.size, 0, 5, len(webp))
+        files[".godot/imported/" + ctex] = header + webp
+        files[res_path + ".import"] = ('[remap]\nimporter="texture"\ntype="CompressedTexture2D"\n'
+            f'path="res://.godot/imported/{ctex}"\n\n[deps]\nsource_file="res://{res_path}"\n'
+            f'dest_files=["res://.godot/imported/{ctex}"]\n\n[params]\n').encode()
+    for scene_path in (assets / "scenes").glob("*"):
+        if scene_path.suffix in (".gd", ".tscn"):
+            files["SaberPresentation/scenes/" + scene_path.name] = scene_path.read_bytes()
     out = ROOT / "build/SaberPresentation.pck"
     out.parent.mkdir(exist_ok=True)
     write_pck(out, files)
-    print(f"Packed {len(files)} resources; portrait {im.size}; {out.stat().st_size:,} bytes")
+    print(f"Packed {len(files)} resources; {len(image_paths)} raster textures; {out.stat().st_size:,} bytes")
     print(f"JP voices: {len(VOICE_IDS)}; provenance: {assets / 'sources.json'}")
 
 

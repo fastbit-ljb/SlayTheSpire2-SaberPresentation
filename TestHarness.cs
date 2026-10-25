@@ -19,6 +19,7 @@ using MegaCrit.Sts2.Core.Models.Characters;
 using MegaCrit.Sts2.Core.Models.Encounters;
 using MegaCrit.Sts2.Core.Nodes;
 using MegaCrit.Sts2.Core.Nodes.Combat;
+using MegaCrit.Sts2.Core.Nodes.Cards.Holders;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.Runs;
@@ -29,12 +30,15 @@ namespace SaberPresentation;
 
 internal static class TestHarness
 {
-    private static bool WithCzn => CommandLineHelper.HasArg("saber-czn-test");
-    private static string Output => "D:/L/Study/mod/SaberPresentation/build/" + (WithCzn ? "verification-czn" : "verification");
+    private static bool WithAllMods => CommandLineHelper.HasArg("saber-all-test");
+    private static bool WithTheme => WithAllMods || CommandLineHelper.HasArg("saber-theme-test");
+    private static bool WithCzn => WithTheme || CommandLineHelper.HasArg("saber-czn-test");
+    private static string Output => "D:/L/Study/mod/SaberPresentation/build/" + (WithAllMods ? "verification-all" : WithTheme ? "verification-theme" : WithCzn ? "verification-czn" : "verification");
     private static readonly List<object> Results = [];
     private static readonly HashSet<string> Captured = [];
     private static bool _running;
     private static readonly List<bool> MotionChecks = [];
+    internal static int OutcomeCount;
 
     internal static async Task Run(NGame game)
     {
@@ -69,6 +73,11 @@ internal static class TestHarness
             var state = CombatManager.Instance.DebugOnlyGetState()!;
             var node = player.Creature.GetCreatureNode()!;
             Assert("saber_detected", Runtime.IsSaber(player.Creature));
+            Assert("saber_identity_icon_preserved", player.Character.IconTexture is AtlasTexture);
+            foreach (string raster in new[] { "saber_card_atlas", "saber_vfx_atlas", "saber_ready_attack", "saber_ready_cast", "camelot_stage", "saber_defeat", "saber_attack_sequence" })
+                Assert("raster_decodes_" + raster, Art.Texture(raster).GetWidth() >= 1000);
+            await VerifyInteractions(game, node);
+            await VerifyCznSurfaces(game);
             var home = node.Visuals.Body.Position;
             Log.Info("[SaberTest] Loaded animations: " + string.Join(", ", node.Visuals.SpineBody!.GetSkeleton()!.GetData().GetAnimationNames()));
             Assert("voice_attack_decodes", Voice.Length("attack_1") > 0);
@@ -142,6 +151,8 @@ internal static class TestHarness
             Assert("czn_effects_used_when_available", WithCzn ? CznAssets.Spawned > 15 : CznAssets.Spawned == 0);
             Assert("czn_sfx_used_when_available", WithCzn ? CznAssets.SoundsPlayed > 0 : CznAssets.SoundsPlayed == 0);
             Assert("czn_effects_cleaned_up", !Runtime.Descendants(game).Any(n => n.Name == "SaberCznEffect"));
+            Assert("painted_effects_cleaned_up", !Runtime.Descendants(game).Any(n => n.Name == "SaberPaintedEffect"));
+            Assert("no_line_geometry", !Runtime.Descendants(game).OfType<Line2D>().Any(n => n.GetParent()?.Name.ToString().StartsWith("Saber") == true));
             if (WithCzn)
             {
                 int spawned = CznAssets.Spawned;
@@ -152,6 +163,12 @@ internal static class TestHarness
                 Settings.Current.UseCznEffects = true;
             }
             await CaptureAfter("combat_final", 0.1);
+            await CreatureCmd.Damage(new BlockingPlayerChoiceContext(), player.Creature, 9999, ValueProp.Move, target);
+            Assert("native_player_death_resolves", player.Creature.IsDead);
+            await Fx.Delay(4.5);
+            Assert("native_game_over_triggers_saber_cg", OutcomeCount > 0);
+            await Fx.Delay(1.8);
+            Assert("game_over_cg_cleans_up", !Runtime.Descendants(game).Any(n => n.Name == "SaberOutcome"));
             Log.Info("[SaberTest] ALL CHECKS PASSED");
         }
         catch (Exception ex)
@@ -171,6 +188,86 @@ internal static class TestHarness
         Results.Add(new { check, passed });
         Log.Info($"[SaberTest] {check}: {passed}");
         if (!passed) throw new Exception(check);
+    }
+    private static async Task VerifyInteractions(NGame game, NCreature actor)
+    {
+        var hand = Runtime.Descendants(game).OfType<NHandCardHolder>().Where(h => h.CardModel?.Owner == actor.Entity.Player).ToArray();
+        var attack = hand.First(h => h.CardModel!.Type == CardType.Attack);
+        var skill = hand.First(h => h.CardModel!.Type == CardType.Skill);
+        int hp = actor.Entity.CurrentHp;
+        attack.EmitSignal(Control.SignalName.FocusEntered);
+        await CaptureAfter("hover_attack", 0.35);
+        Assert("native_card_focus_shows_portrait", ReadyPresentation.Visible && ReadyPresentation.Card == attack.CardModel);
+        Assert("attack_hover_changes_body_pose", ReadyPresentation.BodyReady && ReadyPresentation.Pose == 0);
+        Vector2 sample = ReadyPresentation.MeshSample;
+        await Fx.Delay(0.2);
+        Assert("portrait_mesh_is_animated", sample.DistanceTo(ReadyPresentation.MeshSample) > 0.01f);
+        Assert("saber_card_art_replaced", attack.CardNode!.GetNode<TextureRect>("%Portrait").Texture is AtlasTexture);
+        if (WithTheme) for (int i = 0; i < 10; i++) await CaptureAfter("hover_frame_" + i.ToString("D2"), 0.055);
+        attack.EmitSignal(Control.SignalName.FocusExited);
+        skill.EmitSignal(Control.SignalName.FocusEntered);
+        await CaptureAfter("hover_skill", 0.3);
+        if (WithTheme) for (int i = 10; i < 20; i++) await CaptureAfter("hover_frame_" + i.ToString("D2"), 0.055);
+        Assert("rapid_focus_switch_preserved", ReadyPresentation.Visible && ReadyPresentation.Card == skill.CardModel && ReadyPresentation.Pose == 1);
+        skill.EmitSignal(Control.SignalName.FocusExited);
+        attack.EmitSignal(Control.SignalName.FocusEntered);
+        var play = NMouseCardPlay.Create(attack, "saber_test", false);
+        NCombatRoom.Instance!.AddChild(play);
+        play.Start();
+        await Fx.Delay(0.16);
+        attack.EmitSignal(Control.SignalName.FocusExited);
+        await Fx.Delay(0.16);
+        Assert("targeting_keeps_portrait", ReadyPresentation.Targeting && ReadyPresentation.Visible);
+        play.CancelPlayCard();
+        attack.CancelDrag();
+        await CaptureAfter("hover_cancelled", 0.3);
+        Assert("cancel_restores_portrait_and_body", !ReadyPresentation.Visible && !ReadyPresentation.BodyReady && !ReadyPresentation.Targeting);
+        Assert("hover_does_not_damage_actor", actor.Entity.CurrentHp == hp);
+        attack.EmitSignal(Control.SignalName.FocusEntered);
+        await Fx.Delay(0.26);
+        int framesBefore = ReadyPresentation.ActionFramesPlayed;
+        var enemy = actor.Entity.CombatState!.HittableEnemies.First();
+        int enemyHp = enemy.CurrentHp;
+        _ = TaskHelper.RunSafely(CaptureAfter("portrait_attack_frame_0", 0.05));
+        _ = TaskHelper.RunSafely(CaptureAfter("portrait_attack_frame_1", 0.17));
+        _ = TaskHelper.RunSafely(CaptureAfter("portrait_attack_frame_2", 0.28));
+        await attack.CardModel!.OnPlayWrapper(new BlockingPlayerChoiceContext(), enemy, true,
+            new ResourceInfo { EnergySpent = 0, EnergyValue = 1, StarsSpent = 0, StarValue = 0 }, true);
+        await Fx.Delay(0.5);
+        Assert("native_card_play_animates_portrait", ReadyPresentation.ActionFramesPlayed - framesBefore >= 3);
+        Assert("native_strike_damage_preserved", enemyHp - enemy.CurrentHp == 6);
+        if (WithTheme)
+        {
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetName().Name).ToArray();
+            Assert("czn_style_ui_loaded", assemblies.Contains("CznStyleUI"));
+            Assert("czn_main_menu_loaded", assemblies.Contains("CznMainMenu"));
+            Assert("czn_enemy_skin_loaded", assemblies.Contains("CznEnemySkin"));
+        }
+    }
+    private static async Task VerifyCznSurfaces(NGame game)
+    {
+        if (WithCzn)
+        {
+            var registry = AccessTools.TypeByName("CznCore.Settings.SharedSettingsExtensionRegistry")!;
+            var categories = (System.Collections.IEnumerable)AccessTools.Method(registry, "GetCategories").Invoke(null, null)!;
+            Assert("czn_settings_accept_saber_controls", categories.Cast<object>().Any(c =>
+                (string)c.GetType().GetProperty("Id")!.GetValue(c)! == "saber_presentation"));
+        }
+        var lobby = ResourceLoader.Load<PackedScene>("res://SaberPresentation/scenes/saber_lobby.tscn").Instantiate<Control>();
+        var layer = new CanvasLayer { Layer = 90, Name = "SaberLobbyVerification" };
+        game.AddChild(layer);
+        layer.AddChild(lobby);
+        await CaptureAfter("saber_live_lobby", 0.3);
+        Assert("saber_live_lobby_loaded", lobby.GetChildCount() == 2 && lobby.GetChild(1) is Polygon2D);
+        layer.QueueFree();
+        await Fx.Delay(0.1);
+        if (WithTheme)
+        {
+            var catalog = AccessTools.TypeByName("CznMainMenu.MainMenuCatalog")!;
+            AccessTools.Method(catalog, "EnsureAvailableBackgroundsResolved").Invoke(null, null);
+            object?[] args = ["skin_lobby_saber", null];
+            Assert("czn_main_menu_discovers_saber_lobby", (bool)AccessTools.Method(catalog, "TryGetBackground").Invoke(null, args)!);
+        }
     }
     internal static void OnImpact(string id, Creature attacker)
     {

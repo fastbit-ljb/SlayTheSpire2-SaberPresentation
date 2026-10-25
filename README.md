@@ -2,11 +2,31 @@
 
 对现有 Saber 外观模组的本地二创扩展，参考 Chaos Zero Nightmare - Nine 的战斗演出组织方式，以及用户指定的 FGO 官方阿尔托莉雅介绍视频。侧重动作编排、特效和日语配音。
 
+## 0.3.0：完整交互演出
+
+- 卡牌悬停、手柄聚焦时出现左侧动态大立绘，攻击与技能使用不同姿态；呼吸、发梢和衣摆持续运动。
+- 拖拽选目标时保持预备动作，取消后回收立绘、恢复骨架；出牌时播放绘制攻击帧并收招。
+- 六类精细 Saber 卡面，16 格绘制特效，宝具蓄力、光束、卡梅洛舞台和独立败北 CG；原有线条特效已移除。
+- 继续使用 Saber 的 28 段日配，加入休息、锻造和商店事件回应。
+- 接入 CZN Mod Config 的「Saber 演出」分类，提供 17 个开关／滑块。
+- 接入 CZN Main Menu 的已安装角色背景目录，提供「Saber · 阿尔托莉雅」动态背景。
+- 同时启用千鹤等铁甲皮肤时，可优先保留原 Saber 模型、头像、卡面及专属演出。
+
+完整对照表见 `CZN_PARITY.md`。这次生成的图片、提示词和校验记录保存在 `assets/generated/`，使用内置 image_gen 工具制作。
+
 ## 使用
 
 需要原作者「会画画的Small_day」的 [Saber 外观模组](https://steamcommunity.com/sharedfiles/filedetails/?id=3747659940)。保留原模组，在游戏 `mods/SaberPresentation/` 放入同名 DLL、JSON、PCK 三个文件。启动游戏，启用 Saber 和「Saber 战斗演出 / Saber Combat Presentation」，重启后选择铁甲战士。程序通过骨架内的 `attackvfff` 动画识别 Saber，其他角色与其他铁甲皮肤不会触发本扩展。
 
 扩展没有修改原作者的 Workshop 文件。基础演出只需要 Saber；启用 [CznCore](https://steamcommunity.com/sharedfiles/filedetails/?id=3826011578) 和 [Chaos Zero Nightmare - Nine](https://steamcommunity.com/sharedfiles/filedetails/?id=3815657213) 后，0.2.0 会自动使用其中的战斗素材。订阅后仍需在游戏的模组界面启用并重启。原模组的模型、选人、商店、休息点外观仍由原模组提供。
+
+要获得用户参考图中的整套界面与战场，同时启用：
+
+- [CZN Style UI](https://steamcommunity.com/sharedfiles/filedetails/?id=3771060891)：卡框、能量与战斗 HUD、地图、商店、菜单等通用界面及交互。
+- [CZN Main Menu](https://steamcommunity.com/sharedfiles/filedetails/?id=3774940754)：动态主菜单、背景选择和音乐库。
+- [CZN Enemy Skin](https://steamcommunity.com/sharedfiles/filedetails/?id=3783041069)：敌人、Boss、敌方动画／音效与战场。
+
+本机已订阅这些模组。`tools/enable_czn_suite.ps1` 会先备份普通游戏配置，再启用上述套装和 Saber，并选择 Saber 动态背景；现有其他模组的开关保留。关闭游戏后运行，重启生效。打包版提供同一脚本 `ENABLE_CZN_SUITE.ps1`。
 
 ## CZN 素材增强（0.2.0）
 
@@ -18,7 +38,7 @@
 
 28 段角色配音继续使用 Saber 的日配。金色剑光、蓄力、立绘和宝具光束继续由本扩展制作。缺少某项 CZN 资源时自动使用原有效果；`UseCznEffects=false` 可关闭复用。
 
-本扩展不直接调用 CZN DLL、不注册 CZN 角色，不重复打包其素材。资源路径和来源校验记录见 `CZN_ASSETS.json`；源包升级或改名后可能需要更新映射。
+本扩展不绑定 CZN 程序集进行编译。通过已安装资源路径、CZN 扩展描述符协议、背景元数据及可选兼容钩子接入，不重复打包其素材。资源路径和来源校验记录见 `CZN_ASSETS.json`；源包升级或改名后可能需要更新映射。
 
 ## 演出
 
@@ -58,6 +78,10 @@
 - `Dash`：接近目标的位移。
 - `RichMotion`：上挑、跃斩、前刺的附加动作编排。
 - `UseCznEffects`：使用已启用的 CZN 素材，默认开启；无相应源包时自动回退。
+- `CardHoverPresentation`、`ReadyBodyMotion`：选牌大立绘与战斗模型预备动作。
+- `SaberCardArt`、`HoverVoice`：专属卡面与选牌日配回应。
+- `PortraitScale`、`PortraitOpacity`、`PortraitOffsetX`、`PortraitOffsetY`：左侧立绘尺寸、透明度和位置。
+- `PreferSaber`：与其他铁甲皮肤同时启用时优先使用 Saber；更换模型需重启游戏。
 - `Cinematics`：宝具立绘切入。关闭后仍保留光束、蓄光与配音。
 - `ScreenShake`、`ScreenFlash`：震屏与轻微闪光。
 - `JapaneseVoice`、`VoiceVolume`、`EffectsVolume`：语音开关、语音和附加音效音量。
@@ -89,12 +113,19 @@ dotnet build SaberPresentation.csproj -c Release -p:DefineConstants=SABER_TEST -
 
 # 正式编译、打包并安装。正式 DLL 不含上面的测试入口。
 ./tools/package.ps1 -Install
+
+# 启用已订阅的 CZN 通用界面／主菜单／敌人套装，并选择 Saber 背景。
+./tools/enable_czn_suite.ps1
+
+# 复现全部 18 个本机订阅模组同时加载的检查。
+./tools/prepare_test_runner.ps1 -WithAllMods
+./build/runner-all/SlayTheSpire2.exe --force-steam=off --saber-test --saber-all-test --windowed --resolution 1280x720
 ```
 
 `build/runner/` 中的游戏资源是本机游戏的硬链接/联接，不要将它们随模组发布或在这些链接内修改游戏内容。
 
 ## Git
 
-仓库位于当前项目目录，`v0.1.0` 保存创作前基线，`v0.2.0` 保存本次增强版，版本变化见 `VERSION_HISTORY.md`。源文件、素材来源和已验证安装包纳入本地 Git；游戏本体、测试运行器和临时编译目录排除。当前没有配置远程仓库。
+仓库位于当前项目目录，`v0.1.0` 保存创作前基线，`v0.2.0` 保存第一轮素材增强版，`v0.3.0` 保存本次完整交互版，版本变化见 `VERSION_HISTORY.md`。源文件、生图素材、提示词、素材来源和已验证安装包纳入本地 Git；游戏本体、测试运行器和配置备份排除。当前没有配置远程仓库。
 
 `dist/SaberPresentation-0.1.0.zip` 保留旧安装包；解压覆盖本扩展的三个安装文件即可回退。

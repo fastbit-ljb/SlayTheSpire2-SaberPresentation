@@ -157,6 +157,18 @@ internal static class CznAssets
         if (played) Sound(parent, "res://CznCore/audio/sfx/system_eff_buff.ogg");
         return played;
     }
+    internal static void Charge(Node parent, Vector2 center)
+    {
+        Spine(parent, "res://CznNineCharacter/animations/cinematic/nine_30047_ug_intro_sword_skel_data.tres",
+            center + Vector2.Down * 80, 0.34f, speed: 1.7f, tint: new Color(1, 0.96f, 0.8f));
+    }
+    internal static void FinisherImpact(Node parent, Vector2 center)
+    {
+        Spine(parent, "res://CznNineCharacter/animations/cinematic/nine_30047_ug_target_b_skel_data.tres",
+            center + Vector2.Down * 90, 0.48f, speed: 1.9f);
+        Spine(parent, "res://CznNineCharacter/animations/cinematic/nine_30047_ug_target_f_skel_data.tres",
+            center + Vector2.Down * 90, 0.48f, speed: 1.9f, z: 1);
+    }
     internal static bool Sound(Node parent, string path)
     {
         if (!Valid(parent) || Load(path) is not AudioStream stream) return false;

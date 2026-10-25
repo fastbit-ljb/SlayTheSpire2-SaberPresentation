@@ -1,0 +1,111 @@
+{
+  "generator": "Built-in image_gen.imagegen",
+  "date": "2026-10-25",
+  "pixelEdits": "None; native GPU atlas/frame slicing",
+  "assets": [
+    {
+      "file": "camelot_stage.png",
+      "usage": "Cinematic/lobby background",
+      "includedInGame": true,
+      "dimensions": [
+        1672,
+        941
+      ],
+      "mode": "RGB",
+      "sha256": "428dac3ff9bdf05fd7e8e2c0abbba4719524148ce5f19f0fbce86bf0503e7250",
+      "prompt": "PROMPTS.md#camelot_stage",
+      "reference": null
+    },
+    {
+      "file": "saber_attack_sequence.png",
+      "usage": "Three used attack poses from four generated cells",
+      "includedInGame": true,
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "sha256": "2ce03c5810a16dac110f0dce7d6c1ffff8eae8308d2f885cd4c940c2ec24a9f0",
+      "prompt": "PROMPTS.md#saber_attack_sequence",
+      "reference": "generated/saber_ready_attack.png"
+    },
+    {
+      "file": "saber_card_atlas.png",
+      "usage": "Six card illustrations",
+      "includedInGame": true,
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "mode": "RGB",
+      "sha256": "c1d69601ac731214dfa25cffa8553df24fd81222c499a7f9d1e55a0bcda421bc",
+      "prompt": "PROMPTS.md#saber_card_atlas",
+      "reference": "images/artoria.png"
+    },
+    {
+      "file": "saber_defeat.png",
+      "usage": "Defeat illustration",
+      "includedInGame": true,
+      "dimensions": [
+        1672,
+        941
+      ],
+      "mode": "RGB",
+      "sha256": "2b2eb7e64e910c8f0f02ebead25d6c2d602d3c527287ed4633041448c8d91a95",
+      "prompt": "PROMPTS.md#saber_defeat",
+      "reference": null
+    },
+    {
+      "file": "saber_portrait_draft.png",
+      "usage": "Reference draft; excluded from game PCK",
+      "includedInGame": false,
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "mode": "RGBA",
+      "sha256": "09d0a71ad67783905a3f6555c228327ab8450f25f25677204f5476f33e63f733",
+      "prompt": "PROMPTS.md#saber_portrait_draft",
+      "reference": "images/artoria.png"
+    },
+    {
+      "file": "saber_ready_attack.png",
+      "usage": "Animated attack-ready portrait and style reference",
+      "includedInGame": true,
+      "dimensions": [
+        1024,
+        1536
+      ],
+      "mode": "RGBA",
+      "sha256": "504eff133a39e43e8d3e9d04faac00d70d87a4586ce6cd2d0d9055c054388f3b",
+      "prompt": "PROMPTS.md#saber_ready_attack",
+      "reference": "generated/saber_portrait_draft.png"
+    },
+    {
+      "file": "saber_ready_cast.png",
+      "usage": "Animated skill portrait, icon and lobby",
+      "includedInGame": true,
+      "dimensions": [
+        1024,
+        1536
+      ],
+      "mode": "RGBA",
+      "sha256": "063afdeb0225491e896c48436883cc559f072c44020cee3f1f07a5bc1cf439a8",
+      "prompt": "PROMPTS.md#saber_ready_cast",
+      "reference": "generated/saber_portrait_draft.png"
+    },
+    {
+      "file": "saber_vfx_atlas.png",
+      "usage": "Sixteen painted effect cells",
+      "includedInGame": true,
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "sha256": "3ab0afc39beabb1d3e437e25abd6c92c0d156be21f5c32d21f02a73586c48588",
+      "prompt": "PROMPTS.md#saber_vfx_atlas",
+      "reference": null
+    }
+  ]
+}

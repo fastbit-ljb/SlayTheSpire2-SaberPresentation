@@ -64,6 +64,7 @@ internal static class Runtime
         var creature = command.Attacker!;
         var node = creature.GetCreatureNode();
         if (node == null || command.ModelSource is not CardModel card || creature.IsDead) return;
+        ReadyPresentation.Play(card);
         var actor = _actors.GetOrCreateValue(creature);
         var previous = actor.Attack;
         var home = previous?.Home ?? node.Visuals.Body.Position;
@@ -302,6 +303,7 @@ internal static class Runtime
     public static void Dead(Creature creature) { Voice.Play(creature.GetCreatureNode()!, "death", true); }
     public static void Victory(Creature creature)
     {
+        ReadyPresentation.Cancel(null);
         var node = creature.GetCreatureNode()!;
         node.SetAnimationTrigger("SaberVictory");
         TaskHelper.RunSafely(Voice.VictoryAfterCurrent(node));
@@ -339,6 +341,7 @@ internal static class Runtime
     private static bool Valid(Node node) => GodotObject.IsInstanceValid(node) && node.IsInsideTree();
     internal static bool HasExcaliburHit(Creature creature) => _actors.TryGetValue(creature, out var actor)
         && actor.Attack is { Route: AttackRoute.Excalibur, Hit: > 0 };
+    internal static bool IsAttacking(Creature creature) => _actors.TryGetValue(creature, out var actor) && actor.Attack is { Finished: false };
 #if SABER_TEST
     internal static bool NearTargetAtImpact(Creature creature)
     {
@@ -348,6 +351,7 @@ internal static class Runtime
 #endif
     public static void Clear()
     {
+        ReadyPresentation.Cleanup();
         foreach (var session in Active.ToArray()) Restore(session, true);
         Active.Clear();
         _actors = new();

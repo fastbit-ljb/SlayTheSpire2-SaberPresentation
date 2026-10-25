@@ -21,8 +21,9 @@ public static class Entry
     public static void Initialize()
     {
         Settings.Load();
+        CznInterop.Register();
         new Harmony("local.saber.presentation").PatchAll(typeof(Entry).Assembly);
-        Log.Info("[SaberPresentation] JP combat presentation 0.2.0 initialized.");
+        Log.Info("[SaberPresentation] JP combat presentation 0.3.0 initialized.");
 #if SABER_TEST
         if (MegaCrit.Sts2.Core.Helpers.CommandLineHelper.HasArg("saber-test"))
             _ = MegaCrit.Sts2.Core.Helpers.TaskHelper.RunSafely(TestHarness.Run(MegaCrit.Sts2.Core.Nodes.NGame.Instance!));
@@ -35,8 +36,10 @@ public static class Entry
 [HarmonyPatch(typeof(CharacterModel), nameof(CharacterModel.GenerateAnimator))]
 internal static class AnimatorPatch
 {
+    [HarmonyPriority(Priority.First)]
     private static bool Prefix(CharacterModel __instance, MegaSprite controller, ref CreatureAnimator __result)
     {
+        if (Settings.Current.Enabled && __instance is Ironclad) SaberSkin.Apply(controller);
         if (!Settings.Current.Enabled || __instance is not Ironclad || !controller.HasAnimation("attackvfff")) return true;
         var idle = new AnimState("idle_loop", true);
         var animator = new CreatureAnimator(idle, controller);
@@ -44,6 +47,8 @@ internal static class AnimatorPatch
         animator.AddAnyState("Relaxed", new AnimState("relaxed_loop", true));
         animator.AddAnyState("SaberVictory", new AnimState("relaxed_loop2", true));
         animator.AddAnyState("Revive", idle);
+        animator.AddAnyState("SaberReadyAttack", new AnimState("attack_heavy"));
+        animator.AddAnyState("SaberReadyCast", new AnimState("cast"));
         foreach (var (trigger, clip) in new (string, string)[] {
             ("Attack", "attack"), ("heavyAttack", "attack_heavy"),
             ("SaberAttack", "attack"), ("SaberSlashA", "attack"),

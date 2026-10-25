@@ -41,6 +41,11 @@ PACKS = [
             "se_30047_u1_attack_play": "heavy sword sound",
             "se_30047_ug_attack": "beam sound layer",
         }),
+        ("animations/cinematic/", "_skel_data.tres", {
+            "nine_30047_ug_intro_sword": "noble phantasm charge",
+            "nine_30047_ug_target_b": "noble phantasm rear impact",
+            "nine_30047_ug_target_f": "noble phantasm front impact",
+        }),
     ]),
 ]
 
@@ -73,6 +78,18 @@ def main():
         "adaptation": "Route-specific layers, adjusted placement/scale/playback speed and warm tint; Saber JP voices retained",
         "sources": sources,
     }
+    output["runtimeModules"] = []
+    for name, workshop_id in [("CznStyleUI", "3771060891"), ("CznMainMenu", "3774940754"),
+                              ("CznEnemySkin", "3783041069"), ("ChizuruIroncladSkin", "3826011833")]:
+        folder = WORKSHOP / workshop_id
+        manifest = json.loads((folder / f"{name}.json").read_text(encoding="utf-8-sig"))
+        output["runtimeModules"].append({
+            "id": name, "version": manifest["version"], "author": manifest["author"],
+            "workshop": f"https://steamcommunity.com/sharedfiles/filedetails/?id={workshop_id}",
+            "dllSha256": hashlib.sha256((folder / f"{name}.dll").read_bytes()).hexdigest(),
+            "pckBytes": (folder / f"{name}.pck").stat().st_size,
+            "integration": "Compatibility verification" if name == "ChizuruIroncladSkin" else "Original installed module; no duplication",
+        })
     (ROOT / "CZN_ASSETS.json").write_text(json.dumps(output, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"Recorded {sum(len(s['resources']) for s in sources)} runtime resources from {len(sources)} installed packs")
 
