@@ -1,0 +1,230 @@
+{
+  "version": "0.1.0",
+  "gameVersion": "0.111.0",
+  "checksPassed": 54,
+  "checksFailed": 0,
+  "japaneseVoiceClips": 28,
+  "installedFilesSha256": {
+    "SaberPresentation.dll": "4e420c7a2618f181230a15af7f5339d8f538c1b48b4cd9a75bebd8a2d4506839",
+    "SaberPresentation.json": "a6156c7f820f4ea885d872bdc2f7214df4462c4c67acba5f1ec61d7901d350bd",
+    "SaberPresentation.pck": "83e867967c149fa8147a934b10604429ed8072633caeafc28ba5b67b875bf755"
+  },
+  "checks": [
+    {
+      "check": "saber_detected",
+      "passed": true
+    },
+    {
+      "check": "voice_attack_decodes",
+      "passed": true
+    },
+    {
+      "check": "voice_np_decodes",
+      "passed": true
+    },
+    {
+      "check": "jp_audio_attack_1",
+      "passed": true
+    },
+    {
+      "check": "jp_audio_attack_2",
+      "passed": true
+    },
+    {
+      "check": "jp_audio_attack_3",
+      "passed": true
+    },
+    {
+      "check": "jp_audio_heavy",
+      "passed": true
+    },
+    {
+      "check": "jp_audio_skill_1",
+      "passed": true
+    },
+    {
+      "check": "jp_audio_skill_2",
+      "passed": true
+    },
+    {
+      "check": "jp_audio_entry_1",
+      "passed": true
+    },
+    {
+      "check": "jp_audio_entry_2",
+      "passed": true
+    },
+    {
+      "check": "jp_audio_victory_1",
+      "passed": true
+    },
+    {
+      "check": "jp_audio_victory_2",
+      "passed": true
+    },
+    {
+      "check": "jp_audio_hurt_1",
+      "passed": true
+    },
+    {
+      "check": "jp_audio_hurt_2",
+      "passed": true
+    },
+    {
+      "check": "jp_audio_death",
+      "passed": true
+    },
+    {
+      "check": "jp_audio_np_charge",
+      "passed": true
+    },
+    {
+      "check": "jp_audio_np_release",
+      "passed": true
+    },
+    {
+      "check": "jp_audio_np_end",
+      "passed": true
+    },
+    {
+      "check": "jp_audio_attack_4",
+      "passed": true
+    },
+    {
+      "check": "jp_audio_attack_5",
+      "passed": true
+    },
+    {
+      "check": "jp_audio_attack_6",
+      "passed": true
+    },
+    {
+      "check": "jp_audio_attack_7",
+      "passed": true
+    },
+    {
+      "check": "jp_audio_heavy_2",
+      "passed": true
+    },
+    {
+      "check": "jp_audio_heavy_3",
+      "passed": true
+    },
+    {
+      "check": "jp_audio_skill_3",
+      "passed": true
+    },
+    {
+      "check": "jp_audio_skill_4",
+      "passed": true
+    },
+    {
+      "check": "jp_audio_entry_3",
+      "passed": true
+    },
+    {
+      "check": "jp_audio_entry_4",
+      "passed": true
+    },
+    {
+      "check": "jp_audio_victory_3",
+      "passed": true
+    },
+    {
+      "check": "jp_audio_victory_4",
+      "passed": true
+    },
+    {
+      "check": "damage_unchanged_STRIKE_IRONCLAD",
+      "passed": true
+    },
+    {
+      "check": "actor_returns_STRIKE_IRONCLAD",
+      "passed": true
+    },
+    {
+      "check": "damage_unchanged_POMMEL_STRIKE",
+      "passed": true
+    },
+    {
+      "check": "actor_returns_POMMEL_STRIKE",
+      "passed": true
+    },
+    {
+      "check": "damage_unchanged_UPPERCUT",
+      "passed": true
+    },
+    {
+      "check": "actor_returns_UPPERCUT",
+      "passed": true
+    },
+    {
+      "check": "damage_unchanged_HEMOKINESIS",
+      "passed": true
+    },
+    {
+      "check": "actor_returns_HEMOKINESIS",
+      "passed": true
+    },
+    {
+      "check": "damage_unchanged_WHIRLWIND",
+      "passed": true
+    },
+    {
+      "check": "actor_returns_WHIRLWIND",
+      "passed": true
+    },
+    {
+      "check": "damage_unchanged_BASH",
+      "passed": true
+    },
+    {
+      "check": "actor_returns_BASH",
+      "passed": true
+    },
+    {
+      "check": "damage_unchanged_BLUDGEON",
+      "passed": true
+    },
+    {
+      "check": "actor_returns_BLUDGEON",
+      "passed": true
+    },
+    {
+      "check": "multi_hit_count_unchanged",
+      "passed": true
+    },
+    {
+      "check": "random_damage_unchanged",
+      "passed": true
+    },
+    {
+      "check": "native_callback_preserved",
+      "passed": true
+    },
+    {
+      "check": "aoe_damage_unchanged",
+      "passed": true
+    },
+    {
+      "check": "np_multihit_damage_unchanged",
+      "passed": true
+    },
+    {
+      "check": "real_bludgeon_card_damage_unchanged",
+      "passed": true
+    },
+    {
+      "check": "no_leftover_cinematic",
+      "passed": true
+    },
+    {
+      "check": "final_actor_home",
+      "passed": true
+    },
+    {
+      "check": "melee_motion_reaches_resolved_targets",
+      "passed": true
+    }
+  ]
+}

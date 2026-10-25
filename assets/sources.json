@@ -1,0 +1,153 @@
+{
+  "api": "https://api.atlasacademy.io/nice/JP/servant/2?lore=true",
+  "locale": "JP",
+  "servantId": 100100,
+  "referenceVideo": "https://www.bilibili.com/video/BV1wA4m1A7ZD/",
+  "assets": [
+    {
+      "file": "audio/attack_1.mp3",
+      "url": "https://static.atlasacademy.io/JP/Audio/Servants_100100/0_B010.mp3",
+      "sha256": "247b6c571c1260ef20bb9c9d0409bdd855e4644c932c5628ae91f1c1d966d949"
+    },
+    {
+      "file": "audio/attack_2.mp3",
+      "url": "https://static.atlasacademy.io/JP/Audio/Servants_100100/0_B020.mp3",
+      "sha256": "4e72f5fc231298d1b5cfecfa4cf835e4cde08aeef7d585c4e3c197d33bfc891e"
+    },
+    {
+      "file": "audio/attack_3.mp3",
+      "url": "https://static.atlasacademy.io/JP/Audio/Servants_100100/0_B030.mp3",
+      "sha256": "5ace6c269e7ee58f6dfd9e11d51d2ef432f2852c6a2289cf50498a2822b6fb84"
+    },
+    {
+      "file": "audio/attack_4.mp3",
+      "url": "https://static.atlasacademy.io/JP/Audio/Servants_100100/0_B410.mp3",
+      "sha256": "4426e4ec9646d184f7fb0044de99b0bf0a3e60f077383c164ac7deb021d39fb5"
+    },
+    {
+      "file": "audio/attack_5.mp3",
+      "url": "https://static.atlasacademy.io/JP/Audio/Servants_100100/0_B420.mp3",
+      "sha256": "b806ad69fd5b5b33e3e5ecbc9e8e168c9fc7350c20fa11da3a75492c98c2acde"
+    },
+    {
+      "file": "audio/attack_6.mp3",
+      "url": "https://static.atlasacademy.io/JP/Audio/Servants_100100/0_B430.mp3",
+      "sha256": "02cf9f6b6516461ed9f04f0df455a24edca895503179548f357a961b7cb4d703"
+    },
+    {
+      "file": "audio/attack_7.mp3",
+      "url": "https://static.atlasacademy.io/JP/Audio/Servants_100100/0_B910.mp3",
+      "sha256": "6078e0ed3b0e7503c5e57027b900b713a652a5853404624bca18824f5d7ece5a"
+    },
+    {
+      "file": "audio/heavy.mp3",
+      "url": "https://static.atlasacademy.io/JP/Audio/Servants_100100/0_B040.mp3",
+      "sha256": "8199fd92fea054c97f78fa8e90c3b94f5651cb8220785315817047a4e04e13f7"
+    },
+    {
+      "file": "audio/skill_1.mp3",
+      "url": "https://static.atlasacademy.io/JP/Audio/Servants_100100/0_B080.mp3",
+      "sha256": "c7c015a129b1078a92352a16450aa99bd009855f85f09af9451fabec6e75828a"
+    },
+    {
+      "file": "audio/skill_2.mp3",
+      "url": "https://static.atlasacademy.io/JP/Audio/Servants_100100/0_B090.mp3",
+      "sha256": "704d07dd97c6f99235800cd861f4a454eb745ec328d719b51eca6f5b63f299eb"
+    },
+    {
+      "file": "audio/heavy_2.mp3",
+      "url": "https://static.atlasacademy.io/JP/Audio/Servants_100100/0_B440.mp3",
+      "sha256": "d7e9b1ce09e8dee0a0590b71197200a28a8b70eed1045d94b31e1acdb751d5e3"
+    },
+    {
+      "file": "audio/heavy_3.mp3",
+      "url": "https://static.atlasacademy.io/JP/Audio/Servants_100100/0_B840.mp3",
+      "sha256": "c3648a68c7da404db6590c2da0e6de4fb5245b649c3b7b0fdc6dd81a5821d431"
+    },
+    {
+      "file": "audio/skill_3.mp3",
+      "url": "https://static.atlasacademy.io/JP/Audio/Servants_100100/0_B480.mp3",
+      "sha256": "1ae3dc1cd04ff2373d02e2346597b49ecf278511a8f9c73c419b802c5990c1c2"
+    },
+    {
+      "file": "audio/skill_4.mp3",
+      "url": "https://static.atlasacademy.io/JP/Audio/Servants_100100/0_B490.mp3",
+      "sha256": "90f884193112950c040f8eebc2d7051ec8872abf9d9f64c21d5f55a1b62fe9c1"
+    },
+    {
+      "file": "audio/entry_1.mp3",
+      "url": "https://static.atlasacademy.io/JP/Audio/Servants_100100/0_B100.mp3",
+      "sha256": "a7724ff03d49f817d02522d36537fdbaed0c2c31bfebd22918e39ce19bb24ca4"
+    },
+    {
+      "file": "audio/entry_2.mp3",
+      "url": "https://static.atlasacademy.io/JP/Audio/Servants_100100/0_B110.mp3",
+      "sha256": "945851e1671816957bcb95a4390e8056dae62069bc36fd1ab320032890d2cb05"
+    },
+    {
+      "file": "audio/entry_3.mp3",
+      "url": "https://static.atlasacademy.io/JP/Audio/Servants_100100/0_B500.mp3",
+      "sha256": "5c0c3c49380b8159a251e2a53d35445bade00e12ba5091c5cbc2bf07117ff0ab"
+    },
+    {
+      "file": "audio/entry_4.mp3",
+      "url": "https://static.atlasacademy.io/JP/Audio/Servants_100100/0_B510.mp3",
+      "sha256": "b4adf764ca7b89e5e81ea7a629f65a2b886016a6830487d4deb10e99bcbc4329"
+    },
+    {
+      "file": "audio/victory_1.mp3",
+      "url": "https://static.atlasacademy.io/JP/Audio/Servants_100100/0_B120.mp3",
+      "sha256": "3d1c774431b940de8a0539a63adb8157406720e45d93f7e280706c818a173925"
+    },
+    {
+      "file": "audio/victory_2.mp3",
+      "url": "https://static.atlasacademy.io/JP/Audio/Servants_100100/0_B130.mp3",
+      "sha256": "0358906c6eda6fc59e42c41e2877cfaa4acc52bd3a60ed99340da6fccedad04b"
+    },
+    {
+      "file": "audio/victory_3.mp3",
+      "url": "https://static.atlasacademy.io/JP/Audio/Servants_100100/0_B520.mp3",
+      "sha256": "41589c608e0ff74ed0830559c4dc2fb24c22da20146c2859120aeb55782e8b18"
+    },
+    {
+      "file": "audio/victory_4.mp3",
+      "url": "https://static.atlasacademy.io/JP/Audio/Servants_100100/0_B530.mp3",
+      "sha256": "5be34efd87fb42bab4cd34fcbff39e05d2f2da01f30879070c09e0309d2b8e4f"
+    },
+    {
+      "file": "audio/hurt_1.mp3",
+      "url": "https://static.atlasacademy.io/JP/Audio/Servants_100100/0_B140.mp3",
+      "sha256": "5596e015d6c2ec75236c55cc9f1de14b83ec9ccdc46a5f5acce62bbf23f96c3c"
+    },
+    {
+      "file": "audio/hurt_2.mp3",
+      "url": "https://static.atlasacademy.io/JP/Audio/Servants_100100/0_B150.mp3",
+      "sha256": "f5f85a48c08b9ebf63efd4d73ae6f47da1a496d002e3087ad1196d8944a73800"
+    },
+    {
+      "file": "audio/death.mp3",
+      "url": "https://static.atlasacademy.io/JP/Audio/Servants_100100/0_B160.mp3",
+      "sha256": "27ad1c2ec3280a3860b977afda68dac158421dd9022f2b9844319846db060c47"
+    },
+    {
+      "file": "audio/np_charge.mp3",
+      "url": "https://static.atlasacademy.io/JP/Audio/NoblePhantasm_100100/0_B050.mp3",
+      "sha256": "f8e414c9f74ec93ca120b8e505965e024624c831ed6a55349f2945723ef58b21"
+    },
+    {
+      "file": "audio/np_release.mp3",
+      "url": "https://static.atlasacademy.io/JP/Audio/NoblePhantasm_100100/0_B051.mp3",
+      "sha256": "83bfd1b0a6423cfed66ae1fe56099083677a64f71f05d43be3ae8594c0ab9045"
+    },
+    {
+      "file": "audio/np_end.mp3",
+      "url": "https://static.atlasacademy.io/JP/Audio/NoblePhantasm_100100/0_B052.mp3",
+      "sha256": "03f73a6fbf14e0cb75da3b4f048e3dfc448a17d88d81873bf49307c9f01ca15e"
+    },
+    {
+      "file": "images/artoria.png",
+      "url": "https://static.atlasacademy.io/JP/CharaFigure/1001001/1001001_merged.png",
+      "sha256": "81f8800b32dd0ad0f5f78cb94a1f2d75821db0100a94009546ef5c63baa4fe4a"
+    }
+  ]
+}
