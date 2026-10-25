@@ -22,7 +22,7 @@ internal static class Standalone
         var harmony = new Harmony("local.saber.presentation.bundled-runtime");
         foreach (var (name, type) in new[] {
             ("CznCore", "CznCore.Standalone.StandaloneEntry"), ("CznStyleUI", "CznStyleUI.Entry"),
-            ("CznMainMenu", "CznMainMenu.Entry"), ("CznEnemySkin", "CznEnemySkin.Entry") })
+            ("CznMainMenu", "CznMainMenu.Entry") })
         {
             string folder = System.IO.Path.Combine(Root, "bundled");
             bool alreadyLoaded = ModManager.GetLoadedMods().Any(m => m.manifest?.id == name);
@@ -46,6 +46,7 @@ internal static class Standalone
             Log.Info("[SaberPresentation] Bundled presentation library initialized: " + name);
         }
         SaberSkin.PreserveInstalledSkin();
+        EnergyPresentation.Install();
     }
     private static bool ShouldInitialize(MethodBase __originalMethod) => !Initialized.Contains(__originalMethod);
     private static bool AudioOwnerReady(Node owner, MethodBase __originalMethod)

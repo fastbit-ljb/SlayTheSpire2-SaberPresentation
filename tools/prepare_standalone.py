@@ -14,7 +14,7 @@ from pck_tool import read_pck, extract, write_pck
 
 ROOT = Path(__file__).resolve().parents[1]
 MODULES = [("CznCore", "3826011578"), ("CznStyleUI", "3771060891"),
-           ("CznMainMenu", "3774940754"), ("CznEnemySkin", "3783041069")]
+           ("CznMainMenu", "3774940754")]
 
 
 def sha(path):
@@ -32,22 +32,35 @@ def normalized(path):
 def main():
     out = ROOT / "build/bundled"
     out.mkdir(parents=True, exist_ok=True)
+    cache = ROOT / "build/source-cache"
+    previous = json.loads((cache / "component-lock.json").read_text(encoding="utf-8")) if (cache / "component-lock.json").exists() else None
+    legacy = None
+    if previous:
+        source_pack = cache / "standalone-source.pck"
+        assert sha(source_pack) == previous["ownPack"]["sha256"], "Source cache checksum mismatch"
+        legacy = read_pck(source_pack)
     records = []
     localization = {}
     localization_overrides = []
     for name, workshop in MODULES:
         source = WORKSHOP / workshop
-        manifest = json.loads((source / (name + ".json")).read_text(encoding="utf-8-sig"))
+        source_manifest = source / (name + ".json")
+        manifest = json.loads(source_manifest.read_text(encoding="utf-8-sig")) if source_manifest.exists() else next(
+            lib for lib in previous["libraries"] if lib["id"] == name)
         item = {"id": name, "version": manifest["version"], "author": manifest["author"],
                 "workshop": "https://steamcommunity.com/sharedfiles/filedetails/?id=" + workshop, "files": []}
         for ext in ("dll", "pck"):
             src, dst = source / (name + "." + ext), out / (name + "." + ext)
+            if not src.exists():
+                src = dst
+                expected = next(f["sha256"] for f in manifest["files"] if f["file"] == "bundled/" + dst.name)
+                assert sha(src) == expected, "Bundled source cache mismatch: " + name
             digest = sha(src)
             if not dst.exists() or sha(dst) != digest:
                 shutil.copyfile(src, dst)
             item["files"].append({"file": "bundled/" + dst.name, "bytes": dst.stat().st_size, "sha256": digest})
         records.append(item)
-        packed = read_pck(source / (name + ".pck"))
+        packed = read_pck(out / (name + ".pck"))
         for path in packed["files"]:
             if "/localization/" not in path or not path.endswith(".json"):
                 continue
@@ -65,15 +78,17 @@ def main():
     for path, table in localization.items():
         files["SaberPresentation/localization/" + path] = json.dumps(table, ensure_ascii=False).encode("utf-8")
     original = WORKSHOP / "3747659940/saber.pck"
-    skin = read_pck(original)
+    skin = read_pck(original) if original.exists() else legacy
+    nine_cache_paths = {r["path"] for r in previous["nineEffects"]["resources"]} if previous else set()
     skin_files = [p for p in skin["files"] if normalized(p).startswith(
-        ("animations/", "images/", ".godot/exported/", ".godot/imported/"))]
+        ("animations/", "images/", ".godot/exported/", ".godot/imported/"))
+        and normalized(p) not in nine_cache_paths and not normalized(p).startswith(".godot/imported/saber_")]
     for path in skin_files:
         files[normalized(path)] = extract(skin, path)
 
     nine_path = WORKSHOP / "3815657213/CznNineCharacter.pck"
-    nine = read_pck(nine_path)
-    core = read_pck(WORKSHOP / "3826011578/CznCore.pck")
+    nine = read_pck(nine_path) if nine_path.exists() else legacy
+    core = read_pck(out / "CznCore.pck")
     core_index = {normalized(p) for p in core["files"]}
     index = {normalized(p): p for p in nine["files"]}
     wanted = []
@@ -111,8 +126,16 @@ def main():
             for ref in re.findall(rb'res://[^\x00-\x1f"\x27]+', data):
                 include(ref.decode("utf-8"))
 
-    for path in wanted:
-        include(path)
+    if nine_path.exists():
+        for path in wanted:
+            include(path)
+    else:
+        for item in previous["nineEffects"]["resources"]:
+            path = item["path"]
+            data = extract(nine, index[path])
+            assert hashlib.sha256(data).hexdigest() == item["sha256"], "Effect cache mismatch: " + path
+            files[path] = data
+            copied.add(path)
     # Import files also list their non-packed source filename; a matching import
     # entry is its resolution, not an absent dependency.
     missing = {p for p in missing if p not in copied and p + ".import" not in copied and p + ".remap" not in copied}
@@ -124,9 +147,9 @@ def main():
             "localizationOverridesInModuleOrder": localization_overrides,
             "libraries": records,
             "saberSkin": {"author": "会画画的Small_day", "workshop": "https://steamcommunity.com/sharedfiles/filedetails/?id=3747659940",
-                          "sourceSha256": sha(original), "includedResources": len(skin_files)},
+                          "sourceSha256": sha(original) if original.exists() else previous["saberSkin"]["sourceSha256"], "includedResources": len(skin_files)},
             "nineEffects": {"author": "Pelleas", "workshop": "https://steamcommunity.com/sharedfiles/filedetails/?id=3815657213",
-                           "sourceSha256": sha(nine_path), "includesGameplayAssembly": False,
+                           "sourceSha256": sha(nine_path) if nine_path.exists() else previous["nineEffects"]["sourceSha256"], "includesGameplayAssembly": False,
                            "resources": [{"path": p, "sha256": hashlib.sha256(files[p]).hexdigest()} for p in sorted(copied)]},
             "ownPack": {"file": "SaberPresentation.pck", "resources": len(files), "bytes": (ROOT / "build/SaberPresentation.pck").stat().st_size,
                         "sha256": sha(ROOT / "build/SaberPresentation.pck")}}

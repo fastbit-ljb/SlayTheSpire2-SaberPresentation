@@ -25,6 +25,7 @@ internal static class CznInterop
                 Toggle("portrait", "卡牌悬停动态立绘", () => Settings.Current.CardHoverPresentation, v => { Settings.Current.CardHoverPresentation = v; if (!v) ReadyPresentation.Cancel(null); }),
                 Toggle("ready", "卡牌预备动作", () => Settings.Current.ReadyBodyMotion, v => Settings.Current.ReadyBodyMotion = v),
                 Toggle("card_art", "Saber 专属卡面", () => Settings.Current.SaberCardArt, v => Settings.Current.SaberCardArt = v),
+                Toggle("native_energy", "原版能量球（清晰显示）", () => Settings.Current.NativeEnergyDisplay, EnergyPresentation.SetNativeDisplay),
                 Toggle("hover_voice", "选牌日语回应", () => Settings.Current.HoverVoice, v => Settings.Current.HoverVoice = v),
                 Toggle("jp_voice", "Saber 日配", () => Settings.Current.JapaneseVoice, v => Settings.Current.JapaneseVoice = v),
                 Toggle("czn_effects", "使用 CZN 原生特效", () => Settings.Current.UseCznEffects, v => Settings.Current.UseCznEffects = v),

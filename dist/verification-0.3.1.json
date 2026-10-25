@@ -1,0 +1,772 @@
+{
+  "version": "0.3.1",
+  "gameVersion": "0.111.0",
+  "nativeModEntries": 1,
+  "manifestDependencies": [],
+  "releaseContainsTestHarness": false,
+  "packageBytes": 1042151799,
+  "packageSha256": "08bff2f4d47730cc6e4b05237b7fc582149e411dbe9f44fcc8ab9435f66cfbf0",
+  "verifiedArtifacts": [
+    {
+      "file": "bundled/CznCore.dll",
+      "sha256": "3e8c7e13ff85e2ddbbba24dd3a011cf8741197de5bd2d99b797252ea91bd4322",
+      "zipMatches": true,
+      "installedMatches": true
+    },
+    {
+      "file": "bundled/CznCore.pck",
+      "sha256": "92eb2b1672c7d4d8945aa882bba3acc938027ddd52a1c4414771f2b4254bb8b6",
+      "zipMatches": true,
+      "installedMatches": true
+    },
+    {
+      "file": "bundled/CznStyleUI.dll",
+      "sha256": "04e9d05c0543593192d97bd75ada0a715e4905e1aa8c18f2d979ee14659c6788",
+      "zipMatches": true,
+      "installedMatches": true
+    },
+    {
+      "file": "bundled/CznStyleUI.pck",
+      "sha256": "ef390be283883000c2bfe66559099e3b3136746951c92b3e54cab78fbf82d786",
+      "zipMatches": true,
+      "installedMatches": true
+    },
+    {
+      "file": "bundled/CznMainMenu.dll",
+      "sha256": "ad3d52b853368bc80cb592e4580a7607d0267e5b1e869e6f6e888c68abdc1a49",
+      "zipMatches": true,
+      "installedMatches": true
+    },
+    {
+      "file": "bundled/CznMainMenu.pck",
+      "sha256": "7597b8af756ad0e687f62b0c5f6db771d83269ef6764c26c38b5e09020ee4e33",
+      "zipMatches": true,
+      "installedMatches": true
+    },
+    {
+      "file": "SaberPresentation.dll",
+      "sha256": "f72610af70032cde04aa1dff3eacdd4ede242c0ece8d8624f15cbca0f4aecfa8",
+      "zipMatches": true,
+      "installedMatches": true
+    },
+    {
+      "file": "SaberPresentation.pck",
+      "sha256": "b100ce070c5c852e69a490a2aec07aef4179f2a583c9c2ea60dc87914ccd4990",
+      "zipMatches": true,
+      "installedMatches": true
+    },
+    {
+      "file": "SaberPresentation.json",
+      "sha256": "3c185c3c7dccb0024e42d6faf60cda14db6d8d9c05cd88c4c66fd8943782015c",
+      "zipMatches": true,
+      "installedMatches": true
+    }
+  ],
+  "tests": [
+    {
+      "suite": "verification-standalone",
+      "passed": 116,
+      "failed": 0,
+      "checks": [
+        {
+          "check": "czn_pack_detection",
+          "passed": true
+        },
+        {
+          "check": "global_ui_audio_attaches_after_tree_ready",
+          "passed": true
+        },
+        {
+          "check": "only_one_native_mod_installed",
+          "passed": true
+        },
+        {
+          "check": "three_bundled_libraries_initialized",
+          "passed": true
+        },
+        {
+          "check": "zero_manifest_dependencies",
+          "passed": true
+        },
+        {
+          "check": "enemy_skin_module_absent",
+          "passed": true
+        },
+        {
+          "check": "original_card_art_default",
+          "passed": true
+        },
+        {
+          "check": "saber_detected",
+          "passed": true
+        },
+        {
+          "check": "saber_identity_icon_preserved",
+          "passed": true
+        },
+        {
+          "check": "raster_decodes_saber_card_atlas",
+          "passed": true
+        },
+        {
+          "check": "raster_decodes_saber_vfx_atlas",
+          "passed": true
+        },
+        {
+          "check": "raster_decodes_saber_ready_attack",
+          "passed": true
+        },
+        {
+          "check": "raster_decodes_saber_ready_cast",
+          "passed": true
+        },
+        {
+          "check": "raster_decodes_camelot_stage",
+          "passed": true
+        },
+        {
+          "check": "raster_decodes_saber_defeat",
+          "passed": true
+        },
+        {
+          "check": "raster_decodes_saber_attack_sequence",
+          "passed": true
+        },
+        {
+          "check": "native_card_focus_shows_portrait",
+          "passed": true
+        },
+        {
+          "check": "hover_model_keeps_natural_idle",
+          "passed": true
+        },
+        {
+          "check": "portrait_mesh_is_animated",
+          "passed": true
+        },
+        {
+          "check": "original_card_portrait_preserved",
+          "passed": true
+        },
+        {
+          "check": "native_energy_visible_during_hover",
+          "passed": true
+        },
+        {
+          "check": "native_energy_above_portrait",
+          "passed": true
+        },
+        {
+          "check": "native_energy_in_viewport",
+          "passed": true
+        },
+        {
+          "check": "energy_readout_updates_2",
+          "passed": true
+        },
+        {
+          "check": "energy_stays_visible_2",
+          "passed": true
+        },
+        {
+          "check": "energy_readout_updates_0",
+          "passed": true
+        },
+        {
+          "check": "energy_stays_visible_0",
+          "passed": true
+        },
+        {
+          "check": "energy_readout_updates_3",
+          "passed": true
+        },
+        {
+          "check": "energy_stays_visible_3",
+          "passed": true
+        },
+        {
+          "check": "rapid_focus_switch_preserved",
+          "passed": true
+        },
+        {
+          "check": "targeting_keeps_portrait",
+          "passed": true
+        },
+        {
+          "check": "cancel_restores_portrait_and_body",
+          "passed": true
+        },
+        {
+          "check": "hover_does_not_damage_actor",
+          "passed": true
+        },
+        {
+          "check": "native_card_play_animates_portrait",
+          "passed": true
+        },
+        {
+          "check": "native_strike_damage_preserved",
+          "passed": true
+        },
+        {
+          "check": "czn_style_ui_loaded",
+          "passed": true
+        },
+        {
+          "check": "czn_main_menu_loaded",
+          "passed": true
+        },
+        {
+          "check": "original_enemy_presentation_kept",
+          "passed": true
+        },
+        {
+          "check": "hover_during_return_no_drift_0",
+          "passed": true
+        },
+        {
+          "check": "hover_during_return_no_drift_1",
+          "passed": true
+        },
+        {
+          "check": "hover_during_return_no_drift_2",
+          "passed": true
+        },
+        {
+          "check": "hover_during_return_no_drift_3",
+          "passed": true
+        },
+        {
+          "check": "czn_settings_accept_saber_controls",
+          "passed": true
+        },
+        {
+          "check": "saber_live_lobby_loaded",
+          "passed": true
+        },
+        {
+          "check": "czn_main_menu_discovers_saber_lobby",
+          "passed": true
+        },
+        {
+          "check": "voice_attack_decodes",
+          "passed": true
+        },
+        {
+          "check": "voice_np_decodes",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_attack_1",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_attack_2",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_attack_3",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_heavy",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_skill_1",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_skill_2",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_entry_1",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_entry_2",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_victory_1",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_victory_2",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_hurt_1",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_hurt_2",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_death",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_np_charge",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_np_release",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_np_end",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_attack_4",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_attack_5",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_attack_6",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_attack_7",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_heavy_2",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_heavy_3",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_skill_3",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_skill_4",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_entry_3",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_entry_4",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_victory_3",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_victory_4",
+          "passed": true
+        },
+        {
+          "check": "damage_unchanged_STRIKE_IRONCLAD",
+          "passed": true
+        },
+        {
+          "check": "actor_returns_STRIKE_IRONCLAD",
+          "passed": true
+        },
+        {
+          "check": "damage_unchanged_POMMEL_STRIKE",
+          "passed": true
+        },
+        {
+          "check": "actor_returns_POMMEL_STRIKE",
+          "passed": true
+        },
+        {
+          "check": "damage_unchanged_UPPERCUT",
+          "passed": true
+        },
+        {
+          "check": "actor_returns_UPPERCUT",
+          "passed": true
+        },
+        {
+          "check": "damage_unchanged_HEMOKINESIS",
+          "passed": true
+        },
+        {
+          "check": "actor_returns_HEMOKINESIS",
+          "passed": true
+        },
+        {
+          "check": "damage_unchanged_WHIRLWIND",
+          "passed": true
+        },
+        {
+          "check": "actor_returns_WHIRLWIND",
+          "passed": true
+        },
+        {
+          "check": "damage_unchanged_BASH",
+          "passed": true
+        },
+        {
+          "check": "actor_returns_BASH",
+          "passed": true
+        },
+        {
+          "check": "damage_unchanged_BLUDGEON",
+          "passed": true
+        },
+        {
+          "check": "actor_returns_BLUDGEON",
+          "passed": true
+        },
+        {
+          "check": "multi_hit_count_unchanged",
+          "passed": true
+        },
+        {
+          "check": "random_damage_unchanged",
+          "passed": true
+        },
+        {
+          "check": "native_callback_preserved",
+          "passed": true
+        },
+        {
+          "check": "aoe_damage_unchanged",
+          "passed": true
+        },
+        {
+          "check": "np_multihit_damage_unchanged",
+          "passed": true
+        },
+        {
+          "check": "real_bludgeon_card_damage_unchanged",
+          "passed": true
+        },
+        {
+          "check": "nonlethal_cards_do_not_trigger_cg",
+          "passed": true
+        },
+        {
+          "check": "blocked_low_hp_target_does_not_trigger_cg",
+          "passed": true
+        },
+        {
+          "check": "real_lethal_strike_triggers_excalibur_once",
+          "passed": true
+        },
+        {
+          "check": "full_jp_charge_finishes_before_release",
+          "passed": true
+        },
+        {
+          "check": "multihit_kill_triggers_once",
+          "passed": true
+        },
+        {
+          "check": "aoe_two_kills_one_cg",
+          "passed": true
+        },
+        {
+          "check": "finisher_cg_cleans_up",
+          "passed": true
+        },
+        {
+          "check": "fully_blocked_damage_unchanged",
+          "passed": true
+        },
+        {
+          "check": "no_leftover_cinematic",
+          "passed": true
+        },
+        {
+          "check": "final_actor_home",
+          "passed": true
+        },
+        {
+          "check": "melee_motion_reaches_resolved_targets",
+          "passed": true
+        },
+        {
+          "check": "czn_effects_no_errors",
+          "passed": true
+        },
+        {
+          "check": "czn_effects_used_when_available",
+          "passed": true
+        },
+        {
+          "check": "czn_sfx_used_when_available",
+          "passed": true
+        },
+        {
+          "check": "czn_effects_cleaned_up",
+          "passed": true
+        },
+        {
+          "check": "painted_effects_cleaned_up",
+          "passed": true
+        },
+        {
+          "check": "no_line_geometry",
+          "passed": true
+        },
+        {
+          "check": "czn_setting_disables_reuse",
+          "passed": true
+        },
+        {
+          "check": "native_player_death_resolves",
+          "passed": true
+        },
+        {
+          "check": "native_game_over_triggers_saber_cg",
+          "passed": true
+        },
+        {
+          "check": "game_over_cg_cleans_up",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "suite": "verification-menu",
+      "passed": 7,
+      "failed": 0,
+      "checks": [
+        {
+          "check": "czn_pack_detection",
+          "passed": true
+        },
+        {
+          "check": "global_ui_audio_attaches_after_tree_ready",
+          "passed": true
+        },
+        {
+          "check": "only_one_native_mod_installed",
+          "passed": true
+        },
+        {
+          "check": "three_bundled_libraries_initialized",
+          "passed": true
+        },
+        {
+          "check": "zero_manifest_dependencies",
+          "passed": true
+        },
+        {
+          "check": "native_main_menu_created",
+          "passed": true
+        },
+        {
+          "check": "native_main_menu_has_saber_lobby",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "suite": "verification-fix-hd",
+      "passed": 45,
+      "failed": 0,
+      "checks": [
+        {
+          "check": "czn_pack_detection",
+          "passed": true
+        },
+        {
+          "check": "global_ui_audio_attaches_after_tree_ready",
+          "passed": true
+        },
+        {
+          "check": "only_one_native_mod_installed",
+          "passed": true
+        },
+        {
+          "check": "three_bundled_libraries_initialized",
+          "passed": true
+        },
+        {
+          "check": "zero_manifest_dependencies",
+          "passed": true
+        },
+        {
+          "check": "enemy_skin_module_absent",
+          "passed": true
+        },
+        {
+          "check": "original_card_art_default",
+          "passed": true
+        },
+        {
+          "check": "saber_detected",
+          "passed": true
+        },
+        {
+          "check": "saber_identity_icon_preserved",
+          "passed": true
+        },
+        {
+          "check": "raster_decodes_saber_card_atlas",
+          "passed": true
+        },
+        {
+          "check": "raster_decodes_saber_vfx_atlas",
+          "passed": true
+        },
+        {
+          "check": "raster_decodes_saber_ready_attack",
+          "passed": true
+        },
+        {
+          "check": "raster_decodes_saber_ready_cast",
+          "passed": true
+        },
+        {
+          "check": "raster_decodes_camelot_stage",
+          "passed": true
+        },
+        {
+          "check": "raster_decodes_saber_defeat",
+          "passed": true
+        },
+        {
+          "check": "raster_decodes_saber_attack_sequence",
+          "passed": true
+        },
+        {
+          "check": "native_card_focus_shows_portrait",
+          "passed": true
+        },
+        {
+          "check": "hover_model_keeps_natural_idle",
+          "passed": true
+        },
+        {
+          "check": "portrait_mesh_is_animated",
+          "passed": true
+        },
+        {
+          "check": "original_card_portrait_preserved",
+          "passed": true
+        },
+        {
+          "check": "native_energy_visible_during_hover",
+          "passed": true
+        },
+        {
+          "check": "native_energy_above_portrait",
+          "passed": true
+        },
+        {
+          "check": "native_energy_in_viewport",
+          "passed": true
+        },
+        {
+          "check": "energy_readout_updates_2",
+          "passed": true
+        },
+        {
+          "check": "energy_stays_visible_2",
+          "passed": true
+        },
+        {
+          "check": "energy_readout_updates_0",
+          "passed": true
+        },
+        {
+          "check": "energy_stays_visible_0",
+          "passed": true
+        },
+        {
+          "check": "energy_readout_updates_3",
+          "passed": true
+        },
+        {
+          "check": "energy_stays_visible_3",
+          "passed": true
+        },
+        {
+          "check": "rapid_focus_switch_preserved",
+          "passed": true
+        },
+        {
+          "check": "targeting_keeps_portrait",
+          "passed": true
+        },
+        {
+          "check": "cancel_restores_portrait_and_body",
+          "passed": true
+        },
+        {
+          "check": "hover_does_not_damage_actor",
+          "passed": true
+        },
+        {
+          "check": "native_card_play_animates_portrait",
+          "passed": true
+        },
+        {
+          "check": "native_strike_damage_preserved",
+          "passed": true
+        },
+        {
+          "check": "czn_style_ui_loaded",
+          "passed": true
+        },
+        {
+          "check": "czn_main_menu_loaded",
+          "passed": true
+        },
+        {
+          "check": "original_enemy_presentation_kept",
+          "passed": true
+        },
+        {
+          "check": "hover_during_return_no_drift_0",
+          "passed": true
+        },
+        {
+          "check": "hover_during_return_no_drift_1",
+          "passed": true
+        },
+        {
+          "check": "hover_during_return_no_drift_2",
+          "passed": true
+        },
+        {
+          "check": "hover_during_return_no_drift_3",
+          "passed": true
+        },
+        {
+          "check": "energy_toggle_switches_style",
+          "passed": true
+        },
+        {
+          "check": "energy_toggle_restores_native_readout",
+          "passed": true
+        },
+        {
+          "check": "actual_1920x1080_render",
+          "passed": true
+        }
+      ]
+    }
+  ],
+  "totalPassed": 168,
+  "excludedModules": [
+    "CznEnemySkin"
+  ],
+  "cardArtDefault": "Original game portraits; custom card art paused",
+  "energyDisplay": "Native current/max energy, raised above the hand and portrait",
+  "hoverBattlePose": "Natural idle_loop; no frozen attack frame",
+  "warnings": [
+    "Original Saber exported resources contain stale UIDs; Godot resolves their included text paths.",
+    "Instrumented game exits report Godot renderer/resource allocations, also present in the baseline."
+  ],
+  "presentationLimits": "Original nine Saber battle Spine clips are choreographed into seven routes; large portrait uses new painted frames and animated mesh, not Nine's character skeleton."
+}

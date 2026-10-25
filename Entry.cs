@@ -24,7 +24,7 @@ public static class Entry
         Standalone.Initialize();
         CznInterop.Register();
         new Harmony("local.saber.presentation").PatchAll(typeof(Entry).Assembly);
-        Log.Info("[SaberPresentation] JP combat presentation 0.3.0 initialized.");
+        Log.Info("[SaberPresentation] JP combat presentation 0.3.1 initialized.");
 #if SABER_TEST
         if (MegaCrit.Sts2.Core.Helpers.CommandLineHelper.HasArg("saber-test"))
             _ = MegaCrit.Sts2.Core.Helpers.TaskHelper.RunSafely(TestHarness.Run(MegaCrit.Sts2.Core.Nodes.NGame.Instance!));
@@ -52,8 +52,8 @@ internal static class AnimatorPatch
         animator.AddAnyState("Relaxed", new AnimState("relaxed_loop", true));
         animator.AddAnyState("SaberVictory", new AnimState("relaxed_loop2", true));
         animator.AddAnyState("Revive", idle);
-        animator.AddAnyState("SaberReadyAttack", new AnimState("attack_heavy"));
-        animator.AddAnyState("SaberReadyCast", new AnimState("cast"));
+        animator.AddAnyState("SaberReadyAttack", idle);
+        animator.AddAnyState("SaberReadyCast", idle);
         foreach (var (trigger, clip) in new (string, string)[] {
             ("Attack", "attack"), ("heavyAttack", "attack_heavy"),
             ("SaberAttack", "attack"), ("SaberSlashA", "attack"),
@@ -113,7 +113,9 @@ internal static class TriggerPatch
         try
         {
             if (trigger == "SaberExcalibur" && Runtime.HasExcaliburHit(__instance.Entity)) return false;
-            if (trigger.StartsWith("Saber", StringComparison.Ordinal)) Runtime.AttackMotion(__instance.Entity, ref trigger);
+            if (trigger is "SaberAttack" or "SaberSlashA" or "SaberSlashB" or "SaberHeavy" or "SaberExcalibur"
+                or "SaberCombo" or "SaberThrust" or "SaberRising" or "SaberAerial" or "SaberSweep")
+                Runtime.AttackMotion(__instance.Entity, ref trigger);
             else if (trigger == "Hit") Runtime.Hurt(__instance.Entity);
             else if (trigger == "Cast" || trigger == "PowerUp") Runtime.Skill(__instance.Entity);
             else if (trigger == "Dead") Runtime.Dead(__instance.Entity);

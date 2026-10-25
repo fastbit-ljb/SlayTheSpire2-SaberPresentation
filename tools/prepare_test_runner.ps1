@@ -23,7 +23,13 @@ New-Item -ItemType Directory -Path (Join-Path $testMods 'SaberPresentation') -Fo
 Copy-Item -LiteralPath (Join-Path $projectRoot 'build\test-dll\SaberPresentation.dll'),(Join-Path $projectRoot 'SaberPresentation.json'),(Join-Path $projectRoot 'build\SaberPresentation.pck') -Destination (Join-Path $testMods 'SaberPresentation') -Force
 $bundledTarget = Join-Path $testMods 'SaberPresentation\bundled'
 New-Item -ItemType Directory -Path $bundledTarget -Force | Out-Null
-foreach ($payload in Get-ChildItem -LiteralPath (Join-Path $projectRoot 'build\bundled') -File) {
+$lock = Get-Content -LiteralPath (Join-Path $projectRoot 'STANDALONE_COMPONENTS.json') -Raw | ConvertFrom-Json
+$payloadNames = @($lock.libraries | ForEach-Object { $_.files | ForEach-Object { Split-Path -Leaf $_.file } })
+foreach ($oldName in @('CznEnemySkin.dll','CznEnemySkin.pck')) {
+    $oldTarget = Join-Path $bundledTarget $oldName
+    if (Test-Path -LiteralPath $oldTarget) { Remove-Item -LiteralPath $oldTarget -Force }
+}
+foreach ($payload in Get-ChildItem -LiteralPath (Join-Path $projectRoot 'build\bundled') -File | Where-Object Name -in $payloadNames) {
     $target = Join-Path $bundledTarget $payload.Name
     if (-not (Test-Path -LiteralPath $target)) { New-Item -ItemType HardLink -Path $target -Target $payload.FullName | Out-Null }
 }

@@ -2,7 +2,7 @@
   "format": 1,
   "externalModDependencies": [],
   "nativeModEntries": 1,
-  "localizationTablesMerged": 40,
+  "localizationTablesMerged": 30,
   "localizationOverridesInModuleOrder": [
     {
       "table": "eng/settings.json",
@@ -107,24 +107,6 @@
           "file": "bundled/CznMainMenu.pck",
           "bytes": 759624818,
           "sha256": "7597b8af756ad0e687f62b0c5f6db771d83269ef6764c26c38b5e09020ee4e33"
-        }
-      ]
-    },
-    {
-      "id": "CznEnemySkin",
-      "version": "3.0.0-beta",
-      "author": "Pelleas",
-      "workshop": "https://steamcommunity.com/sharedfiles/filedetails/?id=3783041069",
-      "files": [
-        {
-          "file": "bundled/CznEnemySkin.dll",
-          "bytes": 829952,
-          "sha256": "1860907f62fafe717563595390953beab28a6c5ff1640a7c7ddf66db07481ef4"
-        },
-        {
-          "file": "bundled/CznEnemySkin.pck",
-          "bytes": 535443990,
-          "sha256": "490b2ab4d5d362946682f8e1aba113c96792d253dc1c5c9a6bf841a3254d7e7b"
         }
       ]
     }
@@ -485,8 +467,8 @@
   },
   "ownPack": {
     "file": "SaberPresentation.pck",
-    "resources": 209,
-    "bytes": 34315070,
-    "sha256": "45f47352790d31921f99f346a3beaf748709b1c781b3d5b3634c16dd7065c458"
+    "resources": 199,
+    "bytes": 34274250,
+    "sha256": "b100ce070c5c852e69a490a2aec07aef4179f2a583c9c2ea60dc87914ccd4990"
   }
 }

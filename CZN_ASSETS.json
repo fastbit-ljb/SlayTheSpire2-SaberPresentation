@@ -187,15 +187,6 @@
       "integration": "Unmodified private bundled presentation module"
     },
     {
-      "id": "CznEnemySkin",
-      "version": "3.0.0-beta",
-      "author": "Pelleas",
-      "workshop": "https://steamcommunity.com/sharedfiles/filedetails/?id=3783041069",
-      "dllSha256": "1860907f62fafe717563595390953beab28a6c5ff1640a7c7ddf66db07481ef4",
-      "pckBytes": 535443990,
-      "integration": "Unmodified private bundled presentation module"
-    },
-    {
       "id": "ChizuruIroncladSkin",
       "version": "1.0.0-beta",
       "author": "Pelleas",
@@ -204,5 +195,8 @@
       "pckBytes": 151176009,
       "integration": "Compatibility verification only; not bundled"
     }
+  ],
+  "removedComponents": [
+    "CznEnemySkin: enemy models, battlefields and enemy audio restored to the base game in 0.3.1"
   ]
 }

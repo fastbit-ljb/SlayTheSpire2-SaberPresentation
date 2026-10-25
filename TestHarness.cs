@@ -34,7 +34,7 @@ internal static class TestHarness
     private static bool StandaloneOnly => CommandLineHelper.HasArg("saber-standalone-test");
     private static bool WithTheme => StandaloneOnly || WithAllMods || CommandLineHelper.HasArg("saber-theme-test");
     private static bool WithCzn => WithTheme || CommandLineHelper.HasArg("saber-czn-test");
-    private static string Output => "D:/L/Study/mod/SaberPresentation/build/" + (CommandLineHelper.HasArg("saber-menu-test") ? "verification-menu" : StandaloneOnly ? "verification-standalone" : WithAllMods ? "verification-all" : WithTheme ? "verification-theme" : WithCzn ? "verification-czn" : "verification");
+    private static string Output => "D:/L/Study/mod/SaberPresentation/build/" + (CommandLineHelper.HasArg("saber-fix-smoke") ? "verification-fix-hd" : CommandLineHelper.HasArg("saber-menu-test") ? "verification-menu" : StandaloneOnly ? "verification-standalone" : WithAllMods ? "verification-all" : WithTheme ? "verification-theme" : WithCzn ? "verification-czn" : "verification");
     private static readonly List<object> Results = [];
     private static readonly HashSet<string> Captured = [];
     private static bool _running;
@@ -51,6 +51,7 @@ internal static class TestHarness
             if (!OS.GetUserDataDir().EndsWith("SlayTheSpire2-SaberPresentation-Test", StringComparison.Ordinal))
                 throw new Exception("Refusing to test outside the isolated user directory.");
             await game.GameStartupComplete;
+            if (CommandLineHelper.HasArg("saber-fix-smoke")) DisplayServer.WindowSetSize(new Vector2I(1920, 1080));
             await Fx.Delay(0.5);
             Log.Info("[SaberTest] Startup passed. Isolated user data: " + OS.GetUserDataDir());
             SaveManager.Instance.Progress.EnableFtues = false;
@@ -62,7 +63,7 @@ internal static class TestHarness
             {
                 var mods = MegaCrit.Sts2.Core.Modding.ModManager.GetLoadedMods().ToArray();
                 Assert("only_one_native_mod_installed", mods.Length == 1 && mods[0].manifest?.id == "SaberPresentation");
-                Assert("four_bundled_libraries_initialized", Standalone.LibrariesLoaded == 4);
+                Assert("three_bundled_libraries_initialized", Standalone.LibrariesLoaded == 3);
                 Assert("zero_manifest_dependencies", mods[0].manifest!.dependencies?.Count == 0);
             }
             if (CommandLineHelper.HasArg("saber-menu-test"))
@@ -92,11 +93,27 @@ internal static class TestHarness
             await Fx.Delay(4);
             var state = CombatManager.Instance.DebugOnlyGetState()!;
             var node = player.Creature.GetCreatureNode()!;
+            Assert("enemy_skin_module_absent", !AppDomain.CurrentDomain.GetAssemblies().Any(a => a.GetName().Name == "CznEnemySkin"));
+            Assert("original_card_art_default", !Settings.Current.SaberCardArt);
             Assert("saber_detected", Runtime.IsSaber(player.Creature));
             Assert("saber_identity_icon_preserved", player.Character.IconTexture is AtlasTexture);
             foreach (string raster in new[] { "saber_card_atlas", "saber_vfx_atlas", "saber_ready_attack", "saber_ready_cast", "camelot_stage", "saber_defeat", "saber_attack_sequence" })
                 Assert("raster_decodes_" + raster, Art.Texture(raster).GetWidth() >= 1000);
             await VerifyInteractions(game, node);
+            await VerifyHoverDuringReturn(game, node, state, player);
+            if (CommandLineHelper.HasArg("saber-fix-smoke"))
+            {
+                var counter = Runtime.Descendants(game).OfType<NEnergyCounter>().Single();
+                EnergyPresentation.SetNativeDisplay(false);
+                await Fx.Delay(0.2);
+                Assert("energy_toggle_switches_style", !counter.GetNode<Control>("Label").Visible);
+                EnergyPresentation.SetNativeDisplay(true);
+                await Fx.Delay(0.2);
+                Assert("energy_toggle_restores_native_readout", counter.GetNode<Control>("Label").IsVisibleInTree());
+                Assert("actual_1920x1080_render", game.GetViewport().GetTexture().GetWidth() == 1920 && game.GetViewport().GetTexture().GetHeight() == 1080);
+                Log.Info("[SaberTest] FIX SMOKE CHECKS PASSED");
+                return;
+            }
             await VerifyCznSurfaces(game);
             var home = node.Visuals.Body.Position;
             Log.Info("[SaberTest] Loaded animations: " + string.Join(", ", node.Visuals.SpineBody!.GetSkeleton()!.GetData().GetAnimationNames()));
@@ -253,11 +270,29 @@ internal static class TestHarness
         attack.EmitSignal(Control.SignalName.FocusEntered);
         await CaptureAfter("hover_attack", 0.35);
         Assert("native_card_focus_shows_portrait", ReadyPresentation.Visible && ReadyPresentation.Card == attack.CardModel);
-        Assert("attack_hover_changes_body_pose", ReadyPresentation.BodyReady && ReadyPresentation.Pose == 0);
+        Assert("hover_model_keeps_natural_idle", ReadyPresentation.BodyReady &&
+            actor.Visuals.SpineBody!.GetAnimationState().GetCurrentAnimationDuration() > 1.6f);
         Vector2 sample = ReadyPresentation.MeshSample;
         await Fx.Delay(0.2);
         Assert("portrait_mesh_is_animated", sample.DistanceTo(ReadyPresentation.MeshSample) > 0.01f);
-        Assert("saber_card_art_replaced", attack.CardNode!.GetNode<TextureRect>("%Portrait").Texture is AtlasTexture);
+        var art = attack.CardNode!.GetNode<TextureRect>("%Portrait").Texture;
+        string artPath = art is AtlasTexture atlas ? atlas.Atlas.ResourcePath : art.ResourcePath;
+        Assert("original_card_portrait_preserved", !artPath.Contains("saber_card_atlas", StringComparison.OrdinalIgnoreCase));
+        var energy = Runtime.Descendants(game).OfType<NEnergyCounter>().Single();
+        var energyLabel = energy.GetNode<Control>("Label");
+        Assert("native_energy_visible_during_hover", energy.IsVisibleInTree() && energyLabel.IsVisibleInTree());
+        Assert("native_energy_above_portrait", NCombatRoom.Instance!.Ui.EnergyCounterContainer.ZIndex >= 200);
+        Assert("native_energy_in_viewport", game.GetViewport().GetVisibleRect().Intersects(energy.GetGlobalRect()));
+        var owner = actor.Entity.Player!;
+        var readout = energy.GetNode<Label>("Label");
+        int originalEnergy = owner.PlayerCombatState!.Energy;
+        foreach (int amount in new[] { 2, 0, originalEnergy })
+        {
+            await PlayerCmd.SetEnergy(amount, owner);
+            await Fx.Delay(0.2);
+            Assert("energy_readout_updates_" + amount, readout.Text == $"{amount}/{owner.PlayerCombatState.MaxEnergy}");
+            Assert("energy_stays_visible_" + amount, energy.IsVisibleInTree() && readout.IsVisibleInTree());
+        }
         if (WithTheme) for (int i = 0; i < 10; i++) await CaptureAfter("hover_frame_" + i.ToString("D2"), 0.055);
         attack.EmitSignal(Control.SignalName.FocusExited);
         skill.EmitSignal(Control.SignalName.FocusEntered);
@@ -296,8 +331,27 @@ internal static class TestHarness
             var assemblies = AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetName().Name).ToArray();
             Assert("czn_style_ui_loaded", assemblies.Contains("CznStyleUI"));
             Assert("czn_main_menu_loaded", assemblies.Contains("CznMainMenu"));
-            Assert("czn_enemy_skin_loaded", assemblies.Contains("CznEnemySkin"));
+            Assert("original_enemy_presentation_kept", !assemblies.Contains("CznEnemySkin"));
         }
+    }
+    private static async Task VerifyHoverDuringReturn(NGame game, NCreature actor, CombatState state, Player player)
+    {
+        var home = actor.Visuals.Body.Position;
+        var card = state.CreateCard(ModelDb.Card<StrikeIronclad>(), player);
+        var target = state.HittableEnemies.First();
+        target.SetMaxHpInternal(500); target.SetCurrentHpInternal(500);
+        for (int i = 0; i < 4; i++)
+        {
+            await DamageCmd.Attack(1).FromCard(card, null).Targeting(target).Execute(new BlockingPlayerChoiceContext());
+            await Fx.Delay(0.19);
+            ReadyPresentation.Focus(card);
+            await Fx.Delay(0.14);
+            if (i % 2 == 1) actor.SetAnimationTrigger("SaberVictory");
+            await Fx.Delay(0.35);
+            Assert("hover_during_return_no_drift_" + i, actor.Visuals.Body.Position.DistanceTo(home) < 0.5f);
+            ReadyPresentation.Cancel(card);
+        }
+        await CaptureAfter("fixed_energy_native_cards_and_actor_home", 0.3);
     }
     private static async Task VerifyCznSurfaces(NGame game)
     {

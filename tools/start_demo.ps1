@@ -17,7 +17,9 @@ New-Item -ItemType Directory -Path $modRoot -Force | Out-Null
 Copy-Item -LiteralPath (Join-Path $projectRoot 'build\demo-dll\SaberPresentation.dll'),(Join-Path $projectRoot 'SaberPresentation.json'),(Join-Path $projectRoot 'build\SaberPresentation.pck') -Destination $modRoot -Force
 $bundles = Join-Path $modRoot 'bundled'
 New-Item -ItemType Directory -Path $bundles -Force | Out-Null
-foreach ($file in Get-ChildItem -LiteralPath (Join-Path $projectRoot 'build\bundled') -File) {
+$lock = Get-Content -LiteralPath (Join-Path $projectRoot 'STANDALONE_COMPONENTS.json') -Raw | ConvertFrom-Json
+$payloadNames = @($lock.libraries | ForEach-Object { $_.files | ForEach-Object { Split-Path -Leaf $_.file } })
+foreach ($file in Get-ChildItem -LiteralPath (Join-Path $projectRoot 'build\bundled') -File | Where-Object Name -in $payloadNames) {
     $target = Join-Path $bundles $file.Name
     if (-not (Test-Path -LiteralPath $target)) { New-Item -ItemType HardLink -Path $target -Target $file.FullName | Out-Null }
 }

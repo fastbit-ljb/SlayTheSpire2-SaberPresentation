@@ -12,7 +12,9 @@ public sealed class Settings
     public bool UseCznEffects { get; set; } = true;
     public bool CardHoverPresentation { get; set; } = true;
     public bool ReadyBodyMotion { get; set; } = true;
-    public bool SaberCardArt { get; set; } = true;
+    public bool SaberCardArt { get; set; }
+    public bool NativeEnergyDisplay { get; set; } = true;
+    public int ConfigRevision { get; set; }
     public bool HoverVoice { get; set; } = true;
     public bool PreferSaber { get; set; } = true;
     public float PortraitScale { get; set; } = 1f;
@@ -48,6 +50,12 @@ public sealed class Settings
             Current.PortraitScale = Math.Clamp(Current.PortraitScale, 0.5f, 1.5f);
             Current.PortraitOpacity = Math.Clamp(Current.PortraitOpacity, 0.1f, 1);
             Current.NoblePhantasmCards ??= [];
+            if (Current.ConfigRevision < 1)
+            {
+                Current.SaberCardArt = false;
+                Current.NativeEnergyDisplay = true;
+                Current.ConfigRevision = 1;
+            }
             System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(path)!);
             System.IO.File.WriteAllText(path, JsonSerializer.Serialize(Current, new JsonSerializerOptions { WriteIndented = true }));
         }

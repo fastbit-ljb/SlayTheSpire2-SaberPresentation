@@ -152,8 +152,10 @@ internal static class ReadyPresentation
         _readyBody = true;
         _actor!.SetAnimationTrigger(pose == 0 ? "SaberReadyAttack" : "SaberReadyCast");
         using var track = _actor.Visuals.SpineBody?.GetAnimationState().GetCurrent(0);
-        track?.SetTrackTime(pose == 0 ? 0.23f : 0.62f);
-        track?.SetTimeScale(0);
+        // Card focus must never freeze an attack halfway through its swing.
+        // The battle actor keeps its supported natural idle while the large
+        // portrait supplies the attack/skill selection feedback.
+        track?.SetTimeScale(1);
     }
     internal static void Unfocus(CardModel? card)
     {

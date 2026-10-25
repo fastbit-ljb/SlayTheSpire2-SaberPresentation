@@ -25,6 +25,9 @@ internal static class Runtime
         public ulong LastHurt, LastShield, LastSkill;
         public Session? Attack;
         public bool Entered;
+        public Node2D? HomeBody;
+        public Vector2 HomePosition, HomeScale;
+        public float HomeRotation;
     }
     private sealed class Session
     {
@@ -71,10 +74,11 @@ internal static class Runtime
         if (node == null || command.ModelSource is not CardModel card || creature.IsDead) return Task.CompletedTask;
         ReadyPresentation.Play(card);
         var actor = _actors.GetOrCreateValue(creature);
+        CaptureHome(actor, node.Visuals.Body);
         var previous = actor.Attack;
-        var home = previous?.Home ?? node.Visuals.Body.Position;
-        var homeRotation = previous?.HomeRotation ?? node.Visuals.Body.Rotation;
-        var homeScale = previous?.HomeScale ?? node.Visuals.Body.Scale;
+        var home = actor.HomePosition;
+        var homeRotation = actor.HomeRotation;
+        var homeScale = actor.HomeScale;
         if (previous != null) { previous.Motion?.Kill(); Active.Remove(previous); }
         string id = card.Id.Entry;
         var route = Settings.Current.NoblePhantasmCards.Contains(id, StringComparer.OrdinalIgnoreCase) ? AttackRoute.Excalibur
@@ -162,7 +166,7 @@ internal static class Runtime
 #if SABER_TEST
         Log.Info($"[SaberTest] motion trigger={trigger} session={session != null}");
 #endif
-        if (session == null || !Valid(session.Body)) return;
+        if (session == null || session.Finished || !Valid(session.Body)) return;
         if (trigger == "SaberAttack") trigger = (actor.SlashIndex++ % 3 == 2) ? "SaberCombo" : "SaberSlashA";
         if (!Settings.Current.RichMotion || session.Route == AttackRoute.Excalibur) return;
         var body = session.Body;
@@ -294,7 +298,14 @@ internal static class Runtime
             session.Motion.Parallel().TweenProperty(session.Body, "rotation", session.HomeRotation, 0.22);
             session.Motion.Parallel().TweenProperty(session.Body, "scale", session.HomeScale, 0.22);
             await Fx.Delay(0.23);
-            if (actor.Attack == session) actor.Attack = null;
+            if (actor.Attack == session && Valid(session.Body))
+            {
+                session.Motion?.Kill();
+                session.Body.Position = session.Home;
+                session.Body.Rotation = session.HomeRotation;
+                session.Body.Scale = session.HomeScale;
+                actor.Attack = null;
+            }
         }
         finally { Active.Remove(session); }
     }
@@ -362,6 +373,7 @@ internal static class Runtime
         {
             if (!IsSaber(node.Entity)) continue;
             var actor = _actors.GetOrCreateValue(node.Entity);
+            CaptureHome(actor, node.Visuals.Body);
             if (actor.Entered) continue;
             actor.Entered = true;
             Voice.PlayNext(node, "entry", 4);
@@ -384,6 +396,14 @@ internal static class Runtime
         return center;
     }
     private static bool Valid(Node node) => GodotObject.IsInstanceValid(node) && node.IsInsideTree();
+    private static void CaptureHome(Actor actor, Node2D body)
+    {
+        if (actor.HomeBody == body) return;
+        actor.HomeBody = body;
+        actor.HomePosition = body.Position;
+        actor.HomeScale = body.Scale;
+        actor.HomeRotation = body.Rotation;
+    }
     internal static bool HasExcaliburHit(Creature creature) => _actors.TryGetValue(creature, out var actor)
         && actor.Attack is { Route: AttackRoute.Excalibur, Hit: > 0 };
     internal static bool IsAttacking(Creature creature) => _actors.TryGetValue(creature, out var actor) && actor.Attack is { Finished: false };
