@@ -29,6 +29,10 @@ public static class Entry
         if (MegaCrit.Sts2.Core.Helpers.CommandLineHelper.HasArg("saber-test"))
             _ = MegaCrit.Sts2.Core.Helpers.TaskHelper.RunSafely(TestHarness.Run(MegaCrit.Sts2.Core.Nodes.NGame.Instance!));
 #endif
+#if SABER_DEMO
+        if (MegaCrit.Sts2.Core.Helpers.CommandLineHelper.HasArg("saber-demo"))
+            _ = MegaCrit.Sts2.Core.Helpers.TaskHelper.RunSafely(DemoHarness.Run(MegaCrit.Sts2.Core.Nodes.NGame.Instance!));
+#endif
     }
 }
 
