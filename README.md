@@ -6,7 +6,19 @@
 
 需要原作者「会画画的Small_day」的 [Saber 外观模组](https://steamcommunity.com/sharedfiles/filedetails/?id=3747659940)。保留原模组，在游戏 `mods/SaberPresentation/` 放入同名 DLL、JSON、PCK 三个文件。启动游戏，启用 Saber 和「Saber 战斗演出 / Saber Combat Presentation」，重启后选择铁甲战士。程序通过骨架内的 `attackvfff` 动画识别 Saber，其他角色与其他铁甲皮肤不会触发本扩展。
 
-扩展没有修改原作者的 Workshop 文件，不需要 Nine、CznCore 或 BaseLib。原模组的模型、选人、商店、休息点外观仍由原模组提供。
+扩展没有修改原作者的 Workshop 文件。基础演出只需要 Saber；启用 [CznCore](https://steamcommunity.com/sharedfiles/filedetails/?id=3826011578) 和 [Chaos Zero Nightmare - Nine](https://steamcommunity.com/sharedfiles/filedetails/?id=3815657213) 后，0.2.0 会自动使用其中的战斗素材。订阅后仍需在游戏的模组界面启用并重启。原模组的模型、选人、商店、休息点外观仍由原模组提供。
+
+## CZN 素材增强（0.2.0）
+
+根据本机的 CznCore 1.0.1 / Nine 2.0.0-beta 验证。读取已启用 PCK 的原始资源，并按 Saber 的动作调整位置、尺寸、播放速度与轻微色调：
+
+- 突进的起步、落点烟尘；挥剑粒子；普通、重击、跃斩的不同命中层。
+- 三层蓝色球形护盾、格挡与破盾光效，强化时的魔力光环。
+- 剑击、重击、宝具、护盾与强化的音效层。
+
+28 段角色配音继续使用 Saber 的日配。金色剑光、蓄力、立绘和宝具光束继续由本扩展制作。缺少某项 CZN 资源时自动使用原有效果；`UseCznEffects=false` 可关闭复用。
+
+本扩展不直接调用 CZN DLL、不注册 CZN 角色，不重复打包其素材。资源路径和来源校验记录见 `CZN_ASSETS.json`；源包升级或改名后可能需要更新映射。
 
 ## 演出
 
@@ -19,7 +31,7 @@
 | Whirlwind、Twin Strike、Sword Boomerang、Thrash | 横扫、组合攻击与逐段命中特效 |
 | Bash、Mangle、Tear Asunder、Perfected Strike | 重劈与命中震动 |
 | Bludgeon、Fiend Fire、Pact's End | 宝具演出：举剑蓄光 → 立绘切入 → 誓约胜利之剑金色光束 |
-| 获得格挡 | 蓝色六边形护盾 |
+| 获得格挡、格挡受击 | 蓝色六边形护盾；启用 CZN 后使用球形护盾、格挡与破盾特效 |
 | 施法、强化 | 原皮肤举剑动画、魔力光环与升腾光点 |
 | 受击 | 原皮肤受击动作、火花与日语受击语音 |
 | 开战、胜利、死亡 | 日语角色语音 |
@@ -36,7 +48,7 @@
 - [用户提供的 FGO 官方参考视频](https://www.bilibili.com/video/BV1wA4m1A7ZD/)
 - 每个文件的原始链接和 SHA-256 记录在 `assets/sources.json`。
 
-原始角色、美术和声音版权归 TYPE-MOON / FGO 相关权利方；原 Saber 皮肤归原作者。本项目是本地非官方粉丝扩展，未上传到创意工坊，也不包含 Nine 的素材或反编译代码。
+原始角色、美术和声音版权归 TYPE-MOON / FGO 相关权利方；原 Saber 皮肤归原作者。CznCore / Nine 模组作者为 Pelleas，CZN 原始素材归其相关权利方。本项目是本地非官方粉丝扩展，未上传到创意工坊，安装包不包含 CZN 素材、DLL 或反编译代码。
 
 ## 设置
 
@@ -45,6 +57,7 @@
 - `Enabled`：整个扩展开关。
 - `Dash`：接近目标的位移。
 - `RichMotion`：上挑、跃斩、前刺的附加动作编排。
+- `UseCznEffects`：使用已启用的 CZN 素材，默认开启；无相应源包时自动回退。
 - `Cinematics`：宝具立绘切入。关闭后仍保留光束、蓄光与配音。
 - `ScreenShake`、`ScreenFlash`：震屏与轻微闪光。
 - `JapaneseVoice`、`VoiceVolume`、`EffectsVolume`：语音开关、语音和附加音效音量。
@@ -61,13 +74,27 @@ python -X utf8 tools/prepare_assets.py
 dotnet build SaberPresentation.csproj -c Release
 ```
 
-`build/SaberPresentation.pck` 内仅打包 `SaberPresentation/` 命名空间的 MP3、立绘导入映射与 WebP CTEX，不覆盖原版资源。
+`build/SaberPresentation.pck` 内仅打包 `SaberPresentation/` 下的 MP3、立绘导入映射，以及独立命名的 `.godot/imported/saber_artoria-*` WebP CTEX，不覆盖原版资源。
 
 自动验证代码只在 `SABER_TEST` 编译符号下编入，正式 DLL 不含测试入口。测试运行器使用独立用户目录 `SlayTheSpire2-SaberPresentation-Test`，强制关闭 Steam，通过真实游戏战斗验证路线、数值不变、随机与多段攻击、动作归位、音频解码及特效清理；截图和结果保存在 `build/verification/`。
 
 ```powershell
 dotnet build SaberPresentation.csproj -c Release -p:DefineConstants=SABER_TEST -o build/test-dll
 ./tools/prepare_test_runner.ps1
+./build/runner/SlayTheSpire2.exe --force-steam=off --saber-test --windowed --resolution 1280x720
+
+# 带 CZN 的第二组实机检查；结果保存在 build/verification-czn/。
+./tools/prepare_test_runner.ps1 -WithCzn
+./build/runner-czn/SlayTheSpire2.exe --force-steam=off --saber-test --saber-czn-test --windowed --resolution 1280x720
+
+# 正式编译、打包并安装。正式 DLL 不含上面的测试入口。
+./tools/package.ps1 -Install
 ```
 
 `build/runner/` 中的游戏资源是本机游戏的硬链接/联接，不要将它们随模组发布或在这些链接内修改游戏内容。
+
+## Git
+
+仓库位于当前项目目录，`v0.1.0` 保存创作前基线，`v0.2.0` 保存本次增强版，版本变化见 `VERSION_HISTORY.md`。源文件、素材来源和已验证安装包纳入本地 Git；游戏本体、测试运行器和临时编译目录排除。当前没有配置远程仓库。
+
+`dist/SaberPresentation-0.1.0.zip` 保留旧安装包；解压覆盖本扩展的三个安装文件即可回退。

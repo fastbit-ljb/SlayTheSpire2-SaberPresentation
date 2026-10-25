@@ -3,7 +3,7 @@
   "name": "Saber 战斗演出 / Saber Combat Presentation",
   "author": "Local fan edit; original Saber skin: 会画画的Small_day",
   "description": "Saber 日语战斗演出扩展：近身剑击、连击、受击、格挡、技能与誓约胜利之剑。需要原版 saber 外观模组。",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "min_game_version": "0.111.0",
   "has_pck": true,
   "has_dll": true,

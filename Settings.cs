@@ -9,6 +9,7 @@ public sealed class Settings
     public bool Enabled { get; set; } = true;
     public bool Dash { get; set; } = true;
     public bool RichMotion { get; set; } = true;
+    public bool UseCznEffects { get; set; } = true;
     public bool Cinematics { get; set; } = true;
     public bool ScreenShake { get; set; } = true;
     public bool ScreenFlash { get; set; } = true;

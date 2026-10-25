@@ -160,6 +160,7 @@ internal static class Runtime
         if (trigger == "SaberAttack") trigger = (actor.SlashIndex++ % 3 == 2) ? "SaberCombo" : "SaberSlashA";
         if (!Settings.Current.RichMotion || session.Route == AttackRoute.Excalibur) return;
         var body = session.Body;
+        CznAssets.Swing(body, session.Route, session.Hit);
         var origin = session.Destination ?? session.Home;
         session.Motion?.Kill();
         var tween = session.Motion = body.CreateTween();
@@ -282,6 +283,11 @@ internal static class Runtime
         actor.LastShield = Time.GetTicksMsec();
         var node = creature.GetCreatureNode()!;
         Fx.Shield(Fx.Container(node), Center(node));
+    }
+    internal static void Blocked(Creature creature, bool broken)
+    {
+        var node = creature.GetCreatureNode();
+        if (node != null) CznAssets.Blocked(Fx.Container(node), Center(node), broken);
     }
 
     public static void Skill(Creature creature)

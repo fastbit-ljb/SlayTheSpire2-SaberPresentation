@@ -1,0 +1,152 @@
+{
+  "integration": "Optional resource lookup from the user's installed, enabled PCKs",
+  "bundledCznAssets": false,
+  "directCznAssemblyReferences": false,
+  "adaptation": "Route-specific layers, adjusted placement/scale/playback speed and warm tint; Saber JP voices retained",
+  "sources": [
+    {
+      "id": "CznCore",
+      "version": "1.0.1",
+      "author": "Pelleas",
+      "workshop": "https://steamcommunity.com/sharedfiles/filedetails/?id=3826011578",
+      "pckSha256": "92eb2b1672c7d4d8945aa882bba3acc938027ddd52a1c4414771f2b4254bb8b6",
+      "resources": [
+        {
+          "resource": "res://CznCore/animations/common/system_buff_shield_b_skel_data.tres",
+          "purpose": "shield rear layer",
+          "packedEntry": "res://CznCore/animations/common/system_buff_shield_b_skel_data.tres",
+          "sha256": "d2357d8c6b05e8e96d91e20284a3c6c6a2642200ab2b3db0e4f0455bbb5a1f57"
+        },
+        {
+          "resource": "res://CznCore/animations/common/system_buff_shield_f1_skel_data.tres",
+          "purpose": "shield sphere",
+          "packedEntry": "res://CznCore/animations/common/system_buff_shield_f1_skel_data.tres",
+          "sha256": "c2d1bf4ec8f2c8c88727464c508158203ca7849dfc7e4633861090b4225fd38f"
+        },
+        {
+          "resource": "res://CznCore/animations/common/system_buff_shield_f2_skel_data.tres",
+          "purpose": "shield front particles",
+          "packedEntry": "res://CznCore/animations/common/system_buff_shield_f2_skel_data.tres",
+          "sha256": "3ce3cd3213b29f8307f9d0942587a9a5c3e52b3a78c3fb09445a6eb03518b14b"
+        },
+        {
+          "resource": "res://CznCore/animations/common/system_hit_shield_player_f1_skel_data.tres",
+          "purpose": "blocked hit",
+          "packedEntry": "res://CznCore/animations/common/system_hit_shield_player_f1_skel_data.tres",
+          "sha256": "97bf81d138c5a96ae8d223ea3c3c4b67fed3b6a6f93ce2de2c02bbeee9b6d193"
+        },
+        {
+          "resource": "res://CznCore/animations/common/system_hit_shield_player_f2_skel_data.tres",
+          "purpose": "blocked hit particles",
+          "packedEntry": "res://CznCore/animations/common/system_hit_shield_player_f2_skel_data.tres",
+          "sha256": "2ed9e07ac9d11090a394085385e7758bf4c89cb46e13a8cfa7623e936ab39e64"
+        },
+        {
+          "resource": "res://CznCore/animations/common/system_break_shield_player_skel_data.tres",
+          "purpose": "shield breaking",
+          "packedEntry": "res://CznCore/animations/common/system_break_shield_player_skel_data.tres",
+          "sha256": "6c4ce2d5f26a70208d39dabb01c15bfa4860d65fe4800bd44802d49e682c3c3f"
+        },
+        {
+          "resource": "res://CznCore/animations/common/system_eff_buff_skel_data.tres",
+          "purpose": "skill aura",
+          "packedEntry": "res://CznCore/animations/common/system_eff_buff_skel_data.tres",
+          "sha256": "1c2f38f132d122056beb077153eb9ba03b3a01d90b64c1f8a315c59f6409eab0"
+        },
+        {
+          "resource": "res://CznCore/audio/sfx/system_buff_shield.ogg",
+          "purpose": "shield sound",
+          "packedEntry": "res://CznCore/audio/sfx/system_buff_shield.ogg.import",
+          "sha256": "66688eb547bca6a1bc42c69bd1f035a15ecf1f241e3af94b167c55cd4dd62712"
+        },
+        {
+          "resource": "res://CznCore/audio/sfx/system_eff_buff.ogg",
+          "purpose": "skill sound",
+          "packedEntry": "res://CznCore/audio/sfx/system_eff_buff.ogg",
+          "sha256": "6cd3f571d9adac1d44555c4f84671a882e35e14ed1979f5bb950539d10af48f1"
+        }
+      ]
+    },
+    {
+      "id": "CznNineCharacter",
+      "version": "2.0.0-beta",
+      "author": "Pelleas",
+      "workshop": "https://steamcommunity.com/sharedfiles/filedetails/?id=3815657213",
+      "pckSha256": "bcbc6934fe63af78c0fc722ebcee7d7faa54ce3657b8de5f0e31bd28e6787bb1",
+      "resources": [
+        {
+          "resource": "res://CznNineCharacter/animations/basic_effects/close_combat_step_player_move_skel_data.tres",
+          "purpose": "departure dust",
+          "packedEntry": "res://CznNineCharacter/animations/basic_effects/close_combat_step_player_move_skel_data.tres",
+          "sha256": "69a6c230b09db35ec584223ce9e4a207a26f2289194c44be1eaa91bf6d45bdb1"
+        },
+        {
+          "resource": "res://CznNineCharacter/animations/basic_effects/close_combat_step_player_arrive_skel_data.tres",
+          "purpose": "arrival dust",
+          "packedEntry": "res://CznNineCharacter/animations/basic_effects/close_combat_step_player_arrive_skel_data.tres",
+          "sha256": "06079b06ab5a34ff864af5479688e31b38557d248abd35806b7bce1a50b89f1d"
+        },
+        {
+          "resource": "res://CznNineCharacter/animations/basic_effects/nine_30047_attack_play1_self_f_skel_data.tres",
+          "purpose": "swing particles",
+          "packedEntry": "res://CznNineCharacter/animations/basic_effects/nine_30047_attack_play1_self_f_skel_data.tres",
+          "sha256": "cae8b6beb8f4efc87cfc6b753b1f6fc148adc1e558a755d28d351ebd4d3b4234"
+        },
+        {
+          "resource": "res://CznNineCharacter/animations/basic_effects/nine_30047_attack_play2_self_f_1_skel_data.tres",
+          "purpose": "combo swing particles",
+          "packedEntry": "res://CznNineCharacter/animations/basic_effects/nine_30047_attack_play2_self_f_1_skel_data.tres",
+          "sha256": "3e8cf07787a5fdcf3f2967ae807da94150e8d512a2146cb39d08e3da3ea940c4"
+        },
+        {
+          "resource": "res://CznNineCharacter/animations/basic_effects/nine_30047_u2_attack_play_f_1_skel_data.tres",
+          "purpose": "rising attack particles",
+          "packedEntry": "res://CznNineCharacter/animations/basic_effects/nine_30047_u2_attack_play_f_1_skel_data.tres",
+          "sha256": "de990da621f6f96b3fd5d3dc9bd715078ee9502b889fcbb633677a1e282cf3ac"
+        },
+        {
+          "resource": "res://CznNineCharacter/animations/basic_effects/nine_30047_attack_play1_target_b_skel_data.tres",
+          "purpose": "normal impact",
+          "packedEntry": "res://CznNineCharacter/animations/basic_effects/nine_30047_attack_play1_target_b_skel_data.tres",
+          "sha256": "36e490b75c1a9e2718dff927cce3ecd9a4deb3411d0f66f0e942571a56e05900"
+        },
+        {
+          "resource": "res://CznNineCharacter/animations/basic_effects/nine_30047_attack_play2_target_b_skel_data.tres",
+          "purpose": "alternate impact",
+          "packedEntry": "res://CznNineCharacter/animations/basic_effects/nine_30047_attack_play2_target_b_skel_data.tres",
+          "sha256": "fd5968665ffcbf992a78ac54f268bb6e85b6b27c0c2c365864c28956517ba647"
+        },
+        {
+          "resource": "res://CznNineCharacter/animations/basic_effects/nine_30047_u1_attack_play_target_b_skel_data.tres",
+          "purpose": "heavy impact",
+          "packedEntry": "res://CznNineCharacter/animations/basic_effects/nine_30047_u1_attack_play_target_b_skel_data.tres",
+          "sha256": "94f4792014b4117868f31b3db6a377729594cbd50764a57f54caff63daef9355"
+        },
+        {
+          "resource": "res://CznNineCharacter/animations/basic_effects/nine_30047_u3_attack_play_target_f_1_skel_data.tres",
+          "purpose": "aerial landing impact",
+          "packedEntry": "res://CznNineCharacter/animations/basic_effects/nine_30047_u3_attack_play_target_f_1_skel_data.tres",
+          "sha256": "db3f1262e806e26df51dce67df82000d60f2c4d557b694eef9160505c2d8022c"
+        },
+        {
+          "resource": "res://CznNineCharacter/audio/sfx/se_30047_attack_play1.ogg",
+          "purpose": "sword sound",
+          "packedEntry": "res://CznNineCharacter/audio/sfx/se_30047_attack_play1.ogg.import",
+          "sha256": "8e1af0f9bb726fcd851eec626c08f2d5f79ddf63a990314e7598a088aa0b6664"
+        },
+        {
+          "resource": "res://CznNineCharacter/audio/sfx/se_30047_u1_attack_play.ogg",
+          "purpose": "heavy sword sound",
+          "packedEntry": "res://CznNineCharacter/audio/sfx/se_30047_u1_attack_play.ogg.import",
+          "sha256": "62ccbfdca8547b5228e34f8a63f54e292d1448bd1f85aca3e2a6b630ae67ffa6"
+        },
+        {
+          "resource": "res://CznNineCharacter/audio/sfx/se_30047_ug_attack.ogg",
+          "purpose": "beam sound layer",
+          "packedEntry": "res://CznNineCharacter/audio/sfx/se_30047_ug_attack.ogg.import",
+          "sha256": "d2f1610bddc1009bd98e2b05ca07e32abcc5dcfe7ad9c30a0406a15226772c09"
+        }
+      ]
+    }
+  ]
+}

@@ -88,6 +88,7 @@ internal static class Fx
 
     public static void Slash(Node parent, Vector2 point, bool heavy, int hit, AttackRoute route = AttackRoute.Slash)
     {
+        CznAssets.Impact(parent, point, heavy, hit, route);
         var root = Root(parent, point);
         root.Rotation = (hit % 2 == 0 ? -0.55f : 0.7f) + (heavy ? -0.3f : 0);
         if (route == AttackRoute.Rising) root.Rotation = -1.3f;
@@ -121,6 +122,7 @@ internal static class Fx
     public static void Dash(Node parent, Vector2 from, Vector2 to)
     {
         if (from.DistanceTo(to) < 25) return;
+        CznAssets.Step(parent, from, to);
         var root = Root(parent, from);
         var difference = Local(parent, to) - Local(parent, from);
         for (int i = 0; i < 4; i++)
@@ -138,6 +140,7 @@ internal static class Fx
     }
     public static void Shield(Node parent, Vector2 center)
     {
+        if (CznAssets.Shield(parent, center)) return;
         var root = Root(parent, center);
         var points = Enumerable.Range(0, 7).Select(i => Vector2.FromAngle(i * MathF.Tau / 6 - MathF.PI / 6) * 90).ToArray();
         Line(root, points, 10, new Color(Blue, 0.18f));
@@ -151,6 +154,7 @@ internal static class Fx
     }
     public static void Buff(Node parent, Vector2 center)
     {
+        if (CznAssets.Buff(parent, center)) return;
         var root = Root(parent, center + Vector2.Down * 80);
         var ring = Enumerable.Range(0, 49).Select(i => new Vector2(MathF.Cos(i * MathF.Tau / 48) * 95, MathF.Sin(i * MathF.Tau / 48) * 28)).ToArray();
         Line(root, ring, 2, Gold);

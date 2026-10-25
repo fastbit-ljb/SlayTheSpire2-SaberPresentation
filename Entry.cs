@@ -22,7 +22,7 @@ public static class Entry
     {
         Settings.Load();
         new Harmony("local.saber.presentation").PatchAll(typeof(Entry).Assembly);
-        Log.Info("[SaberPresentation] JP combat presentation 0.1.0 initialized.");
+        Log.Info("[SaberPresentation] JP combat presentation 0.2.0 initialized.");
 #if SABER_TEST
         if (MegaCrit.Sts2.Core.Helpers.CommandLineHelper.HasArg("saber-test"))
             _ = MegaCrit.Sts2.Core.Helpers.TaskHelper.RunSafely(TestHarness.Run(MegaCrit.Sts2.Core.Nodes.NGame.Instance!));
@@ -162,6 +162,15 @@ internal static class BlockPatch
     private static void Postfix(Creature creature, decimal amount)
     {
         if (amount > 0 && Runtime.IsSaber(creature)) Runtime.Shield(creature);
+    }
+}
+
+[HarmonyPatch(typeof(Hook), nameof(Hook.AfterDamageReceived))]
+internal static class ShieldImpactPatch
+{
+    private static void Postfix(Creature target, DamageResult result)
+    {
+        if (result.BlockedDamage > 0 && Runtime.IsSaber(target)) Runtime.Blocked(target, result.WasBlockBroken);
     }
 }
 

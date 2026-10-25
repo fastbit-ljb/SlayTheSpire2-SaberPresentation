@@ -29,7 +29,8 @@ namespace SaberPresentation;
 
 internal static class TestHarness
 {
-    private const string Output = "D:/L/Study/mod/SaberPresentation/build/verification";
+    private static bool WithCzn => CommandLineHelper.HasArg("saber-czn-test");
+    private static string Output => "D:/L/Study/mod/SaberPresentation/build/" + (WithCzn ? "verification-czn" : "verification");
     private static readonly List<object> Results = [];
     private static readonly HashSet<string> Captured = [];
     private static bool _running;
@@ -49,6 +50,8 @@ internal static class TestHarness
             Log.Info("[SaberTest] Startup passed. Isolated user data: " + OS.GetUserDataDir());
             SaveManager.Instance.Progress.EnableFtues = false;
             Settings.Current.NoblePhantasmCards = ["BLUDGEON", "FIEND_FIRE", "PACTS_END"];
+            Settings.Current.UseCznEffects = true;
+            Assert("czn_pack_detection", CznAssets.Available == WithCzn);
             var character = ModelDb.Character<Ironclad>();
             var player = Player.CreateForNewRun(character, SaveManager.Instance.GenerateUnlockStateFromProgress(), 1UL);
             var acts = ActModel.GetDefaultList().Select(a => a.ToMutable()).ToList();
@@ -121,6 +124,10 @@ internal static class TestHarness
             await Fx.Delay(1);
             await CreatureCmd.GainBlock(player.Creature, 5, ValueProp.Move, null);
             await CaptureAfter("shield", 0.08);
+            int playerHp = player.Creature.CurrentHp;
+            await CreatureCmd.Damage(new BlockingPlayerChoiceContext(), player.Creature, 2, ValueProp.Move, target);
+            Assert("fully_blocked_damage_unchanged", player.Creature.CurrentHp == playerHp);
+            await CaptureAfter("block_hit", 0.08);
             node.SetAnimationTrigger("Cast");
             await CaptureAfter("skill", 0.35);
             await Fx.Delay(1.4);
@@ -130,6 +137,20 @@ internal static class TestHarness
             Assert("no_leftover_cinematic", !Runtime.Descendants(game).Any(n => n.Name == "SaberExcaliburCutIn"));
             Assert("final_actor_home", node.Visuals.Body.Position.DistanceTo(home) < 0.5f);
             Assert("melee_motion_reaches_resolved_targets", MotionChecks.Count >= 8 && MotionChecks.All(v => v));
+            await Fx.Delay(1.2);
+            Assert("czn_effects_no_errors", CznAssets.Failures == 0);
+            Assert("czn_effects_used_when_available", WithCzn ? CznAssets.Spawned > 15 : CznAssets.Spawned == 0);
+            Assert("czn_sfx_used_when_available", WithCzn ? CznAssets.SoundsPlayed > 0 : CznAssets.SoundsPlayed == 0);
+            Assert("czn_effects_cleaned_up", !Runtime.Descendants(game).Any(n => n.Name == "SaberCznEffect"));
+            if (WithCzn)
+            {
+                int spawned = CznAssets.Spawned;
+                Settings.Current.UseCznEffects = false;
+                Fx.Shield(Fx.Container(node), Runtime.Center(node));
+                await CaptureAfter("fallback_shield", 0.08);
+                Assert("czn_setting_disables_reuse", CznAssets.Spawned == spawned);
+                Settings.Current.UseCznEffects = true;
+            }
             await CaptureAfter("combat_final", 0.1);
             Log.Info("[SaberTest] ALL CHECKS PASSED");
         }

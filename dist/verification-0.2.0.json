@@ -1,0 +1,530 @@
+{
+  "version": "0.2.0",
+  "gameVersion": "0.111.0",
+  "verifiedUtc": "2026-10-25T06:00:14.646970+00:00",
+  "baselineCommit": "e9dd075",
+  "checksPassed": 121,
+  "checksFailed": 0,
+  "suites": {
+    "withCzn": {
+      "checksPassed": 61,
+      "checks": [
+        {
+          "check": "czn_pack_detection",
+          "passed": true
+        },
+        {
+          "check": "saber_detected",
+          "passed": true
+        },
+        {
+          "check": "voice_attack_decodes",
+          "passed": true
+        },
+        {
+          "check": "voice_np_decodes",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_attack_1",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_attack_2",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_attack_3",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_heavy",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_skill_1",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_skill_2",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_entry_1",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_entry_2",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_victory_1",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_victory_2",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_hurt_1",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_hurt_2",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_death",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_np_charge",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_np_release",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_np_end",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_attack_4",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_attack_5",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_attack_6",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_attack_7",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_heavy_2",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_heavy_3",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_skill_3",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_skill_4",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_entry_3",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_entry_4",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_victory_3",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_victory_4",
+          "passed": true
+        },
+        {
+          "check": "damage_unchanged_STRIKE_IRONCLAD",
+          "passed": true
+        },
+        {
+          "check": "actor_returns_STRIKE_IRONCLAD",
+          "passed": true
+        },
+        {
+          "check": "damage_unchanged_POMMEL_STRIKE",
+          "passed": true
+        },
+        {
+          "check": "actor_returns_POMMEL_STRIKE",
+          "passed": true
+        },
+        {
+          "check": "damage_unchanged_UPPERCUT",
+          "passed": true
+        },
+        {
+          "check": "actor_returns_UPPERCUT",
+          "passed": true
+        },
+        {
+          "check": "damage_unchanged_HEMOKINESIS",
+          "passed": true
+        },
+        {
+          "check": "actor_returns_HEMOKINESIS",
+          "passed": true
+        },
+        {
+          "check": "damage_unchanged_WHIRLWIND",
+          "passed": true
+        },
+        {
+          "check": "actor_returns_WHIRLWIND",
+          "passed": true
+        },
+        {
+          "check": "damage_unchanged_BASH",
+          "passed": true
+        },
+        {
+          "check": "actor_returns_BASH",
+          "passed": true
+        },
+        {
+          "check": "damage_unchanged_BLUDGEON",
+          "passed": true
+        },
+        {
+          "check": "actor_returns_BLUDGEON",
+          "passed": true
+        },
+        {
+          "check": "multi_hit_count_unchanged",
+          "passed": true
+        },
+        {
+          "check": "random_damage_unchanged",
+          "passed": true
+        },
+        {
+          "check": "native_callback_preserved",
+          "passed": true
+        },
+        {
+          "check": "aoe_damage_unchanged",
+          "passed": true
+        },
+        {
+          "check": "np_multihit_damage_unchanged",
+          "passed": true
+        },
+        {
+          "check": "real_bludgeon_card_damage_unchanged",
+          "passed": true
+        },
+        {
+          "check": "fully_blocked_damage_unchanged",
+          "passed": true
+        },
+        {
+          "check": "no_leftover_cinematic",
+          "passed": true
+        },
+        {
+          "check": "final_actor_home",
+          "passed": true
+        },
+        {
+          "check": "melee_motion_reaches_resolved_targets",
+          "passed": true
+        },
+        {
+          "check": "czn_effects_no_errors",
+          "passed": true
+        },
+        {
+          "check": "czn_effects_used_when_available",
+          "passed": true
+        },
+        {
+          "check": "czn_sfx_used_when_available",
+          "passed": true
+        },
+        {
+          "check": "czn_effects_cleaned_up",
+          "passed": true
+        },
+        {
+          "check": "czn_setting_disables_reuse",
+          "passed": true
+        }
+      ]
+    },
+    "withoutCzn": {
+      "checksPassed": 60,
+      "checks": [
+        {
+          "check": "czn_pack_detection",
+          "passed": true
+        },
+        {
+          "check": "saber_detected",
+          "passed": true
+        },
+        {
+          "check": "voice_attack_decodes",
+          "passed": true
+        },
+        {
+          "check": "voice_np_decodes",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_attack_1",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_attack_2",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_attack_3",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_heavy",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_skill_1",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_skill_2",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_entry_1",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_entry_2",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_victory_1",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_victory_2",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_hurt_1",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_hurt_2",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_death",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_np_charge",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_np_release",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_np_end",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_attack_4",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_attack_5",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_attack_6",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_attack_7",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_heavy_2",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_heavy_3",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_skill_3",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_skill_4",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_entry_3",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_entry_4",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_victory_3",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_victory_4",
+          "passed": true
+        },
+        {
+          "check": "damage_unchanged_STRIKE_IRONCLAD",
+          "passed": true
+        },
+        {
+          "check": "actor_returns_STRIKE_IRONCLAD",
+          "passed": true
+        },
+        {
+          "check": "damage_unchanged_POMMEL_STRIKE",
+          "passed": true
+        },
+        {
+          "check": "actor_returns_POMMEL_STRIKE",
+          "passed": true
+        },
+        {
+          "check": "damage_unchanged_UPPERCUT",
+          "passed": true
+        },
+        {
+          "check": "actor_returns_UPPERCUT",
+          "passed": true
+        },
+        {
+          "check": "damage_unchanged_HEMOKINESIS",
+          "passed": true
+        },
+        {
+          "check": "actor_returns_HEMOKINESIS",
+          "passed": true
+        },
+        {
+          "check": "damage_unchanged_WHIRLWIND",
+          "passed": true
+        },
+        {
+          "check": "actor_returns_WHIRLWIND",
+          "passed": true
+        },
+        {
+          "check": "damage_unchanged_BASH",
+          "passed": true
+        },
+        {
+          "check": "actor_returns_BASH",
+          "passed": true
+        },
+        {
+          "check": "damage_unchanged_BLUDGEON",
+          "passed": true
+        },
+        {
+          "check": "actor_returns_BLUDGEON",
+          "passed": true
+        },
+        {
+          "check": "multi_hit_count_unchanged",
+          "passed": true
+        },
+        {
+          "check": "random_damage_unchanged",
+          "passed": true
+        },
+        {
+          "check": "native_callback_preserved",
+          "passed": true
+        },
+        {
+          "check": "aoe_damage_unchanged",
+          "passed": true
+        },
+        {
+          "check": "np_multihit_damage_unchanged",
+          "passed": true
+        },
+        {
+          "check": "real_bludgeon_card_damage_unchanged",
+          "passed": true
+        },
+        {
+          "check": "fully_blocked_damage_unchanged",
+          "passed": true
+        },
+        {
+          "check": "no_leftover_cinematic",
+          "passed": true
+        },
+        {
+          "check": "final_actor_home",
+          "passed": true
+        },
+        {
+          "check": "melee_motion_reaches_resolved_targets",
+          "passed": true
+        },
+        {
+          "check": "czn_effects_no_errors",
+          "passed": true
+        },
+        {
+          "check": "czn_effects_used_when_available",
+          "passed": true
+        },
+        {
+          "check": "czn_sfx_used_when_available",
+          "passed": true
+        },
+        {
+          "check": "czn_effects_cleaned_up",
+          "passed": true
+        }
+      ]
+    }
+  },
+  "japaneseVoiceClips": 28,
+  "optionalCznResourceMappings": 21,
+  "bundledCznResources": 0,
+  "ownPckResources": 30,
+  "releaseTestHarnessAbsent": true,
+  "installedFilesSha256": {
+    "SaberPresentation.dll": "1a22aaba6902465e4df36ca483a62099a97b3a93644110336f6f95477f1c6b57",
+    "SaberPresentation.json": "6147bda808d48d7debdebb293790fc7cce16561fd87df98894eaaae551193d7e",
+    "SaberPresentation.pck": "83e867967c149fa8147a934b10604429ed8072633caeafc28ba5b67b875bf755"
+  },
+  "zipSha256": "2ed5aef9254b0d600cb0daaf72c8b3c575ff652183e43348e0c91436ecdc88e4",
+  "zipEntries": [
+    "SaberPresentation/ASSET_SOURCES.json",
+    "SaberPresentation/CZN_ASSETS.json",
+    "SaberPresentation/README.md",
+    "SaberPresentation/SaberPresentation.dll",
+    "SaberPresentation/SaberPresentation.json",
+    "SaberPresentation/SaberPresentation.pck",
+    "SaberPresentation/VERSION_HISTORY.md"
+  ],
+  "notes": [
+    "Both isolated game runs passed all presentation checks and reported matching native Godot renderer/resource-in-use warnings during test-process shutdown.",
+    "Validation used CznCore 1.0.1 and CznNineCharacter 2.0.0-beta; future source-pack resource renames may require new mappings.",
+    "Release build completed with zero compiler warnings/errors; release class listing contains no TestHarness.",
+    "Original Saber skeleton clips are choreographed with movement and effects; no new full skeletal animation frames are claimed."
+  ]
+}

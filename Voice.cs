@@ -98,10 +98,19 @@ internal static class Voice
         PlayNext(owner, "victory", 4);
     }
 
-    public static void Sword(Node host, bool heavy) => PlayEffect(host, heavy ? _heavy ??= MakeSound(0.4, 1) : _sword ??= MakeSound(0.24, 0));
-    public static void Beam(Node host) => PlayEffect(host, _beam ??= MakeSound(0.95, 2));
+    public static void Sword(Node host, bool heavy)
+    {
+        string name = heavy ? "se_30047_u1_attack_play" : "se_30047_attack_play1";
+        if (!CznAssets.Sound(host, $"res://CznNineCharacter/audio/sfx/{name}.ogg"))
+            PlayEffect(host, heavy ? _heavy ??= MakeSound(0.4, 1) : _sword ??= MakeSound(0.24, 0));
+    }
+    public static void Beam(Node host)
+    {
+        if (!CznAssets.Sound(host, "res://CznNineCharacter/audio/sfx/se_30047_ug_attack.ogg"))
+            PlayEffect(host, _beam ??= MakeSound(0.95, 2));
+    }
 
-    private static void PlayEffect(Node host, AudioStream stream)
+    internal static void PlayEffect(Node host, AudioStream stream)
     {
         if (!GodotObject.IsInstanceValid(host) || !host.IsInsideTree() || Settings.Current.EffectsVolume <= 0) return;
         var player = new AudioStreamPlayer { Stream = stream, Bus = "Master",
