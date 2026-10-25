@@ -1,4 +1,4 @@
-"""Record the installed CZN resources used at runtime; copy no source assets."""
+"""Record the original CZN resources adapted and bundled by the standalone build."""
 import hashlib
 import json
 from pathlib import Path
@@ -73,8 +73,8 @@ def main():
             "resources": resources,
         })
     output = {
-        "integration": "Optional resource lookup from the user's installed, enabled PCKs",
-        "bundledCznAssets": False, "directCznAssemblyReferences": False,
+        "integration": "Self-contained private payload; original sources used at build time only",
+        "bundledCznAssets": True, "directCznAssemblyReferences": False,
         "adaptation": "Route-specific layers, adjusted placement/scale/playback speed and warm tint; Saber JP voices retained",
         "sources": sources,
     }
@@ -88,7 +88,7 @@ def main():
             "workshop": f"https://steamcommunity.com/sharedfiles/filedetails/?id={workshop_id}",
             "dllSha256": hashlib.sha256((folder / f"{name}.dll").read_bytes()).hexdigest(),
             "pckBytes": (folder / f"{name}.pck").stat().st_size,
-            "integration": "Compatibility verification" if name == "ChizuruIroncladSkin" else "Original installed module; no duplication",
+            "integration": "Compatibility verification only; not bundled" if name == "ChizuruIroncladSkin" else "Unmodified private bundled presentation module",
         })
     (ROOT / "CZN_ASSETS.json").write_text(json.dumps(output, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"Recorded {sum(len(s['resources']) for s in sources)} runtime resources from {len(sources)} installed packs")

@@ -4,6 +4,7 @@ using HarmonyLib;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Commands.Builders;
 using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Logging;
 using MegaCrit.Sts2.Core.Models;
@@ -39,9 +40,13 @@ internal static class Runtime
         public int Hit;
         public ulong Started;
         public bool Finished;
+        public bool FinisherPlayed;
     }
     private static ConditionalWeakTable<Creature, Actor> _actors = new();
     private static readonly HashSet<Session> Active = [];
+    private static ConditionalWeakTable<CardPlay, object> _finishedCards = new();
+    internal static int KillingBlowCount { get; private set; }
+    internal static double LastChargeDuration { get; private set; }
     private static readonly AccessTools.FieldRef<AttackCommand, string?> Animation =
         AccessTools.FieldRefAccess<AttackCommand, string?>("_attackerAnimName");
     private static readonly AccessTools.FieldRef<AttackCommand, Creature?> SingleTarget =
@@ -59,11 +64,11 @@ internal static class Runtime
             && node.Visuals?.SpineBody?.HasAnimation("attackvfff") == true;
     }
 
-    public static async Task Begin(AttackCommand command)
+    public static Task Begin(AttackCommand command)
     {
         var creature = command.Attacker!;
         var node = creature.GetCreatureNode();
-        if (node == null || command.ModelSource is not CardModel card || creature.IsDead) return;
+        if (node == null || command.ModelSource is not CardModel card || creature.IsDead) return Task.CompletedTask;
         ReadyPresentation.Play(card);
         var actor = _actors.GetOrCreateValue(creature);
         var previous = actor.Attack;
@@ -108,10 +113,9 @@ internal static class Runtime
 
         if (route == AttackRoute.Excalibur)
         {
-            Voice.Play(node, "np_charge", priority: true);
+            Voice.PlayNext(node, "heavy", 3);
             node.SetAnimationTrigger("Cast");
             Fx.Charge(Fx.Container(node), Center(node));
-            if (Settings.Current.Cinematics) await Fx.CutIn(node);
         }
         else
         {
@@ -129,6 +133,7 @@ internal static class Runtime
             }
         }
         Log.Info($"[SaberPresentation] {id} -> {route}");
+        return Task.CompletedTask;
     }
 
     private static void Approach(Session session, Creature? target)
@@ -209,7 +214,6 @@ internal static class Runtime
         {
             if (session.Hit == 0)
             {
-                Voice.PlaySequence(session.Node, ["np_release", "np_end"], priority: true);
                 Fx.Excalibur(container, Center(session.Node), nodes.Select(Center).ToArray(), Math.Clamp(HitCount(session.Command) * 0.43, 0.13, 1.8));
             }
             else foreach (var target in nodes) Fx.Slash(container, Center(target), true, session.Hit);
@@ -222,6 +226,47 @@ internal static class Runtime
             Voice.Sword(container, heavy);
         }
         session.Hit++;
+    }
+
+    internal static async Task KillingBlow(Creature creature, DamageResult result, CardModel card)
+    {
+        if (!Settings.Current.KillingBlowExcalibur || !result.WasTargetKilled || !result.Receiver.IsDead
+            || !_actors.TryGetValue(creature, out var actor) || actor.Attack is not { } session
+            || session.Command.ModelSource != card || session.FinisherPlayed || !Valid(session.Body)) return;
+        var play = session.Command.CardPlay;
+        if (play != null)
+        {
+            if (_finishedCards.TryGetValue(play, out _)) return;
+            _finishedCards.Add(play, new object());
+        }
+        session.FinisherPlayed = true;
+        KillingBlowCount++;
+        var targetNode = result.Receiver.GetCreatureNode();
+        Vector2 target = targetNode != null ? Center(targetNode) : Center(session.Node) + Vector2.Right * 600;
+        var container = Fx.Container(session.Node);
+        session.Motion?.Kill();
+        session.Node.SetAnimationTrigger("Cast");
+        Fx.Charge(container, Center(session.Node));
+        if (Settings.Current.Cinematics)
+        {
+#if SABER_TEST
+            if (KillingBlowCount == 1) _ = TaskHelper.RunSafely(TestHarness.CaptureFinisherSequence());
+#endif
+            Voice.Play(session.Node, "np_charge", priority: true);
+            double duration = Math.Max(1.24, Voice.Length("np_charge"));
+            ulong started = Time.GetTicksMsec();
+            await Fx.CutIn(session.Node, duration: duration);
+            LastChargeDuration = (Time.GetTicksMsec() - started) / 1000.0;
+        }
+        if (!Valid(session.Node)) return;
+        session.Node.SetAnimationTrigger("SaberHeavy");
+        Voice.PlaySequence(session.Node, ["np_release", "np_end"], priority: true);
+        Fx.Excalibur(container, Center(session.Node), [target], 0.65);
+#if SABER_TEST
+        _ = TaskHelper.RunSafely(TestHarness.CaptureAfter("killing_blow_excalibur", 0.08));
+#endif
+        await Fx.Delay(0.72);
+        Log.Info($"[SaberPresentation] Confirmed killing blow: {card.Id.Entry} -> Excalibur CG");
     }
 
     public static void Finish(AttackCommand command)
@@ -355,5 +400,6 @@ internal static class Runtime
         foreach (var session in Active.ToArray()) Restore(session, true);
         Active.Clear();
         _actors = new();
+        _finishedCards = new();
     }
 }

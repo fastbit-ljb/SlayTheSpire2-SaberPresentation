@@ -108,7 +108,7 @@ internal static class Fx
         tween.TweenProperty(flash, "color:a", 0f, 0.18);
         tween.TweenCallback(Callable.From(layer.QueueFree));
     }
-    public static async Task CutIn(Node owner, bool holdForPreview = false)
+    public static async Task CutIn(Node owner, bool holdForPreview = false, double duration = 1.24)
     {
         if (!Valid(owner)) return;
         ReadyPresentation.Hide();
@@ -129,7 +129,8 @@ internal static class Fx
                 MouseFilter = Control.MouseFilterEnum.Ignore };
             stage.AddChild(portrait);
             var lighting = new Node2D(); stage.AddChild(lighting);
-            Painted(lighting, size * new Vector2(0.63f, 0.45f), 1, new Vector2(size.Y, size.Y), 0.65, repeat: 2).Modulate = new Color(1, 0.9f, 0.6f, 0.32f);
+            Painted(lighting, size * new Vector2(0.63f, 0.45f), 1, new Vector2(size.Y, size.Y), 0.65,
+                repeat: (int)Math.Ceiling(duration / 0.65)).Modulate = new Color(1, 0.9f, 0.6f, 0.32f);
             var top = new ColorRect { Size = new Vector2(size.X, size.Y * 0.085f), Color = new Color(0.005f, 0.01f, 0.025f), MouseFilter = Control.MouseFilterEnum.Ignore };
             stage.AddChild(top);
             var bottom = new ColorRect { Position = new Vector2(0, size.Y * 0.875f), Size = new Vector2(size.X, size.Y * 0.125f), Color = top.Color, MouseFilter = Control.MouseFilterEnum.Ignore };
@@ -146,7 +147,7 @@ internal static class Fx
 #if SABER_TEST
             _ = TaskHelper.RunSafely(TestHarness.CaptureAfter("excalibur_cutin", 0.5));
 #endif
-            await Delay(1.05);
+            await Delay(Math.Max(0.12, duration - 0.19));
             if (Valid(stage)) { stage.CreateTween().TweenProperty(stage, "modulate:a", 0f, 0.18); await Delay(0.19); }
         }
         finally { if (!holdForPreview && GodotObject.IsInstanceValid(layer)) layer.QueueFree(); }

@@ -1,7 +1,7 @@
-param([switch]$WithCzn, [switch]$WithTheme, [switch]$WithAllMods)
+param([switch]$WithCzn, [switch]$WithTheme, [switch]$WithAllMods, [switch]$Standalone)
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path -Parent $PSScriptRoot
-$runnerRoot = Join-Path $projectRoot $(if ($WithAllMods) { 'build\runner-all' } elseif ($WithTheme) { 'build\runner-theme' } elseif ($WithCzn) { 'build\runner-czn' } else { 'build\runner' })
+$runnerRoot = Join-Path $projectRoot $(if ($Standalone) { 'build\runner-standalone' } elseif ($WithAllMods) { 'build\runner-all' } elseif ($WithTheme) { 'build\runner-theme' } elseif ($WithCzn) { 'build\runner-czn' } else { 'build\runner' })
 $gameRoot = 'D:\L\Game\Steam\steamapps\common\Slay the Spire 2'
 New-Item -ItemType Directory -Path $runnerRoot -Force | Out-Null
 foreach ($file in Get-ChildItem -LiteralPath $gameRoot -File) {
@@ -15,10 +15,18 @@ if (-not (Test-Path -LiteralPath $dataLink)) {
     New-Item -ItemType Junction -Path $dataLink -Target (Join-Path $gameRoot 'data_sts2_windows_x86_64') | Out-Null
 }
 $testMods = Join-Path $runnerRoot 'mods'
+if (-not $Standalone) {
 New-Item -ItemType Directory -Path (Join-Path $testMods 'saber') -Force | Out-Null
-New-Item -ItemType Directory -Path (Join-Path $testMods 'SaberPresentation') -Force | Out-Null
 Copy-Item -LiteralPath 'D:\L\Game\Steam\steamapps\workshop\content\2868840\3747659940\saber.pck','D:\L\Game\Steam\steamapps\workshop\content\2868840\3747659940\saber.json' -Destination (Join-Path $testMods 'saber') -Force
+}
+New-Item -ItemType Directory -Path (Join-Path $testMods 'SaberPresentation') -Force | Out-Null
 Copy-Item -LiteralPath (Join-Path $projectRoot 'build\test-dll\SaberPresentation.dll'),(Join-Path $projectRoot 'SaberPresentation.json'),(Join-Path $projectRoot 'build\SaberPresentation.pck') -Destination (Join-Path $testMods 'SaberPresentation') -Force
+$bundledTarget = Join-Path $testMods 'SaberPresentation\bundled'
+New-Item -ItemType Directory -Path $bundledTarget -Force | Out-Null
+foreach ($payload in Get-ChildItem -LiteralPath (Join-Path $projectRoot 'build\bundled') -File) {
+    $target = Join-Path $bundledTarget $payload.Name
+    if (-not (Test-Path -LiteralPath $target)) { New-Item -ItemType HardLink -Path $target -Target $payload.FullName | Out-Null }
+}
 if ($WithCzn -or $WithTheme -or $WithAllMods) {
     $packs = @(@{Id='CznCore'; Workshop='3826011578'}, @{Id='CznNineCharacter'; Workshop='3815657213'})
     if ($WithTheme -or $WithAllMods) {

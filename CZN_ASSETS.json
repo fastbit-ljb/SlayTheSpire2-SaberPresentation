@@ -1,6 +1,6 @@
 {
-  "integration": "Optional resource lookup from the user's installed, enabled PCKs",
-  "bundledCznAssets": false,
+  "integration": "Self-contained private payload; original sources used at build time only",
+  "bundledCznAssets": true,
   "directCznAssemblyReferences": false,
   "adaptation": "Route-specific layers, adjusted placement/scale/playback speed and warm tint; Saber JP voices retained",
   "sources": [
@@ -175,7 +175,7 @@
       "workshop": "https://steamcommunity.com/sharedfiles/filedetails/?id=3771060891",
       "dllSha256": "04e9d05c0543593192d97bd75ada0a715e4905e1aa8c18f2d979ee14659c6788",
       "pckBytes": 178476820,
-      "integration": "Original installed module; no duplication"
+      "integration": "Unmodified private bundled presentation module"
     },
     {
       "id": "CznMainMenu",
@@ -184,7 +184,7 @@
       "workshop": "https://steamcommunity.com/sharedfiles/filedetails/?id=3774940754",
       "dllSha256": "ad3d52b853368bc80cb592e4580a7607d0267e5b1e869e6f6e888c68abdc1a49",
       "pckBytes": 759624818,
-      "integration": "Original installed module; no duplication"
+      "integration": "Unmodified private bundled presentation module"
     },
     {
       "id": "CznEnemySkin",
@@ -193,7 +193,7 @@
       "workshop": "https://steamcommunity.com/sharedfiles/filedetails/?id=3783041069",
       "dllSha256": "1860907f62fafe717563595390953beab28a6c5ff1640a7c7ddf66db07481ef4",
       "pckBytes": 535443990,
-      "integration": "Original installed module; no duplication"
+      "integration": "Unmodified private bundled presentation module"
     },
     {
       "id": "ChizuruIroncladSkin",
@@ -202,7 +202,7 @@
       "workshop": "https://steamcommunity.com/sharedfiles/filedetails/?id=3826011833",
       "dllSha256": "806a84a60b0111aac9579e535e8293d2e61969cbe2cb35d4b573ae0e53cc40bf",
       "pckBytes": 151176009,
-      "integration": "Compatibility verification"
+      "integration": "Compatibility verification only; not bundled"
     }
   ]
 }

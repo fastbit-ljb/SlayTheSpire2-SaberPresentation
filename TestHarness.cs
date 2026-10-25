@@ -31,9 +31,10 @@ namespace SaberPresentation;
 internal static class TestHarness
 {
     private static bool WithAllMods => CommandLineHelper.HasArg("saber-all-test");
-    private static bool WithTheme => WithAllMods || CommandLineHelper.HasArg("saber-theme-test");
+    private static bool StandaloneOnly => CommandLineHelper.HasArg("saber-standalone-test");
+    private static bool WithTheme => StandaloneOnly || WithAllMods || CommandLineHelper.HasArg("saber-theme-test");
     private static bool WithCzn => WithTheme || CommandLineHelper.HasArg("saber-czn-test");
-    private static string Output => "D:/L/Study/mod/SaberPresentation/build/" + (WithAllMods ? "verification-all" : WithTheme ? "verification-theme" : WithCzn ? "verification-czn" : "verification");
+    private static string Output => "D:/L/Study/mod/SaberPresentation/build/" + (CommandLineHelper.HasArg("saber-menu-test") ? "verification-menu" : StandaloneOnly ? "verification-standalone" : WithAllMods ? "verification-all" : WithTheme ? "verification-theme" : WithCzn ? "verification-czn" : "verification");
     private static readonly List<object> Results = [];
     private static readonly HashSet<string> Captured = [];
     private static bool _running;
@@ -56,6 +57,25 @@ internal static class TestHarness
             Settings.Current.NoblePhantasmCards = ["BLUDGEON", "FIEND_FIRE", "PACTS_END"];
             Settings.Current.UseCznEffects = true;
             Assert("czn_pack_detection", CznAssets.Available == WithCzn);
+            Assert("global_ui_audio_attaches_after_tree_ready", Runtime.Descendants(game).Any(n => n.Name.ToString().StartsWith("CznStyleGlobalUiAudio")));
+            if (StandaloneOnly)
+            {
+                var mods = MegaCrit.Sts2.Core.Modding.ModManager.GetLoadedMods().ToArray();
+                Assert("only_one_native_mod_installed", mods.Length == 1 && mods[0].manifest?.id == "SaberPresentation");
+                Assert("four_bundled_libraries_initialized", Standalone.LibrariesLoaded == 4);
+                Assert("zero_manifest_dependencies", mods[0].manifest!.dependencies?.Count == 0);
+            }
+            if (CommandLineHelper.HasArg("saber-menu-test"))
+            {
+                await PreloadManager.LoadMainMenuEssentials();
+                await (Task)AccessTools.Method(typeof(NGame), "LoadMainMenu").Invoke(game, [false])!;
+                await Fx.Delay(2);
+                await CaptureAfter("standalone_main_menu", 0.2);
+                Assert("native_main_menu_created", game.MainMenu != null);
+                Assert("native_main_menu_has_saber_lobby", Runtime.Descendants(game.MainMenu!).OfType<Polygon2D>().Any(n => n.Texture?.ResourcePath.Contains("saber_ready_cast") == true));
+                Log.Info("[SaberTest] MENU CHECKS PASSED");
+                return;
+            }
             var character = ModelDb.Character<Ironclad>();
             var player = Player.CreateForNewRun(character, SaveManager.Instance.GenerateUnlockStateFromProgress(), 1UL);
             var acts = ActModel.GetDefaultList().Select(a => a.ToMutable()).ToList();
@@ -130,6 +150,8 @@ internal static class TestHarness
             await real.OnPlayWrapper(new BlockingPlayerChoiceContext(), target, true,
                 new ResourceInfo { EnergySpent = 0, EnergyValue = 3, StarsSpent = 0, StarValue = 0 }, true);
             Assert("real_bludgeon_card_damage_unchanged", hp - target.CurrentHp == 32);
+            Assert("nonlethal_cards_do_not_trigger_cg", Runtime.KillingBlowCount == 0);
+            target = await VerifyKillingBlow(state, player, target);
             await Fx.Delay(1);
             await CreatureCmd.GainBlock(player.Creature, 5, ValueProp.Move, null);
             await CaptureAfter("shield", 0.08);
@@ -188,6 +210,39 @@ internal static class TestHarness
         Results.Add(new { check, passed });
         Log.Info($"[SaberTest] {check}: {passed}");
         if (!passed) throw new Exception(check);
+    }
+    private static async Task<Creature> VerifyKillingBlow(CombatState state, Player player, Creature target)
+    {
+        await CreatureCmd.Add<MegaCrit.Sts2.Core.Models.Monsters.TwoTailedRat>(state, "first");
+        await CreatureCmd.Add<MegaCrit.Sts2.Core.Models.Monsters.TwoTailedRat>(state, "second");
+        await Fx.Delay(0.3);
+        foreach (var enemy in state.HittableEnemies) { enemy.SetMaxHpInternal(500); enemy.SetCurrentHpInternal(500); }
+        var strike = state.CreateCard(ModelDb.Card<StrikeIronclad>(), player);
+        target.SetCurrentHpInternal(2);
+        await CreatureCmd.GainBlock(target, 10, ValueProp.Unpowered, null);
+        await DamageCmd.Attack(2).FromCard(strike, null).Targeting(target).Execute(new BlockingPlayerChoiceContext());
+        Assert("blocked_low_hp_target_does_not_trigger_cg", Runtime.KillingBlowCount == 0 && target.CurrentHp == 2);
+        await CreatureCmd.LoseBlock(new BlockingPlayerChoiceContext(), target, target.Block, player.Creature);
+        await CardPileCmd.Add(strike, PileType.Hand);
+        await strike.OnPlayWrapper(new BlockingPlayerChoiceContext(), target, true,
+            new ResourceInfo { EnergySpent = 0, EnergyValue = 1, StarsSpent = 0, StarValue = 0 }, true);
+        Assert("real_lethal_strike_triggers_excalibur_once", target.IsDead && Runtime.KillingBlowCount == 1);
+        Assert("full_jp_charge_finishes_before_release", Runtime.LastChargeDuration >= Voice.Length("np_charge") - 0.05);
+        await Fx.Delay(0.6);
+        var twin = state.CreateCard(ModelDb.Card<TwinStrike>(), player);
+        var multiTarget = state.HittableEnemies.First();
+        multiTarget.SetCurrentHpInternal(3);
+        await DamageCmd.Attack(2).FromCard(twin, null).Targeting(multiTarget).WithHitCount(3).Execute(new BlockingPlayerChoiceContext());
+        Assert("multihit_kill_triggers_once", multiTarget.IsDead && Runtime.KillingBlowCount == 2);
+        await Fx.Delay(0.6);
+        foreach (var enemy in state.HittableEnemies.Take(2)) enemy.SetCurrentHpInternal(2);
+        var aoe = state.CreateCard(ModelDb.Card<Whirlwind>(), player);
+        int living = state.HittableEnemies.Count;
+        await DamageCmd.Attack(2).FromCard(aoe, null).TargetingAllOpponents(state).WithHitCount(2).Execute(new BlockingPlayerChoiceContext());
+        Assert("aoe_two_kills_one_cg", state.HittableEnemies.Count == living - 2 && Runtime.KillingBlowCount == 3);
+        await Fx.Delay(1.0);
+        Assert("finisher_cg_cleans_up", !Runtime.Descendants(NGame.Instance!).Any(n => n.Name == "SaberExcaliburCutIn"));
+        return state.HittableEnemies.First();
     }
     private static async Task VerifyInteractions(NGame game, NCreature actor)
     {
@@ -281,6 +336,10 @@ internal static class TestHarness
         await NGame.Instance.ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
         using var image = NGame.Instance.GetViewport().GetTexture().GetImage();
         image.SavePng(Output + "/" + name + ".png");
+    }
+    internal static async Task CaptureFinisherSequence()
+    {
+        for (int frame = 0; frame < 60; frame++) await CaptureAfter($"finisher_frame_{frame:D2}", 0.075);
     }
 }
 #endif

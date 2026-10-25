@@ -1,0 +1,492 @@
+{
+  "format": 1,
+  "externalModDependencies": [],
+  "nativeModEntries": 1,
+  "localizationTablesMerged": 40,
+  "localizationOverridesInModuleOrder": [
+    {
+      "table": "eng/settings.json",
+      "key": "audio_settings_header",
+      "provider": "CznStyleUI"
+    },
+    {
+      "table": "eng/settings.json",
+      "key": "multiplayer_settings_header",
+      "provider": "CznStyleUI"
+    },
+    {
+      "table": "jpn/settings.json",
+      "key": "audio_settings_header",
+      "provider": "CznStyleUI"
+    },
+    {
+      "table": "jpn/settings.json",
+      "key": "multiplayer_settings_header",
+      "provider": "CznStyleUI"
+    },
+    {
+      "table": "kor/settings.json",
+      "key": "audio_settings_header",
+      "provider": "CznStyleUI"
+    },
+    {
+      "table": "kor/settings.json",
+      "key": "multiplayer_settings_header",
+      "provider": "CznStyleUI"
+    },
+    {
+      "table": "zhs/settings.json",
+      "key": "audio_settings_header",
+      "provider": "CznStyleUI"
+    },
+    {
+      "table": "zhs/settings.json",
+      "key": "multiplayer_settings_header",
+      "provider": "CznStyleUI"
+    },
+    {
+      "table": "zht/settings.json",
+      "key": "audio_settings_header",
+      "provider": "CznStyleUI"
+    },
+    {
+      "table": "zht/settings.json",
+      "key": "multiplayer_settings_header",
+      "provider": "CznStyleUI"
+    }
+  ],
+  "libraries": [
+    {
+      "id": "CznCore",
+      "version": "1.0.1",
+      "author": "Pelleas",
+      "workshop": "https://steamcommunity.com/sharedfiles/filedetails/?id=3826011578",
+      "files": [
+        {
+          "file": "bundled/CznCore.dll",
+          "bytes": 1417216,
+          "sha256": "3e8c7e13ff85e2ddbbba24dd3a011cf8741197de5bd2d99b797252ea91bd4322"
+        },
+        {
+          "file": "bundled/CznCore.pck",
+          "bytes": 52615710,
+          "sha256": "92eb2b1672c7d4d8945aa882bba3acc938027ddd52a1c4414771f2b4254bb8b6"
+        }
+      ]
+    },
+    {
+      "id": "CznStyleUI",
+      "version": "3.0.2-beta",
+      "author": "Pelleas",
+      "workshop": "https://steamcommunity.com/sharedfiles/filedetails/?id=3771060891",
+      "files": [
+        {
+          "file": "bundled/CznStyleUI.dll",
+          "bytes": 730112,
+          "sha256": "04e9d05c0543593192d97bd75ada0a715e4905e1aa8c18f2d979ee14659c6788"
+        },
+        {
+          "file": "bundled/CznStyleUI.pck",
+          "bytes": 178476820,
+          "sha256": "ef390be283883000c2bfe66559099e3b3136746951c92b3e54cab78fbf82d786"
+        }
+      ]
+    },
+    {
+      "id": "CznMainMenu",
+      "version": "1.0.1-beta",
+      "author": "Pelleas",
+      "workshop": "https://steamcommunity.com/sharedfiles/filedetails/?id=3774940754",
+      "files": [
+        {
+          "file": "bundled/CznMainMenu.dll",
+          "bytes": 111104,
+          "sha256": "ad3d52b853368bc80cb592e4580a7607d0267e5b1e869e6f6e888c68abdc1a49"
+        },
+        {
+          "file": "bundled/CznMainMenu.pck",
+          "bytes": 759624818,
+          "sha256": "7597b8af756ad0e687f62b0c5f6db771d83269ef6764c26c38b5e09020ee4e33"
+        }
+      ]
+    },
+    {
+      "id": "CznEnemySkin",
+      "version": "3.0.0-beta",
+      "author": "Pelleas",
+      "workshop": "https://steamcommunity.com/sharedfiles/filedetails/?id=3783041069",
+      "files": [
+        {
+          "file": "bundled/CznEnemySkin.dll",
+          "bytes": 829952,
+          "sha256": "1860907f62fafe717563595390953beab28a6c5ff1640a7c7ddf66db07481ef4"
+        },
+        {
+          "file": "bundled/CznEnemySkin.pck",
+          "bytes": 535443990,
+          "sha256": "490b2ab4d5d362946682f8e1aba113c96792d253dc1c5c9a6bf841a3254d7e7b"
+        }
+      ]
+    }
+  ],
+  "saberSkin": {
+    "author": "会画画的Small_day",
+    "workshop": "https://steamcommunity.com/sharedfiles/filedetails/?id=3747659940",
+    "sourceSha256": "9f3d59b753287099eba3f90ace50585b040a7a3d8edd57e833d6b0d8ff53be23",
+    "includedResources": 38
+  },
+  "nineEffects": {
+    "author": "Pelleas",
+    "workshop": "https://steamcommunity.com/sharedfiles/filedetails/?id=3815657213",
+    "sourceSha256": "bcbc6934fe63af78c0fc722ebcee7d7faa54ce3657b8de5f0e31bd28e6787bb1",
+    "includesGameplayAssembly": false,
+    "resources": [
+      {
+        "path": ".godot/imported/close_combat_step_player_arrive.atlas-b99010e9.spatlas",
+        "sha256": "50fd712026bc28a7ad85410926c9c657c3f0140a35feefbaf049e7efb1fc3f54"
+      },
+      {
+        "path": ".godot/imported/close_combat_step_player_move.atlas-1ff4a6d3.spatlas",
+        "sha256": "d493519b98fc8fd2e6ead5f5c6eab84d6be8d36fe288260553d19898156cbe06"
+      },
+      {
+        "path": ".godot/imported/nine_30047_attack_play1_self_f.atlas-130eedd5.spatlas",
+        "sha256": "70906080aee820b79e30f3486a14e4078255649e5d0fd83389f364433eb1ad95"
+      },
+      {
+        "path": ".godot/imported/nine_30047_attack_play1_self_f.png-10494c1409e93ab8b3bb9370f20b9ab5.ctex",
+        "sha256": "65776424753d61033af0ba14748a80d735cae039cc9614f5ba5aa90ce4bae708"
+      },
+      {
+        "path": ".godot/imported/nine_30047_attack_play1_self_f.skel-2f064fe0.spskel",
+        "sha256": "d5534e5656e078665017d2e4b0c810336b867a440f12c6aa35fcee8765672fde"
+      },
+      {
+        "path": ".godot/imported/nine_30047_attack_play1_target_b.atlas-ded9aa2f.spatlas",
+        "sha256": "f0ad2d119d5a70848c20c70f24a2240f5bf0ede628e4df29038a6811b59d3868"
+      },
+      {
+        "path": ".godot/imported/nine_30047_attack_play1_target_b.png-2c85161a74fa300b5103431fa067946c.ctex",
+        "sha256": "50167902823121cd2c6cdbc06b09579c2210df3b73b6ab4f519ea6472ca8a941"
+      },
+      {
+        "path": ".godot/imported/nine_30047_attack_play1_target_b.skel-2f472615.spskel",
+        "sha256": "c9b2c1c5cfa5e1f79ddfed2a7cb4a38d920c8fcbb67d507339981ebbdd5a10d3"
+      },
+      {
+        "path": ".godot/imported/nine_30047_attack_play2_self_f_1.atlas-9918b485.spatlas",
+        "sha256": "a32bceca04ca3153a0e170efa9f00e0ae1e8c6457ddec6030e6bc7104f73b903"
+      },
+      {
+        "path": ".godot/imported/nine_30047_attack_play2_self_f_1.png-aefd5c7079aaee4f3838607036089faa.ctex",
+        "sha256": "dad6cf3c2febc6b8f45625d81c5be6f9214896729b50ae5afb1457cfe699c2d9"
+      },
+      {
+        "path": ".godot/imported/nine_30047_attack_play2_self_f_1.skel-5c96f3fb.spskel",
+        "sha256": "dec80b13e61ac33e0cbe302525895dd87095b8233194b591eddc4168c8b7d1a8"
+      },
+      {
+        "path": ".godot/imported/nine_30047_attack_play2_target_b.atlas-f7111edd.spatlas",
+        "sha256": "e87cac763a9bf6dc749bf5be0572861d21bfec1fd288403b7f16ba978eeb76c1"
+      },
+      {
+        "path": ".godot/imported/nine_30047_attack_play2_target_b.skel-3e3a4c6c.spskel",
+        "sha256": "4bc67b05877b1667e2afb7a4c0a4f6cbdf9fab5eb2208a4d9b99ac27149d7b31"
+      },
+      {
+        "path": ".godot/imported/nine_30047_u1_attack_play_target_b.atlas-7203e740.spatlas",
+        "sha256": "d99065ca750c8b867c3054638eb4b0f099261a31fefa806308385d0c914c014d"
+      },
+      {
+        "path": ".godot/imported/nine_30047_u1_attack_play_target_b.png-12e9847edf01975c96bfc4e60646dece.ctex",
+        "sha256": "3087e2dc6be303d360e7187736e8a63f64b7c549187c60ef5e0d2eaa5096f0ff"
+      },
+      {
+        "path": ".godot/imported/nine_30047_u1_attack_play_target_b.skel-49f3093e.spskel",
+        "sha256": "385fe6dac51c6fe74be8a5b6fc2ba8de3e9f9474d6f0cb8066686851909e478e"
+      },
+      {
+        "path": ".godot/imported/nine_30047_u2_attack_play_f_1.atlas-66595ab4.spatlas",
+        "sha256": "b3c7b31e0cd15a39ee98890814dfc15c440f52f7bbf5cfcb37332c4ee9c29a15"
+      },
+      {
+        "path": ".godot/imported/nine_30047_u2_attack_play_f_1.png-996f1470c4fa896686d51b56d9e03758.ctex",
+        "sha256": "3d823db8de067f2e29edf96ea58a8fe505490f18918022921b167a620c2156c2"
+      },
+      {
+        "path": ".godot/imported/nine_30047_u2_attack_play_f_1.skel-1212b222.spskel",
+        "sha256": "235b4e9b9717c3288ebec7104e8d0d7b14bad3e55b12c9e94cdaf72ac0285095"
+      },
+      {
+        "path": ".godot/imported/nine_30047_u3_attack_play_target_f_1.atlas-791e6127.spatlas",
+        "sha256": "00231fecb37bae9343bb2751c01bb5f7724e2df355488ead6e9b48649c4a45f9"
+      },
+      {
+        "path": ".godot/imported/nine_30047_u3_attack_play_target_f_1.png-3a44daf979d1a0b5eccd45e46791b8fa.ctex",
+        "sha256": "fb499521cb1d8a3e57c4f7a14d4e02b9e61a012446ec85fe22305c0b019f64b8"
+      },
+      {
+        "path": ".godot/imported/nine_30047_u3_attack_play_target_f_1.skel-8faa4ff1.spskel",
+        "sha256": "2ce154acdc55a86abdc273acdbf176949a19bfcf3cea7ff3bb2b79542400ad08"
+      },
+      {
+        "path": ".godot/imported/nine_30047_ug_intro_sword.atlas-8c4ff666.spatlas",
+        "sha256": "d258dd4f7617fa01102c1cec1c9d141ac18f091f0693134c3df8aa4cf2ff2965"
+      },
+      {
+        "path": ".godot/imported/nine_30047_ug_intro_sword.png-022edb8052dce96da3d1d70d23ef670e.ctex",
+        "sha256": "b904fc8bfb8322565773412b904dd663054d986be05e20abb06ec97b3b365655"
+      },
+      {
+        "path": ".godot/imported/nine_30047_ug_intro_sword.skel-d1f959a6.spskel",
+        "sha256": "36091c1ddd62f2679557bb5f31549dce74c660c05d9494175ef198e6e4009a89"
+      },
+      {
+        "path": ".godot/imported/nine_30047_ug_target_b.atlas-08ea08a0.spatlas",
+        "sha256": "8dd9bb964f2b42a5f8a537470bb2372a10e8f205257e9d88f2e168853289648e"
+      },
+      {
+        "path": ".godot/imported/nine_30047_ug_target_b.png-cd51177dcfa0f58e59cade4f7f4df0b1.ctex",
+        "sha256": "59965de77bb8815cf49543e35fd87a3f9487d565c3267a815d9924ab005ebfdd"
+      },
+      {
+        "path": ".godot/imported/nine_30047_ug_target_b.skel-ca4641b5.spskel",
+        "sha256": "8969a81509b6a677343d05a967b74ba702b168e185f4f7e9f5655283088be51c"
+      },
+      {
+        "path": ".godot/imported/nine_30047_ug_target_f.atlas-fca52cb3.spatlas",
+        "sha256": "fccb0148f54a2f1497c83a5bf3ae4eb30163fbaa9b60e95cdef9258643fb8b9e"
+      },
+      {
+        "path": ".godot/imported/nine_30047_ug_target_f.png-f0f1abc4e439e94fc7d1c3ff24efdc57.ctex",
+        "sha256": "a59b50bda34681702ac20dd3749e70b06ae4a05fa561097c853db3d2be717582"
+      },
+      {
+        "path": ".godot/imported/nine_30047_ug_target_f.skel-51d703a3.spskel",
+        "sha256": "cebc87617ac816150b3ced4c085b3a86636d80ff799cfb2a159c3940de3a7fad"
+      },
+      {
+        "path": ".godot/imported/se_30047_attack_play1.ogg-fa2318565cb70f99da83f0d3d68ae2ea.oggvorbisstr",
+        "sha256": "78ad20d50a9f0598e8c7c29d281a723f9836994ac0c418b47d01da22a49b8304"
+      },
+      {
+        "path": ".godot/imported/se_30047_u1_attack_play.ogg-4155c15e52760166a655718c0b6c52e8.oggvorbisstr",
+        "sha256": "1b07905d86c26f836cfa8402eeec76909aa30d3e285513f4febffafd3300c4c4"
+      },
+      {
+        "path": ".godot/imported/se_30047_ug_attack.ogg-61249c9d31d44191eae5677562b62892.oggvorbisstr",
+        "sha256": "8b9c059afe0d2d694685b4c8230da16aefbc83e47353197e12e2476c39796aff"
+      },
+      {
+        "path": "CznNineCharacter/animations/basic_effects/close_combat_step_player_arrive.atlas.import",
+        "sha256": "d7db2304d7bdb5541afac39ca6aa6b34a2109668ee04ebb195eef068565c0d58"
+      },
+      {
+        "path": "CznNineCharacter/animations/basic_effects/close_combat_step_player_arrive.png.import",
+        "sha256": "e94afc5b254b31d92a9953bec77adf573d24b804b7f2f3ce180354610ccfd97c"
+      },
+      {
+        "path": "CznNineCharacter/animations/basic_effects/close_combat_step_player_arrive.skel.import",
+        "sha256": "78196a56e82f74ce0fb8bc4f5b29e921faf5cd60f77ce15fb3a05bd75b8a1bdd"
+      },
+      {
+        "path": "CznNineCharacter/animations/basic_effects/close_combat_step_player_arrive_skel_data.tres",
+        "sha256": "06079b06ab5a34ff864af5479688e31b38557d248abd35806b7bce1a50b89f1d"
+      },
+      {
+        "path": "CznNineCharacter/animations/basic_effects/close_combat_step_player_move.atlas.import",
+        "sha256": "78e237bc4fdcf7f35c97763d55bf56c7acad7a3cca19f7225b4163582c41ff2a"
+      },
+      {
+        "path": "CznNineCharacter/animations/basic_effects/close_combat_step_player_move.png.import",
+        "sha256": "e5cbd2be1b681b78b6f28ea162175c036d4b342f87a41494f1172a9222da1765"
+      },
+      {
+        "path": "CznNineCharacter/animations/basic_effects/close_combat_step_player_move.skel.import",
+        "sha256": "a56b429323dbf525ae19f1ea561d0a9f7d64571dc3db31fad49491bbbcd2c2ce"
+      },
+      {
+        "path": "CznNineCharacter/animations/basic_effects/close_combat_step_player_move_skel_data.tres",
+        "sha256": "69a6c230b09db35ec584223ce9e4a207a26f2289194c44be1eaa91bf6d45bdb1"
+      },
+      {
+        "path": "CznNineCharacter/animations/basic_effects/nine_30047_attack_play1_self_f.atlas.import",
+        "sha256": "78f166f73679479ce3595a16ce78fb853c3a6d9af1fbdb1674267810cf1c1f78"
+      },
+      {
+        "path": "CznNineCharacter/animations/basic_effects/nine_30047_attack_play1_self_f.png.import",
+        "sha256": "e71ef7ca4d08c24cf275639b6f056a4ffcad24223ab6b2c4d95dfff1ec52d42a"
+      },
+      {
+        "path": "CznNineCharacter/animations/basic_effects/nine_30047_attack_play1_self_f.skel.import",
+        "sha256": "0b68bb398e67da9f0fdde3b41b72ad5b47efd5452a43fb70df9111e96a451400"
+      },
+      {
+        "path": "CznNineCharacter/animations/basic_effects/nine_30047_attack_play1_self_f_skel_data.tres",
+        "sha256": "cae8b6beb8f4efc87cfc6b753b1f6fc148adc1e558a755d28d351ebd4d3b4234"
+      },
+      {
+        "path": "CznNineCharacter/animations/basic_effects/nine_30047_attack_play1_target_b.atlas.import",
+        "sha256": "b468a55a9f0b223a482b5fa24d190f2ed53274a4c0fc9bbf90afd1016546e799"
+      },
+      {
+        "path": "CznNineCharacter/animations/basic_effects/nine_30047_attack_play1_target_b.png.import",
+        "sha256": "9c1b91e8c8f2c4bc71dc68f69efa8693c3f63219702b602e4b3834b6108d3709"
+      },
+      {
+        "path": "CznNineCharacter/animations/basic_effects/nine_30047_attack_play1_target_b.skel.import",
+        "sha256": "b880ceee634f12af8f39143969e03beca6905c54b935dd2aaff29205265424bf"
+      },
+      {
+        "path": "CznNineCharacter/animations/basic_effects/nine_30047_attack_play1_target_b_skel_data.tres",
+        "sha256": "36e490b75c1a9e2718dff927cce3ecd9a4deb3411d0f66f0e942571a56e05900"
+      },
+      {
+        "path": "CznNineCharacter/animations/basic_effects/nine_30047_attack_play2_self_f_1.atlas.import",
+        "sha256": "c98341a25a626cf3fa5fadb1b0d49e8aeaef460ac0e42e8d2d470c6c869b6756"
+      },
+      {
+        "path": "CznNineCharacter/animations/basic_effects/nine_30047_attack_play2_self_f_1.png.import",
+        "sha256": "10e37b72c197010dcffdb540466e632b9280ca4297ae621c35029dca399d1429"
+      },
+      {
+        "path": "CznNineCharacter/animations/basic_effects/nine_30047_attack_play2_self_f_1.skel.import",
+        "sha256": "307198a22fa69f874d56089c8a22734213ac48e24758a580b4441510aba4da25"
+      },
+      {
+        "path": "CznNineCharacter/animations/basic_effects/nine_30047_attack_play2_self_f_1_skel_data.tres",
+        "sha256": "3e8cf07787a5fdcf3f2967ae807da94150e8d512a2146cb39d08e3da3ea940c4"
+      },
+      {
+        "path": "CznNineCharacter/animations/basic_effects/nine_30047_attack_play2_target_b.atlas.import",
+        "sha256": "9ab196ed677c0ccb548c3d708aca9913d80bdbc133260f432e86f8a64c5a4898"
+      },
+      {
+        "path": "CznNineCharacter/animations/basic_effects/nine_30047_attack_play2_target_b.png.import",
+        "sha256": "76ad5df673397fde9ff41f81c665aecfc0a74820cddc9e7ca1eb1d76cc010e4e"
+      },
+      {
+        "path": "CznNineCharacter/animations/basic_effects/nine_30047_attack_play2_target_b.skel.import",
+        "sha256": "e4bc5823c1827e524ca6b8e27ec199aee8eac6bd0374396953c4f835d944a0c4"
+      },
+      {
+        "path": "CznNineCharacter/animations/basic_effects/nine_30047_attack_play2_target_b_skel_data.tres",
+        "sha256": "fd5968665ffcbf992a78ac54f268bb6e85b6b27c0c2c365864c28956517ba647"
+      },
+      {
+        "path": "CznNineCharacter/animations/basic_effects/nine_30047_u1_attack_play_target_b.atlas.import",
+        "sha256": "54357ddd56ab0013c074dae0df3de999505426ef70b322024f23f164236809c8"
+      },
+      {
+        "path": "CznNineCharacter/animations/basic_effects/nine_30047_u1_attack_play_target_b.png.import",
+        "sha256": "5acd31a69cde0b7f958a71a871cec5db6851e03252d525f6f199c5f35ee83888"
+      },
+      {
+        "path": "CznNineCharacter/animations/basic_effects/nine_30047_u1_attack_play_target_b.skel.import",
+        "sha256": "9b7bff4c41a6e71dba3e67d3177aa51397e4cb9813c66388ed0fc6f132febc4f"
+      },
+      {
+        "path": "CznNineCharacter/animations/basic_effects/nine_30047_u1_attack_play_target_b_skel_data.tres",
+        "sha256": "94f4792014b4117868f31b3db6a377729594cbd50764a57f54caff63daef9355"
+      },
+      {
+        "path": "CznNineCharacter/animations/basic_effects/nine_30047_u2_attack_play_f_1.atlas.import",
+        "sha256": "4bf0cd77a971854e56c31bbccbfa5e77bfcbdbe42f790ee3fa1ca9c7d42c6f9d"
+      },
+      {
+        "path": "CznNineCharacter/animations/basic_effects/nine_30047_u2_attack_play_f_1.png.import",
+        "sha256": "fb690641c044baf21d9cc33918a71002396c07eb5cde8df4e6d11b11b5001149"
+      },
+      {
+        "path": "CznNineCharacter/animations/basic_effects/nine_30047_u2_attack_play_f_1.skel.import",
+        "sha256": "0d13a50155bd69d4c9d41081a447feb2c77624eae9264e6e1b10c699668297fb"
+      },
+      {
+        "path": "CznNineCharacter/animations/basic_effects/nine_30047_u2_attack_play_f_1_skel_data.tres",
+        "sha256": "de990da621f6f96b3fd5d3dc9bd715078ee9502b889fcbb633677a1e282cf3ac"
+      },
+      {
+        "path": "CznNineCharacter/animations/basic_effects/nine_30047_u3_attack_play_target_f_1.atlas.import",
+        "sha256": "0c5f8793a61aaff2a0e3652fd57d1a82afe4111b257471db92d4a0447d684b48"
+      },
+      {
+        "path": "CznNineCharacter/animations/basic_effects/nine_30047_u3_attack_play_target_f_1.png.import",
+        "sha256": "165bee649ff03cc9ebefe6826861e119eb18fbf53e74bb8a388e8d39e9495218"
+      },
+      {
+        "path": "CznNineCharacter/animations/basic_effects/nine_30047_u3_attack_play_target_f_1.skel.import",
+        "sha256": "c451decc4664ebc0f38de812c8cda10e1bfb7fe59c404949c8bebdf7403eb044"
+      },
+      {
+        "path": "CznNineCharacter/animations/basic_effects/nine_30047_u3_attack_play_target_f_1_skel_data.tres",
+        "sha256": "db3f1262e806e26df51dce67df82000d60f2c4d557b694eef9160505c2d8022c"
+      },
+      {
+        "path": "CznNineCharacter/animations/cinematic/nine_30047_ug_intro_sword.atlas.import",
+        "sha256": "efd4459379a6d68947ddc8a8ec93792cd7a22de1e92a102878b49cb28250f384"
+      },
+      {
+        "path": "CznNineCharacter/animations/cinematic/nine_30047_ug_intro_sword.png.import",
+        "sha256": "c266d50f9393d977c92900d9bb5ee16aef481034e7b6ec98e885f05a2280aa6e"
+      },
+      {
+        "path": "CznNineCharacter/animations/cinematic/nine_30047_ug_intro_sword.skel.import",
+        "sha256": "a9f93038c10585f99d31b58cdb54a135f6acd2e3baa4a083c40ef48741aa5ca7"
+      },
+      {
+        "path": "CznNineCharacter/animations/cinematic/nine_30047_ug_intro_sword_skel_data.tres",
+        "sha256": "04fa02f67738ae541f7104a0423c9413568e9500266bc14d93f6b538ba6a744c"
+      },
+      {
+        "path": "CznNineCharacter/animations/cinematic/nine_30047_ug_target_b.atlas.import",
+        "sha256": "5d707448ed686d838706c81cc8355101e7195c3e36baeccf285eb591d4cfb246"
+      },
+      {
+        "path": "CznNineCharacter/animations/cinematic/nine_30047_ug_target_b.png.import",
+        "sha256": "2a1636df65d8d20901b2459a5b0d6d8cbbb1b2dffa1859f4f9aa6baa31aaee24"
+      },
+      {
+        "path": "CznNineCharacter/animations/cinematic/nine_30047_ug_target_b.skel.import",
+        "sha256": "a31f08bd542d87b5e348b2ac2dd5780c608def5a1bd28152eb6ff210fc98d58b"
+      },
+      {
+        "path": "CznNineCharacter/animations/cinematic/nine_30047_ug_target_b_skel_data.tres",
+        "sha256": "d2c563760c5b10b8e19eb12ee92634e261953b514cf2f89c0fb53ae5d431d82e"
+      },
+      {
+        "path": "CznNineCharacter/animations/cinematic/nine_30047_ug_target_f.atlas.import",
+        "sha256": "ff0b69f246f7d3eeae2bbc3225f4f3a7e07b2538c119d8a5a77546a565be6af4"
+      },
+      {
+        "path": "CznNineCharacter/animations/cinematic/nine_30047_ug_target_f.png.import",
+        "sha256": "64125db2996e058e92bbf364505c1a3d9fa1d059da9615832875cdafd30a3d5c"
+      },
+      {
+        "path": "CznNineCharacter/animations/cinematic/nine_30047_ug_target_f.skel.import",
+        "sha256": "8b368b92b3d80dcb786efd02f49d34fa62898ea16a261a37c177fc99ff2d28d3"
+      },
+      {
+        "path": "CznNineCharacter/animations/cinematic/nine_30047_ug_target_f_skel_data.tres",
+        "sha256": "cfccf40d95ba67e4cf911eee022e676a9d9df2d0bb9d54517efac872e8aea977"
+      },
+      {
+        "path": "CznNineCharacter/audio/sfx/se_30047_attack_play1.ogg.import",
+        "sha256": "8e1af0f9bb726fcd851eec626c08f2d5f79ddf63a990314e7598a088aa0b6664"
+      },
+      {
+        "path": "CznNineCharacter/audio/sfx/se_30047_u1_attack_play.ogg.import",
+        "sha256": "62ccbfdca8547b5228e34f8a63f54e292d1448bd1f85aca3e2a6b630ae67ffa6"
+      },
+      {
+        "path": "CznNineCharacter/audio/sfx/se_30047_ug_attack.ogg.import",
+        "sha256": "d2f1610bddc1009bd98e2b05ca07e32abcc5dcfe7ad9c30a0406a15226772c09"
+      }
+    ]
+  },
+  "ownPack": {
+    "file": "SaberPresentation.pck",
+    "resources": 209,
+    "bytes": 34315070,
+    "sha256": "45f47352790d31921f99f346a3beaf748709b1c781b3d5b3634c16dd7065c458"
+  }
+}

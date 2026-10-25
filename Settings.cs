@@ -20,6 +20,8 @@ public sealed class Settings
     public float PortraitOffsetX { get; set; }
     public float PortraitOffsetY { get; set; }
     public bool Cinematics { get; set; } = true;
+    public bool KillingBlowExcalibur { get; set; } = true;
+    public bool StandaloneDefaultsApplied { get; set; }
     public bool ScreenShake { get; set; } = true;
     public bool ScreenFlash { get; set; } = true;
     public bool JapaneseVoice { get; set; } = true;

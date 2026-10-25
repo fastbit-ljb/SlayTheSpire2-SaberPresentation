@@ -2,11 +2,11 @@
   "id": "SaberPresentation",
   "name": "Saber 战斗演出 / Saber Combat Presentation",
   "author": "Local fan edit; original Saber skin: 会画画的Small_day",
-  "description": "Saber 完整交互演出：选牌预备动作、动态大立绘、专属卡面、精细特效、日配与誓约胜利之剑。接入 CZN 界面、主菜单和敌人套装；需要原版 saber 外观模组。",
+  "description": "独立 Saber 完整演出：角色骨骼、选牌预备动作、动态大立绘、专属卡面、日配、精细特效与击杀咖喱棒 CG。内置 CZN 界面、主菜单与敌人演出组件，只需安装本模组。",
   "version": "0.3.0",
   "min_game_version": "0.111.0",
   "has_pck": true,
   "has_dll": true,
-  "dependencies": [{ "id": "saber" }],
+  "dependencies": [],
   "affects_gameplay": false
 }

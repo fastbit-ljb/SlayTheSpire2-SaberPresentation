@@ -31,6 +31,7 @@ internal static class CznInterop
                 Toggle("dash", "近身移动", () => Settings.Current.Dash, v => Settings.Current.Dash = v),
                 Toggle("rich_motion", "丰富动作编排", () => Settings.Current.RichMotion, v => Settings.Current.RichMotion = v),
                 Toggle("cinematics", "宝具全屏演出", () => Settings.Current.Cinematics, v => Settings.Current.Cinematics = v),
+                Toggle("killing_blow", "击杀时释放咖喱棒 CG", () => Settings.Current.KillingBlowExcalibur, v => Settings.Current.KillingBlowExcalibur = v),
                 Toggle("flash", "宝具闪光", () => Settings.Current.ScreenFlash, v => Settings.Current.ScreenFlash = v),
                 Toggle("shake", "震屏", () => Settings.Current.ScreenShake, v => Settings.Current.ScreenShake = v),
                 Toggle("prefer_saber", "铁甲战士优先使用 Saber", () => Settings.Current.PreferSaber, v => Settings.Current.PreferSaber = v),

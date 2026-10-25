@@ -1,4 +1,4 @@
-param([switch]$Install, [switch]$EnableCznSuite)
+param([switch]$Install, [switch]$EnableStandalone)
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $version = (Get-Content -LiteralPath (Join-Path $projectRoot 'SaberPresentation.json') -Raw | ConvertFrom-Json).version
@@ -7,6 +7,8 @@ $packageRoot = Join-Path $projectRoot 'dist\SaberPresentation'
 if ($LASTEXITCODE -ne 0) { throw 'Release build failed' }
 & python -X utf8 (Join-Path $PSScriptRoot 'prepare_assets.py')
 if ($LASTEXITCODE -ne 0) { throw 'Asset build failed' }
+& python -X utf8 (Join-Path $PSScriptRoot 'prepare_standalone.py')
+if ($LASTEXITCODE -ne 0) { throw 'Standalone payload build failed' }
 New-Item -ItemType Directory -Path $packageRoot -Force | Out-Null
 $artifacts = @(
     (Join-Path $projectRoot 'bin\Release\net9.0\SaberPresentation.dll'),
@@ -20,14 +22,22 @@ Copy-Item -LiteralPath (Join-Path $projectRoot 'CZN_ASSETS.json'),(Join-Path $pr
 Copy-Item -LiteralPath (Join-Path $projectRoot 'CZN_PARITY.md') -Destination $packageRoot -Force
 Copy-Item -LiteralPath (Join-Path $projectRoot 'assets\generated\provenance.json') -Destination (Join-Path $packageRoot 'GENERATED_ASSETS.json') -Force
 Copy-Item -LiteralPath (Join-Path $projectRoot 'assets\generated\PROMPTS.md') -Destination $packageRoot -Force
-Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'enable_czn_suite.ps1') -Destination (Join-Path $packageRoot 'ENABLE_CZN_SUITE.ps1') -Force
+Copy-Item -LiteralPath (Join-Path $projectRoot 'STANDALONE_COMPONENTS.json'),(Join-Path $projectRoot 'THIRD_PARTY_NOTICES.md') -Destination $packageRoot -Force
+Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'enable_standalone.ps1') -Destination (Join-Path $packageRoot 'ENABLE_STANDALONE.ps1') -Force
+$bundledPackage = Join-Path $packageRoot 'bundled'
+New-Item -ItemType Directory -Path $bundledPackage -Force | Out-Null
+Copy-Item -LiteralPath (Get-ChildItem -LiteralPath (Join-Path $projectRoot 'build\bundled') -File).FullName -Destination $bundledPackage -Force
 $zip = Join-Path $projectRoot "dist\SaberPresentation-$version.zip"
-Compress-Archive -LiteralPath $packageRoot -DestinationPath $zip -Force
+Compress-Archive -LiteralPath $packageRoot -DestinationPath $zip -CompressionLevel Fastest -Force
 if ($Install) {
     $installRoot = 'D:\L\Game\Steam\steamapps\common\Slay the Spire 2\mods\SaberPresentation'
     New-Item -ItemType Directory -Path $installRoot -Force | Out-Null
     Copy-Item -LiteralPath $artifacts -Destination $installRoot -Force
+    $bundledInstall = Join-Path $installRoot 'bundled'
+    New-Item -ItemType Directory -Path $bundledInstall -Force | Out-Null
+    Copy-Item -LiteralPath (Get-ChildItem -LiteralPath $bundledPackage -File).FullName -Destination $bundledInstall -Force
+    Copy-Item -LiteralPath (Join-Path $packageRoot 'STANDALONE_COMPONENTS.json'),(Join-Path $packageRoot 'THIRD_PARTY_NOTICES.md'),(Join-Path $packageRoot 'README.md') -Destination $installRoot -Force
     Write-Output "Installed: $installRoot"
 }
-if ($EnableCznSuite) { & (Join-Path $PSScriptRoot 'enable_czn_suite.ps1') }
+if ($EnableStandalone) { & (Join-Path $PSScriptRoot 'enable_standalone.ps1') }
 Get-Item -LiteralPath $zip | Select-Object FullName,Length

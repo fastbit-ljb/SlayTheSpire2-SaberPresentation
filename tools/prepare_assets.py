@@ -1,7 +1,6 @@
-"""Acquire the verified JP Artoria (100100) resources and package this add-on.
+"""Acquire JP Artoria audio and build our art/audio pack.
 
-Only our namespaced resources are packed. The installed Saber skin is never
-modified, and no Nine artwork/audio/code is included.
+prepare_standalone.py then adds the complete skin and effect dependency closure.
 """
 import hashlib
 import io

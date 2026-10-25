@@ -14,12 +14,9 @@ internal static class SaberSkin
         if (!Settings.Current.PreferSaber) return;
         try
         {
-            var mod = ModManager.GetLoadedMods().FirstOrDefault(m => m.manifest?.id == "saber");
-            if (mod == null) return;
-            string pack = System.IO.Path.Combine(mod.path, "saber.pck");
-            // Other installed Ironclad skins export the same native paths. Mount
-            // the user's original Saber pack last and load its own exported body
-            // explicitly, without copying or modifying the Workshop source.
+            string pack = System.IO.Path.Combine(Standalone.Root, "SaberPresentation.pck");
+            // The complete Saber skeleton and its atlas are in our own payload.
+            // Mount last to retain it alongside other Ironclad replacements.
             if (!ProjectSettings.LoadResourcePack(pack, replaceFiles: true)) return;
             using var file = System.IO.File.OpenRead(pack);
             using var reader = new System.IO.BinaryReader(file);
@@ -35,7 +32,7 @@ internal static class SaberSkin
                 file.Position += (4 - length % 4) % 4 + 36;
                 if (!path.EndsWith("-ironclad_skel_data.res", StringComparison.Ordinal)) continue;
                 _body = ResourceLoader.Load("res://" + path.Replace("res://", ""), cacheMode: ResourceLoader.CacheMode.ReplaceDeep);
-                Log.Info("[SaberPresentation] Original Saber body retained alongside other Ironclad skins.");
+                Log.Info("[SaberPresentation] Bundled Saber body loaded without external skin dependencies.");
                 return;
             }
         }

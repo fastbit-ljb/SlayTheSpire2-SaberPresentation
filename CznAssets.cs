@@ -5,8 +5,8 @@ using MegaCrit.Sts2.Core.Logging;
 
 namespace SaberPresentation;
 
-// Optional, resource-only integration. No CZN DLL calls, model registration or
-// extracted assets: all paths belong to the user's installed, enabled packs.
+// Resource-only effect adapter. All required atlas/skeleton/audio dependencies
+// ship in this mod's private payload; no installed Nine character is required.
 internal static class CznAssets
 {
     private const string Nine = "res://CznNineCharacter/animations/basic_effects/";

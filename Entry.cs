@@ -21,6 +21,7 @@ public static class Entry
     public static void Initialize()
     {
         Settings.Load();
+        Standalone.Initialize();
         CznInterop.Register();
         new Harmony("local.saber.presentation").PatchAll(typeof(Entry).Assembly);
         Log.Info("[SaberPresentation] JP combat presentation 0.3.0 initialized.");
@@ -176,6 +177,26 @@ internal static class ShieldImpactPatch
     private static void Postfix(Creature target, DamageResult result)
     {
         if (result.BlockedDamage > 0 && Runtime.IsSaber(target)) Runtime.Blocked(target, result.WasBlockBroken);
+    }
+}
+
+// Damage is final here, including block, powers and redirection, but the native
+// death/removal phase has not started. Await only the presentation, never replay
+// a damage calculation or advance targeting RNG to predict a kill.
+[HarmonyPatch(typeof(Hook), nameof(Hook.AfterDamageGiven))]
+internal static class KillingBlowPatch
+{
+    private static void Postfix(Creature? dealer, DamageResult results, ValueProp props, CardModel? cardSource, ref Task __result)
+    {
+        if (cardSource != null && Runtime.IsSaber(dealer) && (props & ValueProp.Move) != 0
+            && results.WasTargetKilled && results.Receiver.IsDead && results.Receiver.Side != dealer!.Side)
+            __result = Present(__result, dealer!, results, cardSource);
+    }
+    private static async Task Present(Task original, Creature dealer, DamageResult result, CardModel card)
+    {
+        await original;
+        try { await Runtime.KillingBlow(dealer, result, card); }
+        catch (Exception ex) { Log.Warn("[SaberPresentation] Finisher presentation: " + ex.Message); }
     }
 }
 
