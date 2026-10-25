@@ -18,6 +18,6 @@ def encode(source, output, start, duration, filters, audio):
 
 if __name__ == "__main__":
     encode("fgo_official_saber_720p.mp4", "excalibur_np.ogv", 23.15, 16.6,
-           "crop=1138:640:71:80,scale=1280:720", True)
+           "crop=1138:456:71:80,scale=1280:512,pad=1280:720:0:104:black", True)
     encode("fgo_memorial_2023_official.mp4", "saber_defeat.ogv", 105.35, 9.3,
            "crop=1138:640:71:80,scale=1280:720,fade=t=in:st=0:d=0.16,fade=t=out:st=8.5:d=0.8", False)

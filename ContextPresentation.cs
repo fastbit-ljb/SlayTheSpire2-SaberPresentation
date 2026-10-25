@@ -44,11 +44,6 @@ internal static class ContextPresentation
                     Size = size, MouseFilter = Control.MouseFilterEnum.Ignore };
                 video.Set("expand", true);
                 layer.AddChild(video);
-                var defeatTitle = new Label { Text = "DEFEAT", Position = size * new Vector2(0.075f, 0.76f),
-                    Modulate = new Color(0.76f, 0.86f, 1, 0), MouseFilter = Control.MouseFilterEnum.Ignore };
-                defeatTitle.AddThemeFontSizeOverride("font_size", 62);
-                defeatTitle.AddThemeColorOverride("font_color", new Color(0.76f, 0.86f, 1));
-                layer.AddChild(defeatTitle);
                 video.Play();
                 await Fx.Delay(0.08);
                 if (video.IsPlaying())
@@ -58,7 +53,6 @@ internal static class ContextPresentation
                     _ = TaskHelper.RunSafely(TestHarness.CaptureAfter("defeat_cg_mid", 3.6));
                     _ = TaskHelper.RunSafely(TestHarness.CaptureAfter("defeat_cg_late", 6.6));
 #endif
-                    defeatTitle.CreateTween().TweenProperty(defeatTitle, "modulate:a", 0.92f, 0.35).SetDelay(0.35);
                     while (GodotObject.IsInstanceValid(video) && video.IsPlaying())
                     {
                         LastDefeatVideoSeconds = video.StreamPosition;
@@ -69,7 +63,6 @@ internal static class ContextPresentation
                 }
                 video.QueueFree();
                 backdrop.QueueFree();
-                defeatTitle.QueueFree();
             }
             var picture = new TextureRect { Texture = Art.Texture(victory ? "camelot_stage" : "saber_defeat"), Size = size,
                 ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.KeepAspectCovered,
@@ -82,11 +75,6 @@ internal static class ContextPresentation
                     StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered, MouseFilter = Control.MouseFilterEnum.Ignore };
                 picture.AddChild(portrait);
             }
-            var title = new Label { Text = victory ? "VICTORY" : "DEFEAT", Position = size * new Vector2(0.09f, 0.48f),
-                MouseFilter = Control.MouseFilterEnum.Ignore };
-            title.AddThemeFontSizeOverride("font_size", 64);
-            title.AddThemeColorOverride("font_color", victory ? new Color(1, 0.85f, 0.5f) : new Color(0.84f, 0.9f, 1));
-            picture.AddChild(title);
             picture.CreateTween().TweenProperty(picture, "modulate:a", 1f, 0.22);
             await Fx.Delay(1.35);
             if (GodotObject.IsInstanceValid(picture)) picture.CreateTween().TweenProperty(picture, "modulate:a", 0f, 0.25);

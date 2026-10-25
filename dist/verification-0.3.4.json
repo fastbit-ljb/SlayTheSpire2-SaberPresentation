@@ -1,0 +1,954 @@
+{
+  "version": "0.3.4",
+  "gameVersion": "0.111.0",
+  "nativeModEntries": 1,
+  "manifestDependencies": [],
+  "releaseContainsTestHarness": false,
+  "packageBytes": 88677777,
+  "packageSha256": "5806bc586794eb248c6bfe9e3111b624872302cfe60d3a24de0ae4441ee34a60",
+  "verifiedArtifacts": [
+    {
+      "file": "SaberPresentation.dll",
+      "sha256": "94c8eae9491236fe10d961c222033184fb37dccec83f290c9a3c8676bda4b59a",
+      "zipMatches": true,
+      "installedMatches": true
+    },
+    {
+      "file": "SaberPresentation.pck",
+      "sha256": "df5b3012371fe77ed7a48fc4acbbcd527116e8fd176814b00e9929558c94a5bd",
+      "zipMatches": true,
+      "installedMatches": true
+    },
+    {
+      "file": "SaberPresentation.json",
+      "sha256": "81a87ec74c2a4cd8ea4391d75d022d0137bf1f9f64f9baa86c4f73cb36e62567",
+      "zipMatches": true,
+      "installedMatches": true
+    }
+  ],
+  "tests": [
+    {
+      "suite": "verification-standalone",
+      "passed": 143,
+      "failed": 0,
+      "checks": [
+        {
+          "check": "czn_pack_detection",
+          "passed": true
+        },
+        {
+          "check": "no_foreign_runtime_assemblies",
+          "passed": true
+        },
+        {
+          "check": "no_czn_shared_settings_registry",
+          "passed": true
+        },
+        {
+          "check": "only_one_native_mod_installed",
+          "passed": true
+        },
+        {
+          "check": "zero_manifest_dependencies",
+          "passed": true
+        },
+        {
+          "check": "enemy_skin_module_absent",
+          "passed": true
+        },
+        {
+          "check": "card_art_override_not_installed",
+          "passed": true
+        },
+        {
+          "check": "saber_detected",
+          "passed": true
+        },
+        {
+          "check": "saber_identity_icon_preserved",
+          "passed": true
+        },
+        {
+          "check": "raster_decodes_saber_vfx_atlas",
+          "passed": true
+        },
+        {
+          "check": "raster_decodes_saber_ready_attack",
+          "passed": true
+        },
+        {
+          "check": "raster_decodes_saber_ready_cast",
+          "passed": true
+        },
+        {
+          "check": "raster_decodes_camelot_stage",
+          "passed": true
+        },
+        {
+          "check": "raster_decodes_saber_defeat",
+          "passed": true
+        },
+        {
+          "check": "raster_decodes_saber_rig_body_v1",
+          "passed": true
+        },
+        {
+          "check": "raster_decodes_saber_rig_head_v1",
+          "passed": true
+        },
+        {
+          "check": "raster_decodes_saber_rig_arms_v1",
+          "passed": true
+        },
+        {
+          "check": "official_excalibur_video_decodes",
+          "passed": true
+        },
+        {
+          "check": "animated_defeat_video_decodes",
+          "passed": true
+        },
+        {
+          "check": "anime_bgm_instrumental_decodes",
+          "passed": true
+        },
+        {
+          "check": "anime_bgm_owned_by_saber_run",
+          "passed": true
+        },
+        {
+          "check": "native_run_music_suppressed",
+          "passed": true
+        },
+        {
+          "check": "anime_bgm_does_not_restart_on_update",
+          "passed": true
+        },
+        {
+          "check": "anime_bgm_ducks_for_japanese_voice",
+          "passed": true
+        },
+        {
+          "check": "anime_bgm_pauses_for_cg",
+          "passed": true
+        },
+        {
+          "check": "anime_bgm_resumes_after_cg",
+          "passed": true
+        },
+        {
+          "check": "anime_bgm_obeys_game_music_mute",
+          "passed": true
+        },
+        {
+          "check": "native_card_focus_shows_portrait",
+          "passed": true
+        },
+        {
+          "check": "hover_uses_anime_portrait_art",
+          "passed": true
+        },
+        {
+          "check": "portrait_is_native_weighted_skeleton",
+          "passed": true
+        },
+        {
+          "check": "hover_native_art_resolution",
+          "passed": true
+        },
+        {
+          "check": "hover_does_not_clone_battle_or_selection_spine",
+          "passed": true
+        },
+        {
+          "check": "hover_model_keeps_natural_idle",
+          "passed": true
+        },
+        {
+          "check": "anime_cloth_animates_while_hovered",
+          "passed": true
+        },
+        {
+          "check": "original_card_portrait_preserved",
+          "passed": true
+        },
+        {
+          "check": "native_energy_visible_during_hover",
+          "passed": true
+        },
+        {
+          "check": "native_energy_above_portrait",
+          "passed": true
+        },
+        {
+          "check": "native_energy_in_viewport",
+          "passed": true
+        },
+        {
+          "check": "energy_readout_updates_2",
+          "passed": true
+        },
+        {
+          "check": "energy_stays_visible_2",
+          "passed": true
+        },
+        {
+          "check": "energy_readout_updates_0",
+          "passed": true
+        },
+        {
+          "check": "energy_stays_visible_0",
+          "passed": true
+        },
+        {
+          "check": "energy_readout_updates_3",
+          "passed": true
+        },
+        {
+          "check": "energy_stays_visible_3",
+          "passed": true
+        },
+        {
+          "check": "rapid_focus_switch_preserved",
+          "passed": true
+        },
+        {
+          "check": "targeting_keeps_portrait",
+          "passed": true
+        },
+        {
+          "check": "cancel_restores_portrait_and_body",
+          "passed": true
+        },
+        {
+          "check": "hover_does_not_damage_actor",
+          "passed": true
+        },
+        {
+          "check": "native_card_play_animates_portrait",
+          "passed": true
+        },
+        {
+          "check": "portrait_textures_unchanged_through_attack",
+          "passed": true
+        },
+        {
+          "check": "animated_action_sword_tips_inside_viewport",
+          "passed": true
+        },
+        {
+          "check": "native_strike_damage_preserved",
+          "passed": true
+        },
+        {
+          "check": "hover_during_return_no_drift_0",
+          "passed": true
+        },
+        {
+          "check": "hover_during_return_no_drift_1",
+          "passed": true
+        },
+        {
+          "check": "hover_during_return_no_drift_2",
+          "passed": true
+        },
+        {
+          "check": "hover_during_return_no_drift_3",
+          "passed": true
+        },
+        {
+          "check": "no_czn_hud_menu_or_audio_nodes",
+          "passed": true
+        },
+        {
+          "check": "native_gold_label_visible_and_accurate",
+          "passed": true
+        },
+        {
+          "check": "native_gold_icon_preserved",
+          "passed": true
+        },
+        {
+          "check": "native_card_frame_DEFEND_IRONCLAD",
+          "passed": true
+        },
+        {
+          "check": "native_card_frame_STRIKE_IRONCLAD",
+          "passed": true
+        },
+        {
+          "check": "native_card_frame_STRIKE_IRONCLAD",
+          "passed": true
+        },
+        {
+          "check": "native_card_frame_STRIKE_IRONCLAD",
+          "passed": true
+        },
+        {
+          "check": "native_card_frame_DEFEND_IRONCLAD",
+          "passed": true
+        },
+        {
+          "check": "native_energy_counter_retained",
+          "passed": true
+        },
+        {
+          "check": "native_end_turn_button_retained",
+          "passed": true
+        },
+        {
+          "check": "no_ui_assets_in_character_payload",
+          "passed": true
+        },
+        {
+          "check": "voice_attack_decodes",
+          "passed": true
+        },
+        {
+          "check": "voice_np_decodes",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_attack_1",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_attack_2",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_attack_3",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_heavy",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_skill_1",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_skill_2",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_entry_1",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_entry_2",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_victory_1",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_victory_2",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_hurt_1",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_hurt_2",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_death",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_np_charge",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_np_release",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_np_end",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_attack_4",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_attack_5",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_attack_6",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_attack_7",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_heavy_2",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_heavy_3",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_skill_3",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_skill_4",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_entry_3",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_entry_4",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_victory_3",
+          "passed": true
+        },
+        {
+          "check": "jp_audio_victory_4",
+          "passed": true
+        },
+        {
+          "check": "damage_unchanged_STRIKE_IRONCLAD",
+          "passed": true
+        },
+        {
+          "check": "actor_returns_STRIKE_IRONCLAD",
+          "passed": true
+        },
+        {
+          "check": "damage_unchanged_POMMEL_STRIKE",
+          "passed": true
+        },
+        {
+          "check": "actor_returns_POMMEL_STRIKE",
+          "passed": true
+        },
+        {
+          "check": "damage_unchanged_UPPERCUT",
+          "passed": true
+        },
+        {
+          "check": "actor_returns_UPPERCUT",
+          "passed": true
+        },
+        {
+          "check": "damage_unchanged_HEMOKINESIS",
+          "passed": true
+        },
+        {
+          "check": "actor_returns_HEMOKINESIS",
+          "passed": true
+        },
+        {
+          "check": "damage_unchanged_WHIRLWIND",
+          "passed": true
+        },
+        {
+          "check": "actor_returns_WHIRLWIND",
+          "passed": true
+        },
+        {
+          "check": "damage_unchanged_BASH",
+          "passed": true
+        },
+        {
+          "check": "actor_returns_BASH",
+          "passed": true
+        },
+        {
+          "check": "damage_unchanged_BLUDGEON",
+          "passed": true
+        },
+        {
+          "check": "actor_returns_BLUDGEON",
+          "passed": true
+        },
+        {
+          "check": "multi_hit_count_unchanged",
+          "passed": true
+        },
+        {
+          "check": "random_damage_unchanged",
+          "passed": true
+        },
+        {
+          "check": "native_callback_preserved",
+          "passed": true
+        },
+        {
+          "check": "aoe_damage_unchanged",
+          "passed": true
+        },
+        {
+          "check": "np_multihit_damage_unchanged",
+          "passed": true
+        },
+        {
+          "check": "real_bludgeon_card_damage_unchanged",
+          "passed": true
+        },
+        {
+          "check": "nonlethal_cards_do_not_trigger_cg",
+          "passed": true
+        },
+        {
+          "check": "blocked_low_hp_target_does_not_trigger_cg",
+          "passed": true
+        },
+        {
+          "check": "real_lethal_strike_triggers_excalibur_once",
+          "passed": true
+        },
+        {
+          "check": "killing_blow_uses_animated_cg",
+          "passed": true
+        },
+        {
+          "check": "excalibur_starts_ahead_of_saber",
+          "passed": true
+        },
+        {
+          "check": "excalibur_muzzle_does_not_cover_saber",
+          "passed": true
+        },
+        {
+          "check": "full_jp_charge_finishes_before_release",
+          "passed": true
+        },
+        {
+          "check": "multihit_kill_triggers_once",
+          "passed": true
+        },
+        {
+          "check": "aoe_two_kills_one_cg",
+          "passed": true
+        },
+        {
+          "check": "finisher_cg_cleans_up",
+          "passed": true
+        },
+        {
+          "check": "fully_blocked_damage_unchanged",
+          "passed": true
+        },
+        {
+          "check": "no_leftover_cinematic",
+          "passed": true
+        },
+        {
+          "check": "final_actor_home",
+          "passed": true
+        },
+        {
+          "check": "melee_motion_reaches_resolved_targets",
+          "passed": true
+        },
+        {
+          "check": "czn_effects_no_errors",
+          "passed": true
+        },
+        {
+          "check": "czn_effects_used_when_available",
+          "passed": true
+        },
+        {
+          "check": "czn_sfx_used_when_available",
+          "passed": true
+        },
+        {
+          "check": "czn_effects_cleaned_up",
+          "passed": true
+        },
+        {
+          "check": "painted_effects_cleaned_up",
+          "passed": true
+        },
+        {
+          "check": "no_line_geometry",
+          "passed": true
+        },
+        {
+          "check": "czn_setting_disables_reuse",
+          "passed": true
+        },
+        {
+          "check": "native_player_death_resolves",
+          "passed": true
+        },
+        {
+          "check": "native_game_over_triggers_saber_cg",
+          "passed": true
+        },
+        {
+          "check": "game_over_uses_animated_defeat_cg",
+          "passed": true
+        },
+        {
+          "check": "defeat_video_advances_beyond_single_frame",
+          "passed": true
+        },
+        {
+          "check": "game_over_cg_cleans_up",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "suite": "verification-menu",
+      "passed": 9,
+      "failed": 0,
+      "checks": [
+        {
+          "check": "czn_pack_detection",
+          "passed": true
+        },
+        {
+          "check": "no_foreign_runtime_assemblies",
+          "passed": true
+        },
+        {
+          "check": "no_czn_shared_settings_registry",
+          "passed": true
+        },
+        {
+          "check": "only_one_native_mod_installed",
+          "passed": true
+        },
+        {
+          "check": "zero_manifest_dependencies",
+          "passed": true
+        },
+        {
+          "check": "native_main_menu_created",
+          "passed": true
+        },
+        {
+          "check": "native_main_menu_no_theme_host",
+          "passed": true
+        },
+        {
+          "check": "no_custom_lobby_resource",
+          "passed": true
+        },
+        {
+          "check": "anime_music_absent_from_main_menu",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "suite": "verification-fix-hd",
+      "passed": 68,
+      "failed": 0,
+      "checks": [
+        {
+          "check": "czn_pack_detection",
+          "passed": true
+        },
+        {
+          "check": "no_foreign_runtime_assemblies",
+          "passed": true
+        },
+        {
+          "check": "no_czn_shared_settings_registry",
+          "passed": true
+        },
+        {
+          "check": "only_one_native_mod_installed",
+          "passed": true
+        },
+        {
+          "check": "zero_manifest_dependencies",
+          "passed": true
+        },
+        {
+          "check": "enemy_skin_module_absent",
+          "passed": true
+        },
+        {
+          "check": "card_art_override_not_installed",
+          "passed": true
+        },
+        {
+          "check": "saber_detected",
+          "passed": true
+        },
+        {
+          "check": "saber_identity_icon_preserved",
+          "passed": true
+        },
+        {
+          "check": "raster_decodes_saber_vfx_atlas",
+          "passed": true
+        },
+        {
+          "check": "raster_decodes_saber_ready_attack",
+          "passed": true
+        },
+        {
+          "check": "raster_decodes_saber_ready_cast",
+          "passed": true
+        },
+        {
+          "check": "raster_decodes_camelot_stage",
+          "passed": true
+        },
+        {
+          "check": "raster_decodes_saber_defeat",
+          "passed": true
+        },
+        {
+          "check": "raster_decodes_saber_rig_body_v1",
+          "passed": true
+        },
+        {
+          "check": "raster_decodes_saber_rig_head_v1",
+          "passed": true
+        },
+        {
+          "check": "raster_decodes_saber_rig_arms_v1",
+          "passed": true
+        },
+        {
+          "check": "official_excalibur_video_decodes",
+          "passed": true
+        },
+        {
+          "check": "animated_defeat_video_decodes",
+          "passed": true
+        },
+        {
+          "check": "anime_bgm_instrumental_decodes",
+          "passed": true
+        },
+        {
+          "check": "anime_bgm_owned_by_saber_run",
+          "passed": true
+        },
+        {
+          "check": "native_run_music_suppressed",
+          "passed": true
+        },
+        {
+          "check": "anime_bgm_does_not_restart_on_update",
+          "passed": true
+        },
+        {
+          "check": "anime_bgm_ducks_for_japanese_voice",
+          "passed": true
+        },
+        {
+          "check": "anime_bgm_pauses_for_cg",
+          "passed": true
+        },
+        {
+          "check": "anime_bgm_resumes_after_cg",
+          "passed": true
+        },
+        {
+          "check": "anime_bgm_obeys_game_music_mute",
+          "passed": true
+        },
+        {
+          "check": "native_card_focus_shows_portrait",
+          "passed": true
+        },
+        {
+          "check": "hover_uses_anime_portrait_art",
+          "passed": true
+        },
+        {
+          "check": "portrait_is_native_weighted_skeleton",
+          "passed": true
+        },
+        {
+          "check": "hover_native_art_resolution",
+          "passed": true
+        },
+        {
+          "check": "hover_does_not_clone_battle_or_selection_spine",
+          "passed": true
+        },
+        {
+          "check": "hover_model_keeps_natural_idle",
+          "passed": true
+        },
+        {
+          "check": "anime_cloth_animates_while_hovered",
+          "passed": true
+        },
+        {
+          "check": "original_card_portrait_preserved",
+          "passed": true
+        },
+        {
+          "check": "native_energy_visible_during_hover",
+          "passed": true
+        },
+        {
+          "check": "native_energy_above_portrait",
+          "passed": true
+        },
+        {
+          "check": "native_energy_in_viewport",
+          "passed": true
+        },
+        {
+          "check": "energy_readout_updates_2",
+          "passed": true
+        },
+        {
+          "check": "energy_stays_visible_2",
+          "passed": true
+        },
+        {
+          "check": "energy_readout_updates_0",
+          "passed": true
+        },
+        {
+          "check": "energy_stays_visible_0",
+          "passed": true
+        },
+        {
+          "check": "energy_readout_updates_3",
+          "passed": true
+        },
+        {
+          "check": "energy_stays_visible_3",
+          "passed": true
+        },
+        {
+          "check": "rapid_focus_switch_preserved",
+          "passed": true
+        },
+        {
+          "check": "targeting_keeps_portrait",
+          "passed": true
+        },
+        {
+          "check": "cancel_restores_portrait_and_body",
+          "passed": true
+        },
+        {
+          "check": "hover_does_not_damage_actor",
+          "passed": true
+        },
+        {
+          "check": "native_card_play_animates_portrait",
+          "passed": true
+        },
+        {
+          "check": "portrait_textures_unchanged_through_attack",
+          "passed": true
+        },
+        {
+          "check": "animated_action_sword_tips_inside_viewport",
+          "passed": true
+        },
+        {
+          "check": "native_strike_damage_preserved",
+          "passed": true
+        },
+        {
+          "check": "hover_during_return_no_drift_0",
+          "passed": true
+        },
+        {
+          "check": "hover_during_return_no_drift_1",
+          "passed": true
+        },
+        {
+          "check": "hover_during_return_no_drift_2",
+          "passed": true
+        },
+        {
+          "check": "hover_during_return_no_drift_3",
+          "passed": true
+        },
+        {
+          "check": "no_czn_hud_menu_or_audio_nodes",
+          "passed": true
+        },
+        {
+          "check": "native_gold_label_visible_and_accurate",
+          "passed": true
+        },
+        {
+          "check": "native_gold_icon_preserved",
+          "passed": true
+        },
+        {
+          "check": "native_card_frame_DEFEND_IRONCLAD",
+          "passed": true
+        },
+        {
+          "check": "native_card_frame_STRIKE_IRONCLAD",
+          "passed": true
+        },
+        {
+          "check": "native_card_frame_STRIKE_IRONCLAD",
+          "passed": true
+        },
+        {
+          "check": "native_card_frame_STRIKE_IRONCLAD",
+          "passed": true
+        },
+        {
+          "check": "native_card_frame_DEFEND_IRONCLAD",
+          "passed": true
+        },
+        {
+          "check": "native_energy_counter_retained",
+          "passed": true
+        },
+        {
+          "check": "native_end_turn_button_retained",
+          "passed": true
+        },
+        {
+          "check": "no_ui_assets_in_character_payload",
+          "passed": true
+        },
+        {
+          "check": "actual_1920x1080_render",
+          "passed": true
+        }
+      ]
+    }
+  ],
+  "totalPassed": 220,
+  "excludedModules": [
+    "CznStyleUI",
+    "CznMainMenu",
+    "CznEnemySkin",
+    "CznCore.dll",
+    "CznNineCharacter.dll"
+  ],
+  "foreignRuntimeAssemblies": [],
+  "nativeUiPreserved": true,
+  "bundledCharacterEffectDependencies": 142,
+  "cardArtDefault": "Original game portraits; custom card art paused",
+  "energyDisplay": "Native current/max energy, raised above the hand and portrait",
+  "hoverBattlePose": "Natural idle_loop; no frozen attack frame",
+  "cinematics": "Official FGO clips; Excalibur 16.6 seconds with JP audio; defeat 9.3 seconds, animated",
+  "backgroundMusic": "EMIYA_UBW Extended instrumental; offline 30-minute loop; Saber runs only; voice duck and CG pause",
+  "warnings": [
+    "Original Saber exported resources contain stale UIDs; Godot resolves their included text paths.",
+    "Instrumented game exits report Godot renderer/resource allocations, also present in the baseline."
+  ],
+  "portraitAnimation": "One 20-bone character with three weighted RGBA layers; native Skeleton2D + AnimationPlayer; continuous idle/attack/cast; hair-root/tip lag, bangs/ahoge/cloth; no whole-character texture swaps",
+  "presentationLimits": "Original nine Saber battle Spine clips are choreographed into seven routes. HD portrait is an original cutout rig following Nine's lifecycle, not Nine's original Spine asset."
+}

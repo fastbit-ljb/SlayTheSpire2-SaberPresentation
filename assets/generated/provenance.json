@@ -1,7 +1,7 @@
 {
   "generator": "Built-in image_gen.imagegen",
   "date": "2026-10-25",
-  "pixelEdits": "None; generated alpha preserved, animated with native GPU meshes and source-resolution action textures",
+  "pixelEdits": "None; generated alpha preserved; native Bone2D weighted cutout rig, no whole-character texture swaps",
   "assets": [
     {
       "file": "camelot_stage.png",
@@ -18,8 +18,8 @@
     },
     {
       "file": "saber_attack_sequence.png",
-      "usage": "Legacy motion storyboard; live actions use separate source-resolution anime-v4 images",
-      "includedInGame": true,
+      "usage": "Retired motion storyboard; excluded from runtime and package",
+      "includedInGame": false,
       "dimensions": [
         1254,
         1254
@@ -169,7 +169,7 @@
       "mode": "RGBA",
       "sha256": "ece3a985dd8f9b74f4a0e587014e7fecef3a54fc03f316c97e18ec80e9cd332f",
       "usage": "Cool silver/blue anime slash; complete pointed blade",
-      "includedInGame": true,
+      "includedInGame": false,
       "generator": "Built-in image_gen.imagegen",
       "prompt": "PROMPTS_ANIME_V2.md#saber_slash_anime_v4--saber_recover_anime_v4",
       "reference": "approved saber_ready_attack.png, V3 action, user game screenshot"
@@ -180,10 +180,40 @@
       "mode": "RGBA",
       "sha256": "42d54ee858a0d9193f7180df5e576d2f8d974f899406cc27f3f4cd2bbdd83b97",
       "usage": "Cool silver/blue anime follow-through; complete pointed blade",
-      "includedInGame": true,
+      "includedInGame": false,
       "generator": "Built-in image_gen.imagegen",
       "prompt": "PROMPTS_ANIME_V2.md#saber_slash_anime_v4--saber_recover_anime_v4",
       "reference": "approved saber_ready_attack.png, V3 action, user game screenshot"
+    },
+    {
+      "file": "saber_rig_body_v1.png",
+      "dimensions": [1024, 1536],
+      "mode": "RGBA",
+      "sha256": "1f8c4d7611305bbae3888f8312ecb6e546c0a23673ee07c2b43c591675e764a5",
+      "usage": "Continuous rig torso/skirt/legs underpaint; simultaneously visible layer",
+      "includedInGame": true,
+      "prompt": "PROMPTS_RIG.md#saber_rig_body_v1",
+      "reference": "user-approved saber_ready_attack.png"
+    },
+    {
+      "file": "saber_rig_head_v1.png",
+      "dimensions": [1024, 1536],
+      "mode": "RGBA",
+      "sha256": "a21726ae3dc22da3b753e292198150f275e177aa22fe0a6d780978aa62667a85",
+      "usage": "Continuous rig head/hair/ribbons; simultaneously visible layer",
+      "includedInGame": true,
+      "prompt": "PROMPTS_RIG.md#saber_rig_head_v1",
+      "reference": "user-approved saber_ready_attack.png"
+    },
+    {
+      "file": "saber_rig_arms_v1.png",
+      "dimensions": [1024, 1536],
+      "mode": "RGBA",
+      "sha256": "c06bd6904c7d7f260996efbe459e638dc4c6366ad325a6cba4822d412cf1c935",
+      "usage": "Continuous rig arms/gauntlets/full sword; simultaneously visible layer",
+      "includedInGame": true,
+      "prompt": "PROMPTS_RIG.md#saber_rig_arms_v1",
+      "reference": "user-approved saber_ready_attack.png"
     }
   ],
   "referenceSources": [

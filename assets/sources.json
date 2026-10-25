@@ -153,11 +153,14 @@
       "file": "video/excalibur_np.ogv",
       "url": "https://www.bilibili.com/video/BV1wA4m1A7ZD/",
       "sourceSha256": "e0daf0fa1733deed249cbbf2e1a41d04ae737750d791bf1572b88025ec2b69a0",
-      "sha256": "03b52b40d2221d8acd83de7d35b3c55aad2b39ac054f5d31086c94498cb5f071",
+      "sha256": "a8cdf3b700d447242572d1d5a14b7f712e602a3adab5083f87ebe95b3eb761dd",
       "clip": {
         "start": 23.15,
         "end": 39.75,
-        "crop": "1138:640:71:80",
+        "crop": "1138:456:71:80",
+        "scale": "1280:512",
+        "pad": "1280:720:0:104",
+        "titleUiRemoved": true,
         "codec": "Theora/Vorbis"
       }
     },
@@ -165,7 +168,7 @@
       "file": "video/saber_defeat.ogv",
       "url": "https://www.bilibili.com/video/BV1hj4119731/",
       "sourceSha256": "5744767bc98013d9b6a27fa8c980bcded60cb50f5e188f03bdd709edd08d34d6",
-      "sha256": "e0642d9a95b94e5f83a55c353b72cf9a31110ae13727edb3e75a2587698a0b89",
+      "sha256": "4bb4d9fee4304be21575001cd376d7d00d4b0bf5787a88daa11ab8816c6c1b59",
       "clip": {
         "start": 105.35,
         "end": 114.65,

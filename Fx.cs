@@ -173,10 +173,6 @@ internal static class Fx
             stage.AddChild(bottom);
             var text = new Control { Position = new Vector2(size.X * 0.09f, size.Y * 0.38f), MouseFilter = Control.MouseFilterEnum.Ignore };
             stage.AddChild(text);
-            LabelAt(text, "S A B E R   /   A R T O R I A", 21, new Color(0.65f, 0.86f, 1), Vector2.Zero);
-            LabelAt(text, "EXCALIBUR", 78, new Color(1, 0.98f, 0.82f), new Vector2(-5, 38));
-            LabelAt(text, "誓约胜利之剑", 36, new Color(1, 0.78f, 0.3f), new Vector2(0, 133));
-            LabelAt(text, "対城宝具  ·  A++", 19, new Color(0.75f, 0.82f, 0.95f), new Vector2(0, 190));
             stage.CreateTween().TweenProperty(stage, "modulate:a", 1f, 0.12);
             portrait.CreateTween().TweenProperty(portrait, "position:x", size.X * 0.46f, 0.35).SetTrans(Tween.TransitionType.Cubic).SetEase(Tween.EaseType.Out);
             if (holdForPreview) return false;

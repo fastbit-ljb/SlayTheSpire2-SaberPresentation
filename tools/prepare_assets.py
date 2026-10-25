@@ -72,7 +72,8 @@ def main():
             "url": "https://www.bilibili.com/video/BV1wA4m1A7ZD/",
             "sourceSha256": hashlib.sha256(video_source.read_bytes()).hexdigest(),
             "sha256": hashlib.sha256(video_clip.read_bytes()).hexdigest(),
-            "clip": {"start": 23.15, "end": 39.75, "crop": "1138:640:71:80", "codec": "Theora/Vorbis"},
+            "clip": {"start": 23.15, "end": 39.75, "crop": "1138:456:71:80", "scale": "1280:512",
+                     "pad": "1280:720:0:104", "titleUiRemoved": True, "codec": "Theora/Vorbis"},
         })
     if defeat_source.exists() and defeat_clip.exists():
         records.append({
@@ -102,8 +103,8 @@ def main():
     image_paths = [assets / "images/artoria.png"]
     image_paths += [assets / "generated" / (name + ".png") for name in
         ["saber_vfx_atlas", "saber_ready_attack", "saber_ready_cast",
-         "saber_slash_anime_v4", "saber_recover_anime_v4",
-         "camelot_stage", "saber_defeat", "saber_attack_sequence"]
+         "saber_rig_body_v1", "saber_rig_head_v1", "saber_rig_arms_v1",
+         "camelot_stage", "saber_defeat"]
         if (assets / "generated" / (name + ".png")).exists()]
     for image_path in image_paths:
         im = Image.open(image_path).convert("RGBA")

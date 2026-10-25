@@ -34,7 +34,7 @@ internal static class TestHarness
     private static bool StandaloneOnly => CommandLineHelper.HasArg("saber-standalone-test");
     private static bool WithTheme => StandaloneOnly || WithAllMods || CommandLineHelper.HasArg("saber-theme-test");
     private static bool WithCzn => WithTheme || CommandLineHelper.HasArg("saber-czn-test");
-    private static string Output => "D:/L/Study/mod/SaberPresentation/build/" + (CommandLineHelper.HasArg("saber-fix-smoke") ? "verification-fix-hd" : CommandLineHelper.HasArg("saber-menu-test") ? "verification-menu" : StandaloneOnly ? "verification-standalone" : WithAllMods ? "verification-all" : WithTheme ? "verification-theme" : WithCzn ? "verification-czn" : "verification");
+    private static string Output => "D:/L/Study/mod/SaberPresentation/build/" + (CommandLineHelper.HasArg("saber-rig-preview") ? "verification-rig" : CommandLineHelper.HasArg("saber-fix-smoke") ? "verification-fix-hd" : CommandLineHelper.HasArg("saber-menu-test") ? "verification-menu" : StandaloneOnly ? "verification-standalone" : WithAllMods ? "verification-all" : WithTheme ? "verification-theme" : WithCzn ? "verification-czn" : "verification");
     private static readonly List<object> Results = [];
     private static readonly HashSet<string> Captured = [];
     private static bool _running;
@@ -103,11 +103,12 @@ internal static class TestHarness
             Assert("card_art_override_not_installed", AccessTools.TypeByName("SaberPresentation.SaberCardArtPatch") == null);
             Assert("saber_detected", Runtime.IsSaber(player.Creature));
             Assert("saber_identity_icon_preserved", player.Character.IconTexture is AtlasTexture);
-            foreach (string raster in new[] { "saber_vfx_atlas", "saber_ready_attack", "saber_ready_cast", "camelot_stage", "saber_defeat", "saber_attack_sequence" })
+            foreach (string raster in new[] { "saber_vfx_atlas", "saber_ready_attack", "saber_ready_cast", "camelot_stage", "saber_defeat", "saber_rig_body_v1", "saber_rig_head_v1", "saber_rig_arms_v1" })
                 Assert("raster_decodes_" + raster, Art.Texture(raster).GetWidth() >= 1000);
             Assert("official_excalibur_video_decodes", Art.ExcaliburVideo != null);
             Assert("animated_defeat_video_decodes", Art.DefeatVideo != null);
             await VerifyMusic();
+            if (CommandLineHelper.HasArg("saber-rig-preview")) { await ExportBattleReference(game, node); await ExportPortraitMotion(game, node); return; }
             await VerifyInteractions(game, node);
             await VerifyHoverDuringReturn(game, node, state, player);
             await VerifyNativeUi(game, player);
@@ -310,7 +311,8 @@ internal static class TestHarness
         await CaptureAfter("hover_attack", 0.35);
         Assert("native_card_focus_shows_portrait", ReadyPresentation.Visible && ReadyPresentation.Card == attack.CardModel);
         Assert("hover_uses_anime_portrait_art", ReadyPresentation.AnimePortraitReady
-            && ReadyPresentation.PortraitSource?.EndsWith("/saber_ready_attack.png") == true);
+            && ReadyPresentation.PortraitSource?.EndsWith("/saber_rig_body_v1.png") == true);
+        Assert("portrait_is_native_weighted_skeleton", ReadyPresentation.RigBones >= 20);
         Assert("hover_native_art_resolution", ReadyPresentation.PortraitResolution.X >= 1024 && ReadyPresentation.PortraitResolution.Y >= 1536);
         Assert("hover_does_not_clone_battle_or_selection_spine", !Runtime.Descendants(game).Any(n => n.Name.ToString().Contains("HoverSpine")));
         Assert("hover_model_keeps_natural_idle", ReadyPresentation.BodyReady &&
@@ -359,17 +361,80 @@ internal static class TestHarness
         attack.EmitSignal(Control.SignalName.FocusEntered);
         await Fx.Delay(0.26);
         int framesBefore = ReadyPresentation.ActionFramesPlayed;
+        string? portraitTextures = ReadyPresentation.TextureSignature;
         var enemy = actor.Entity.CombatState!.HittableEnemies.First();
         int enemyHp = enemy.CurrentHp;
         _ = TaskHelper.RunSafely(CaptureAfter("portrait_attack_frame_0", 0.05));
         _ = TaskHelper.RunSafely(CaptureAfter("portrait_attack_frame_1", 0.17));
         _ = TaskHelper.RunSafely(CaptureAfter("portrait_attack_frame_2", 0.28));
+        _ = TaskHelper.RunSafely(CaptureAfter("portrait_attack_swing", 0.48));
+        _ = TaskHelper.RunSafely(CaptureAfter("portrait_attack_followthrough", 0.66));
+        _ = TaskHelper.RunSafely(CaptureAfter("portrait_attack_recovery", 0.92));
         await attack.CardModel!.OnPlayWrapper(new BlockingPlayerChoiceContext(), enemy, true,
             new ResourceInfo { EnergySpent = 0, EnergyValue = 1, StarsSpent = 0, StarValue = 0 }, true);
-        await Fx.Delay(0.5);
-        Assert("native_card_play_animates_portrait", ReadyPresentation.ActionFramesPlayed - framesBefore >= 4);
+        await Fx.Delay(1.3);
+        Log.Info("[SaberTest] Continuous portrait render samples: " + (ReadyPresentation.ActionFramesPlayed - framesBefore));
+        Assert("native_card_play_animates_portrait", ReadyPresentation.ActionFramesPlayed - framesBefore >= 30);
+        Assert("portrait_textures_unchanged_through_attack", portraitTextures == ReadyPresentation.TextureSignature);
         Assert("animated_action_sword_tips_inside_viewport", ReadyPresentation.ActionSwordTipsSafe);
         Assert("native_strike_damage_preserved", enemyHp - enemy.CurrentHp == 6);
+    }
+
+    private static async Task ExportPortraitMotion(NGame game, NCreature actor)
+    {
+        var card = Runtime.Descendants(game).OfType<NHandCardHolder>().First(h => h.CardModel != null && h.CardModel.Owner == actor.Entity.Player && h.CardModel.Type == CardType.Attack).CardModel!;
+        ReadyPresentation.Focus(card);
+        await Fx.Delay(0.4);
+        string folder = Output + "/frames";
+        System.IO.Directory.CreateDirectory(folder);
+        int index = 0;
+        // Offline render of native GPU-skinned game poses at a fixed 30 fps;
+        // this is an animation review export, not a performance measurement.
+        foreach (var (clip, frames) in new[] { ("b_idle", 60), ("card_attack", 35), ("b_idle", 15), ("card_casting", 37), ("b_idle", 25) })
+        {
+            for (int frame = 0; frame < frames; frame++)
+            {
+                ReadyPresentation.ExportPose(clip, frame / 30.0);
+                await Fx.Delay(0.02); // Flush native Bone2D/Skeleton2D transforms before offscreen draw.
+                var drawn = game.ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
+                RenderingServer.ForceDraw();
+                await drawn;
+                using var image = game.GetViewport().GetTexture().GetImage();
+                image.SaveJpg(folder + "/portrait_" + index.ToString("D4") + ".jpg", 0.9f);
+                index++;
+            }
+        }
+        Assert("continuous_portrait_preview_rendered", index == 172 && ReadyPresentation.RigBones >= 12);
+        Log.Info("[SaberTest] RIG PREVIEW COMPLETE: " + folder);
+    }
+
+    private static async Task ExportBattleReference(NGame game, NCreature actor)
+    {
+        var spine = actor.Visuals.SpineBody!;
+        var state = spine.GetAnimationState();
+        var records = new List<object>();
+        foreach (string clip in new[] { "attack", "attackvfff", "attack_heavy" })
+        {
+            if (!spine.HasAnimation(clip)) continue;
+            state.SetAnimation(clip, false);
+            using var entry = state.GetCurrent(0)!;
+            entry.SetTimeScale(0);
+            entry.SetMixDuration(0);
+            float length = entry.GetAnimationDuration();
+            for (int step = 0; step <= 10; step++)
+            {
+                entry.SetTrackTime(length * step / 10f);
+                await Fx.Delay(0.04);
+                foreach (string bone in new[] { "wuqi3", "wuqi2o", "Ys_wuqi2", "Ys_wuqi1", "jian", "Ys_rjian4", "Ys_rjian3" })
+                    if (spine.GetGlobalBoneTransform(bone) is { } transform)
+                        records.Add(new { clip, progress = step / 10f, bone, x = transform.Origin.X,
+                            y = transform.Origin.Y, angle = Mathf.RadToDeg(transform.X.Angle()) });
+                await CaptureAfter("native_" + clip + "_" + step.ToString("D2"), 0.01);
+            }
+        }
+        System.IO.File.WriteAllText(Output + "/native_sword_motion.json", JsonSerializer.Serialize(records));
+        state.SetAnimation("idle_loop", true);
+        using var idle = state.GetCurrent(0); idle?.SetTimeScale(1);
     }
 
     private static async Task VerifyHoverDuringReturn(NGame game, NCreature actor, CombatState state, Player player)
@@ -420,9 +485,12 @@ internal static class TestHarness
     {
         await Fx.Delay(seconds);
         if (NGame.Instance == null) return;
-        await NGame.Instance.ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
+        var drawn = NGame.Instance.ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
+        RenderingServer.ForceDraw();
+        await drawn;
         using var image = NGame.Instance.GetViewport().GetTexture().GetImage();
-        image.SavePng(Output + "/" + name + ".png");
+        // Encoding screenshots must not block the animation being measured.
+        await Task.Run(() => image.SavePng(Output + "/" + name + ".png"));
     }
     internal static async Task CaptureFinisherSequence()
     {
