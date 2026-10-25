@@ -35,12 +35,18 @@ internal static class DemoHarness
     private static string Marker => System.IO.Path.Combine(Standalone.Root, "demo-state.json");
     private static void State(string phase) => System.IO.File.WriteAllText(Marker,
         System.Text.Json.JsonSerializer.Serialize(new { take = _take, phase, fullscreen = DisplayServer.WindowGetMode().ToString() }));
+    internal static async Task StartWhenReady()
+    {
+        while (NGame.Instance == null) await Task.Delay(50);
+        await Run(NGame.Instance);
+    }
     internal static async Task Run(NGame game)
     {
         try
         {
             if (!OS.GetUserDataDir().EndsWith("SlayTheSpire2-SaberPresentation-Demo", StringComparison.Ordinal))
                 throw new InvalidOperationException("Recording mode requires its isolated demo profile.");
+            game.StartOnMainMenu = false;
             await game.GameStartupComplete;
             SaveManager.Instance.Progress.EnableFtues = false;
             SaveManager.Instance.SettingsSave.VolumeMaster = 0.85f;
@@ -86,6 +92,11 @@ internal static class DemoHarness
             RunManager.Instance.MapSelectionSynchronizer.OnLocationChanged(run.MapLocation);
             await RunManager.Instance.EnterRoomDebug(RoomType.Monster, MapPointType.Unassigned, ModelDb.Encounter<TwoTailedRatsNormal>().ToMutable());
             await Fx.Delay(4);
+            // Run creation reapplies saved display settings. Force fullscreen
+            // after it finishes, so the recording stays at the intended size.
+            DisplayServer.WindowSetMode(DisplayServer.WindowMode.Fullscreen);
+            DisplayServer.WindowMoveToForeground();
+            await Fx.Delay(0.35);
             var combat = CombatManager.Instance.DebugOnlyGetState()!;
             while (GodotObject.IsInstanceValid(game) && game.IsInsideTree())
             {

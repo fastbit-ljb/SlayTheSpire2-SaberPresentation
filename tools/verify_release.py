@@ -75,10 +75,26 @@ def main():
             "hover_pose_has_no_painted_combat_vfx", "mouse_leave_retracts_hover_pose"]
         if folder == "verification-standalone":
             new_checks += ["killing_blow_uses_animated_cg", "game_over_uses_animated_defeat_cg",
-                           "defeat_video_advances_beyond_single_frame"]
+                           "defeat_video_advances_beyond_single_frame", "killing_blow_uses_integrated_battle_stage",
+                           "finisher_actor_advances_toward_screen_center", "finisher_actor_enlarges_during_advance",
+                           "finisher_environment_changes_with_timeline", "finisher_target_receives_stage_hit",
+                           "finisher_emitter_follows_forward_sword", "finisher_emitter_uses_live_sword_bone",
+                           "finisher_stage_releases_live_bodies", "finisher_releases_only_one_beam",
+                           "hsr_cg_reaches_final_column_impact", "finisher_cancel_restores_live_body_ownership",
+                           "finisher_cancel_restores_live_body_transforms", "finisher_cancel_cleans_stage"]
         for check in new_checks:
             assert any(r["check"] == check and r["passed"] for r in results), "Stale suite evidence: " + check
         suites.append({"suite": folder, "passed": len(results), "failed": 0, "checks": results})
+    finisher = json.loads((ROOT / "build/verification-finisher/results.json").read_text(encoding="utf-8"))
+    assert finisher and all(r["passed"] for r in finisher)
+    for check in ("finisher_test_window_is_fullscreen", "finisher_emitter_uses_live_sword_bone",
+                  "finisher_releases_only_one_beam", "finisher_cancel_cleans_stage"):
+        assert any(r["check"] == check and r["passed"] for r in finisher), "Missing fullscreen finisher proof: " + check
+    suites.append({"suite": "verification-finisher", "passed": len(finisher), "failed": 0, "checks": finisher})
+    media_qa = json.loads((ROOT / "build/hsr-fullscreen-media-qa.json").read_text(encoding="utf-8"))
+    assert media_qa and all(r["blackBarsAbsent"] for r in media_qa)
+    from pck_tool import extract
+    assert hashlib.sha256(extract(pack, "SaberPresentation/video/excalibur_np.ogv")).hexdigest() == sha(ROOT / "assets/video/excalibur_np.ogv")
     report = {"version": version, "gameVersion": "0.111.0", "nativeModEntries": 1,
               "manifestDependencies": manifest["dependencies"], "releaseContainsTestHarness": False,
               "packageBytes": archive.stat().st_size, "packageSha256": sha(archive),
@@ -89,8 +105,10 @@ def main():
               "bundledCharacterEffectDependencies": len(lock["characterEffects"]["resources"]),
               "cardArtDefault": "Original game portraits; custom card art paused",
               "energyDisplay": "Native current/max energy, raised above the hand and portrait",
-              "hoverBattlePose": "Natural idle_loop; no frozen attack frame",
-              "cinematics": "Official FGO clips; Excalibur 16.6 seconds with JP audio; defeat 9.3 seconds, animated",
+              "hoverBattlePose": "Attack hover: sword-charge pose; skill hover: sword planted guard; no combat VFX until played; leave/cancel restores idle",
+              "cinematics": "Official Honkai: Star Rail Saber 9-second Excalibur edit with synchronized JP Artoria voice; live actor advance/enlarge, staged target hit and environment timeline. Defeat: official FGO Memorial Movie 9.3-second animated clip",
+              "fullscreenCgEvidence": media_qa,
+              "saberLinkedSequence": "Blade-anchored Invisible Air gathers blue-white wind; JP Excalibur call turns environment gold; downstroke emits from live sword bone into actual target with flash/shake; ambient light and actor recover after the beam",
               "backgroundMusic": "EMIYA_UBW Extended instrumental; offline 30-minute loop; Saber runs only; voice duck and CG pause",
               "warnings": ["Original Saber exported resources contain stale UIDs; Godot resolves their included text paths.",
                            "Instrumented game exits report Godot renderer/resource allocations, also present in the baseline."],

@@ -23,14 +23,14 @@ public static class Entry
         Settings.Load();
         Standalone.Initialize();
         new Harmony("local.saber.presentation").PatchAll(typeof(Entry).Assembly);
-        Log.Info("[SaberPresentation] JP character presentation 0.3.5 initialized; animated battle-ready portrait with layered in-world attacks; original game UI retained.");
+        Log.Info("[SaberPresentation] JP character presentation 0.3.6 initialized; integrated HSR Excalibur stage with blade-anchored wind, target response and environment lighting; original game UI retained.");
 #if SABER_TEST
         if (MegaCrit.Sts2.Core.Helpers.CommandLineHelper.HasArg("saber-test"))
             _ = MegaCrit.Sts2.Core.Helpers.TaskHelper.RunSafely(SaberTestBootstrapPatch.StartWhenReady());
 #endif
 #if SABER_DEMO
         if (MegaCrit.Sts2.Core.Helpers.CommandLineHelper.HasArg("saber-demo"))
-            _ = MegaCrit.Sts2.Core.Helpers.TaskHelper.RunSafely(DemoHarness.Run(MegaCrit.Sts2.Core.Nodes.NGame.Instance!));
+            _ = MegaCrit.Sts2.Core.Helpers.TaskHelper.RunSafely(DemoHarness.StartWhenReady());
 #endif
     }
 }

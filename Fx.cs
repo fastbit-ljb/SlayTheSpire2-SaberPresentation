@@ -1,6 +1,7 @@
 using Godot;
 using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Nodes;
+using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using MegaCrit.Sts2.Core.Nodes.Vfx.Utilities;
 
@@ -14,31 +15,34 @@ internal static class Fx
     internal static Vector2 LastExcaliburOrigin { get; private set; }
     internal static Vector2 LastExcaliburOriginSize { get; private set; }
     internal static bool LastCutInUsedVideo { get; private set; }
+    internal static bool LastCutInIntegrated { get; private set; }
     public static Node Container(Node owner) => (Node?)NCombatRoom.Instance?.CombatVfxContainer ?? owner.GetParent();
     private static CanvasItemMaterial Add => _add ??= new CanvasItemMaterial { BlendMode = CanvasItemMaterial.BlendModeEnum.Add };
     private static Vector2 Local(Node parent, Vector2 global) => parent is CanvasItem canvas
         ? canvas.GetGlobalTransform().AffineInverse() * global : global;
     private static bool Valid(Node? node) => node != null && GodotObject.IsInstanceValid(node) && node.IsInsideTree();
     internal static Sprite2D Painted(Node parent, Vector2 point, int row, Vector2 size,
-        double duration = 0.4, float rotation = 0, bool additive = true, int repeat = 1)
+        double duration = 0.4, float rotation = 0, bool additive = true, int repeat = 1, int[]? frameOrder = null)
     {
         var texture = Art.Texture("saber_vfx_atlas");
         var sprite = new Sprite2D { Name = "SaberPaintedEffect", Texture = texture, Hframes = 4, Vframes = 4,
             Frame = row * 4, Position = Local(parent, point), Scale = size / (texture.GetSize() / 4),
             Rotation = rotation, Material = additive ? Add : null };
         parent.AddChild(sprite);
-        _ = TaskHelper.RunSafely(Animate(sprite, row, duration, repeat));
+        _ = TaskHelper.RunSafely(Animate(sprite, row, duration, repeat, frameOrder));
         return sprite;
     }
-    private static async Task Animate(Sprite2D sprite, int row, double duration, int repeat)
+    private static async Task Animate(Sprite2D sprite, int row, double duration, int repeat, int[]? frameOrder)
     {
         try
         {
+            var frames = frameOrder ?? [0, 1, 2, 3];
             for (int loop = 0; loop < repeat; loop++)
-                for (int frame = 0; frame < 4 && Valid(sprite); frame++)
+                foreach (int frame in frames)
                 {
+                    if (!Valid(sprite)) return;
                     sprite.Frame = row * 4 + frame;
-                    await Delay(duration / 4);
+                    await Delay(duration / frames.Length);
                 }
         }
         finally { if (GodotObject.IsInstanceValid(sprite)) sprite.QueueFree(); }
@@ -105,7 +109,7 @@ internal static class Fx
     }
     private static void Flash(Node parent)
     {
-        var layer = new CanvasLayer { Name = "SaberFlash", Layer = 65 };
+        var layer = new CanvasLayer { Name = "SaberFlash", Layer = FinisherStage.Active ? 75 : 65 };
         parent.AddChild(layer);
         var flash = new ColorRect { Color = new Color(1, 0.94f, 0.7f, 0.16f),
             Size = parent.GetViewport().GetVisibleRect().Size, MouseFilter = Control.MouseFilterEnum.Ignore };
@@ -115,9 +119,15 @@ internal static class Fx
         tween.TweenCallback(Callable.From(layer.QueueFree));
     }
     internal static bool HasExcaliburVideo => Art.ExcaliburVideo != null;
-    public static async Task<bool> CutIn(Node owner, bool holdForPreview = false, double duration = 1.24)
+    public static async Task<bool> CutIn(NCreature owner, NCreature? target = null, bool holdForPreview = false, double duration = 1.24)
     {
         if (!Valid(owner)) return false;
+        if (!holdForPreview)
+        {
+            LastCutInUsedVideo = await FinisherStage.Play(owner, target, duration);
+            LastCutInIntegrated = FinisherStage.LastStageStarted;
+            return LastCutInUsedVideo;
+        }
         using var music = AnimeMusic.PauseForCinematic();
         ReadyPresentation.Hide();
         var layer = new CanvasLayer { Name = "SaberExcaliburCutIn", Layer = 70 };
@@ -126,6 +136,7 @@ internal static class Fx
         {
             var size = owner.GetViewport().GetVisibleRect().Size;
             LastCutInUsedVideo = false;
+            LastCutInIntegrated = false;
             if (Art.ExcaliburVideo is { } stream)
             {
                 var backdrop = new ColorRect { Color = Colors.Black, Size = size,

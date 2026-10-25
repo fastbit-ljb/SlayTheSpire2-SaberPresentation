@@ -62,18 +62,21 @@ def main():
 
     with ThreadPoolExecutor(max_workers=5) as pool:
         records = list(pool.map(acquire, sources.items()))
-    video_source = assets / "video" / "fgo_official_saber_720p.mp4"
+    video_source = assets / "video" / "hsr_saber_official_1080.mp4"
     defeat_source = assets / "video" / "fgo_memorial_2023_official.mp4"
     video_clip = assets / "video" / "excalibur_np.ogv"
     defeat_clip = assets / "video" / "saber_defeat.ogv"
     if video_source.exists() and video_clip.exists():
         records.append({
             "file": "video/excalibur_np.ogv",
-            "url": "https://www.bilibili.com/video/BV1wA4m1A7ZD/",
+            "url": "https://www.bilibili.com/video/BV1hi3yzdEpq/",
             "sourceSha256": hashlib.sha256(video_source.read_bytes()).hexdigest(),
             "sha256": hashlib.sha256(video_clip.read_bytes()).hexdigest(),
-            "clip": {"start": 23.15, "end": 39.75, "crop": "1138:456:71:80", "scale": "1280:512",
-                     "pad": "1280:720:0:104", "titleUiRemoved": True, "codec": "Theora/Vorbis"},
+            "clip": {"segments": [[185.0, 189.5], [197.0, 201.5]], "duration": 9.0,
+                     "sourceResolution": "1920x1080", "crop": "1152:648:384:100", "scale": "1920:1080",
+                     "fullscreen": True, "letterbox": False, "platformMarksAndSubtitlesRemoved": True,
+                     "audio": "source commentary omitted; JP Artoria NP voice is synchronized by runtime",
+                     "codec": "Theora"},
         })
     if defeat_source.exists() and defeat_clip.exists():
         records.append({
@@ -85,7 +88,7 @@ def main():
                      "audio": "native Japanese defeat voice retained; source music omitted", "codec": "Theora"},
         })
     (assets / "sources.json").write_text(json.dumps({"api": API, "locale": "JP", "servantId": 100100,
-        "referenceVideo": "https://www.bilibili.com/video/BV1wA4m1A7ZD/", "assets": records}, indent=2), encoding="utf-8")
+        "referenceVideo": "https://www.bilibili.com/video/BV1hi3yzdEpq/", "assets": records}, indent=2), encoding="utf-8")
     files = {f"SaberPresentation/{rel}": (assets / rel).read_bytes() for rel in sources if rel.endswith(".mp3")}
     if video_clip.exists():
         files["SaberPresentation/video/excalibur_np.ogv"] = video_clip.read_bytes()
@@ -98,7 +101,7 @@ def main():
         music_record.update(file="music/emiya_ubw.mp3", sha256=hashlib.sha256(music.read_bytes()).hexdigest())
         records.append(music_record)
         (assets / "sources.json").write_text(json.dumps({"api": API, "locale": "JP", "servantId": 100100,
-            "referenceVideo": "https://www.bilibili.com/video/BV1wA4m1A7ZD/", "assets": records}, indent=2), encoding="utf-8")
+            "referenceVideo": "https://www.bilibili.com/video/BV1hi3yzdEpq/", "assets": records}, indent=2), encoding="utf-8")
     # Keep the raster artwork and alpha intact; slice frames with AtlasTexture.
     image_paths = [assets / "images/artoria.png"]
     image_paths += [assets / "generated" / (name + ".png") for name in

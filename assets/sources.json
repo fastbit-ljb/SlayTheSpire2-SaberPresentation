@@ -2,7 +2,7 @@
   "api": "https://api.atlasacademy.io/nice/JP/servant/2?lore=true",
   "locale": "JP",
   "servantId": 100100,
-  "referenceVideo": "https://www.bilibili.com/video/BV1wA4m1A7ZD/",
+  "referenceVideo": "https://www.bilibili.com/video/BV1hi3yzdEpq/",
   "assets": [
     {
       "file": "audio/attack_1.mp3",
@@ -151,17 +151,29 @@
     },
     {
       "file": "video/excalibur_np.ogv",
-      "url": "https://www.bilibili.com/video/BV1wA4m1A7ZD/",
-      "sourceSha256": "e0daf0fa1733deed249cbbf2e1a41d04ae737750d791bf1572b88025ec2b69a0",
-      "sha256": "a8cdf3b700d447242572d1d5a14b7f712e602a3adab5083f87ebe95b3eb761dd",
+      "url": "https://www.bilibili.com/video/BV1hi3yzdEpq/",
+      "sourceSha256": "722b0e39a211632f47a1c2befcc933dddb0dc4215001e7b19dd5e27041c84730",
+      "sha256": "39241508aa70fb7065d95c83c93b1e309c3805b7528a91a2308f75c57240affc",
       "clip": {
-        "start": 23.15,
-        "end": 39.75,
-        "crop": "1138:456:71:80",
-        "scale": "1280:512",
-        "pad": "1280:720:0:104",
-        "titleUiRemoved": true,
-        "codec": "Theora/Vorbis"
+        "segments": [
+          [
+            185.0,
+            189.5
+          ],
+          [
+            197.0,
+            201.5
+          ]
+        ],
+        "duration": 9.0,
+        "sourceResolution": "1920x1080",
+        "crop": "1152:648:384:100",
+        "scale": "1920:1080",
+        "fullscreen": true,
+        "letterbox": false,
+        "platformMarksAndSubtitlesRemoved": true,
+        "audio": "source commentary omitted; JP Artoria NP voice is synchronized by runtime",
+        "codec": "Theora"
       }
     },
     {

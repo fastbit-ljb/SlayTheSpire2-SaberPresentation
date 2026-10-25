@@ -249,24 +249,25 @@ internal static class Runtime
         Vector2 target = targetNode != null ? Center(targetNode) : Center(session.Node) + Vector2.Right * 600;
         var container = Fx.Container(session.Node);
         session.Motion?.Kill();
-        session.Node.SetAnimationTrigger("Cast");
-        Fx.Charge(container, Center(session.Node));
         if (Settings.Current.Cinematics)
         {
+            // Stage from the stable battle position, not the end of a melee dash.
+            session.Body.Position = session.Home;
+            session.Body.Scale = session.HomeScale;
+            session.Body.Rotation = session.HomeRotation;
 #if SABER_TEST
             if (KillingBlowCount == 1) _ = TaskHelper.RunSafely(TestHarness.CaptureFinisherSequence());
 #endif
-            bool usesVideo = Fx.HasExcaliburVideo;
-            if (!usesVideo) Voice.Play(session.Node, "np_charge", priority: true);
-            double duration = usesVideo ? 17.0 : Math.Max(1.24, Voice.Length("np_charge"));
             ulong started = Time.GetTicksMsec();
-            usesVideo = await Fx.CutIn(session.Node, duration: duration);
+            await Fx.CutIn(session.Node, targetNode, duration: Math.Max(1.24, Voice.Length("np_charge")));
             LastChargeDuration = (Time.GetTicksMsec() - started) / 1000.0;
-            if (!usesVideo) Voice.PlaySequence(session.Node, ["np_release", "np_end"], priority: true);
+            // The stage owns release, impact and recovery as a single sequence.
+            Log.Info($"[SaberPresentation] Confirmed killing blow: {card.Id.Entry} -> integrated Excalibur stage");
+            return;
         }
         if (!Valid(session.Node)) return;
         session.Node.SetAnimationTrigger("SaberHeavy");
-        if (!Settings.Current.Cinematics) Voice.PlaySequence(session.Node, ["np_release", "np_end"], priority: true);
+        Voice.PlaySequence(session.Node, ["np_release", "np_end"], priority: true);
         Fx.Excalibur(container, WeaponPoint(session.Node), [target], 0.65);
 #if SABER_TEST
         _ = TaskHelper.RunSafely(TestHarness.CaptureAfter("killing_blow_excalibur", 0.08));
@@ -442,6 +443,7 @@ internal static class Runtime
 #endif
     public static void Clear()
     {
+        FinisherStage.Cancel();
         ReadyPresentation.Cleanup();
         foreach (var session in Active.ToArray()) Restore(session, true);
         Active.Clear();

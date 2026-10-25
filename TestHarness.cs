@@ -34,7 +34,7 @@ internal static class TestHarness
     private static bool StandaloneOnly => CommandLineHelper.HasArg("saber-standalone-test");
     private static bool WithTheme => StandaloneOnly || WithAllMods || CommandLineHelper.HasArg("saber-theme-test");
     private static bool WithCzn => WithTheme || CommandLineHelper.HasArg("saber-czn-test");
-    private static string Output => "D:/L/Study/mod/SaberPresentation/build/" + (CommandLineHelper.HasArg("saber-nine-reference") ? "nine-inspection" : CommandLineHelper.HasArg("saber-rig-preview") ? "verification-rig" : CommandLineHelper.HasArg("saber-fix-smoke") ? "verification-fix-hd" : CommandLineHelper.HasArg("saber-menu-test") ? "verification-menu" : StandaloneOnly ? "verification-standalone" : WithAllMods ? "verification-all" : WithTheme ? "verification-theme" : WithCzn ? "verification-czn" : "verification");
+    private static string Output => "D:/L/Study/mod/SaberPresentation/build/" + (CommandLineHelper.HasArg("saber-finisher-smoke") ? "verification-finisher" : CommandLineHelper.HasArg("saber-nine-reference") ? "nine-inspection" : CommandLineHelper.HasArg("saber-rig-preview") ? "verification-rig" : CommandLineHelper.HasArg("saber-fix-smoke") ? "verification-fix-hd" : CommandLineHelper.HasArg("saber-menu-test") ? "verification-menu" : StandaloneOnly ? "verification-standalone" : WithAllMods ? "verification-all" : WithTheme ? "verification-theme" : WithCzn ? "verification-czn" : "verification");
     private static readonly List<object> Results = [];
     private static readonly HashSet<string> Captured = [];
     private static bool _running;
@@ -53,8 +53,10 @@ internal static class TestHarness
             if (!OS.GetUserDataDir().EndsWith("SlayTheSpire2-SaberPresentation-Test", StringComparison.Ordinal)
                 && !isolatedByEnvironment)
                 throw new Exception("Refusing to test outside the isolated user directory.");
+            if (!CommandLineHelper.HasArg("saber-menu-test")) game.StartOnMainMenu = false;
             await game.GameStartupComplete;
-            if (CommandLineHelper.HasArg("saber-fix-smoke")) DisplayServer.WindowSetSize(new Vector2I(1920, 1080));
+            if (CommandLineHelper.HasArg("saber-finisher-smoke")) DisplayServer.WindowSetMode(DisplayServer.WindowMode.Fullscreen);
+            else if (StandaloneOnly || CommandLineHelper.HasArg("saber-fix-smoke")) DisplayServer.WindowSetSize(new Vector2I(1920, 1080));
             await Fx.Delay(0.5);
             Log.Info("[SaberTest] Startup passed. Isolated user data: " + OS.GetUserDataDir());
             SaveManager.Instance.Progress.EnableFtues = false;
@@ -107,6 +109,17 @@ internal static class TestHarness
                 Assert("raster_decodes_" + raster, Art.Texture(raster).GetWidth() >= 1000);
             Assert("official_excalibur_video_decodes", Art.ExcaliburVideo != null);
             Assert("animated_defeat_video_decodes", Art.DefeatVideo != null);
+            if (CommandLineHelper.HasArg("saber-finisher-smoke"))
+            {
+                // Run creation applies the saved display options. Select the
+                // recording surface after that native setup has completed.
+                DisplayServer.WindowSetMode(DisplayServer.WindowMode.Fullscreen);
+                await Fx.Delay(0.35);
+                Assert("finisher_test_window_is_fullscreen", DisplayServer.WindowGetMode() is DisplayServer.WindowMode.Fullscreen or DisplayServer.WindowMode.ExclusiveFullscreen);
+                await VerifyKillingBlow(state, player, state.HittableEnemies.First());
+                Log.Info("[SaberTest] FINISHER SMOKE CHECKS PASSED");
+                return;
+            }
             await VerifyMusic();
             if (CommandLineHelper.HasArg("saber-nine-reference")) { await ExportNineReference(game); return; }
             if (CommandLineHelper.HasArg("saber-rig-preview")) { await ExportBattleReference(game, node); await ExportPortraitMotion(game, node); return; }
@@ -284,7 +297,18 @@ internal static class TestHarness
             new ResourceInfo { EnergySpent = 0, EnergyValue = 1, StarsSpent = 0, StarValue = 0 }, true);
         Assert("real_lethal_strike_triggers_excalibur_once", target.IsDead && Runtime.KillingBlowCount == 1);
         Assert("killing_blow_uses_animated_cg", Fx.LastCutInUsedVideo);
-        Assert("excalibur_starts_ahead_of_saber", Fx.LastExcaliburOrigin.X > Runtime.Center(player.Creature.GetCreatureNode()!).X + 55);
+        Assert("killing_blow_uses_integrated_battle_stage", Fx.LastCutInIntegrated);
+        Assert("finisher_actor_advances_toward_screen_center", FinisherStage.LastActorAdvanced);
+        Assert("finisher_actor_enlarges_during_advance", FinisherStage.LastActorScaleMultiplier >= 1.5f);
+        Assert("finisher_environment_changes_with_timeline", FinisherStage.LastEnvironmentChanged);
+        Assert("finisher_target_receives_stage_hit", FinisherStage.LastTargetHit);
+        Assert("finisher_emitter_follows_forward_sword", FinisherStage.LastEmitterOnForwardSword);
+        Assert("finisher_emitter_uses_live_sword_bone", FinisherStage.LastEmitterUsesSwordBone);
+        Assert("finisher_stage_releases_live_bodies", !FinisherStage.Active);
+        Assert("finisher_releases_only_one_beam", FinisherStage.LastReleaseCount == 1);
+        Assert("hsr_cg_reaches_final_column_impact", FinisherStage.LastVideoSeconds > 7.45);
+        Assert("finisher_actor_restores_original_parent", player.Creature.GetCreatureNode()!.Visuals.Body.GetParent().Name != "SaberFinisherActor");
+        Assert("finisher_target_restores_original_parent", target.GetCreatureNode()?.Visuals.Body.GetParent().Name != "SaberFinisherTarget");
         Assert("excalibur_muzzle_does_not_cover_saber", Fx.LastExcaliburOriginSize.X <= 140 && Fx.LastExcaliburOriginSize.Y <= 170);
         Assert("full_jp_charge_finishes_before_release", Runtime.LastChargeDuration >= Voice.Length("np_charge") - 0.05);
         await Fx.Delay(0.6);
@@ -300,7 +324,21 @@ internal static class TestHarness
         await DamageCmd.Attack(2).FromCard(aoe, null).TargetingAllOpponents(state).WithHitCount(2).Execute(new BlockingPlayerChoiceContext());
         Assert("aoe_two_kills_one_cg", state.HittableEnemies.Count == living - 2 && Runtime.KillingBlowCount == 3);
         await Fx.Delay(1.0);
-        Assert("finisher_cg_cleans_up", !Runtime.Descendants(NGame.Instance!).Any(n => n.Name == "SaberExcaliburCutIn"));
+        Assert("finisher_cg_cleans_up", !Runtime.Descendants(NGame.Instance!).Any(n => n.Name == "SaberExcaliburCutIn" || n.Name == "SaberIntegratedFinisher"));
+        var actorBody = player.Creature.GetCreatureNode()!.Visuals.Body;
+        var liveTargetBody = state.HittableEnemies.First().GetCreatureNode()!.Visuals.Body;
+        var actorParent = actorBody.GetParent();
+        var targetParent = liveTargetBody.GetParent();
+        var actorTransform = actorBody.Transform;
+        var targetTransform = liveTargetBody.Transform;
+        var interrupted = FinisherStage.Play(player.Creature.GetCreatureNode()!, state.HittableEnemies.First().GetCreatureNode(), 1.0);
+        await Fx.Delay(0.22);
+        FinisherStage.Cancel();
+        await interrupted;
+        await Fx.Delay(0.15);
+        Assert("finisher_cancel_restores_live_body_ownership", actorBody.GetParent() == actorParent && liveTargetBody.GetParent() == targetParent);
+        Assert("finisher_cancel_restores_live_body_transforms", actorBody.Transform.IsEqualApprox(actorTransform) && liveTargetBody.Transform.IsEqualApprox(targetTransform));
+        Assert("finisher_cancel_cleans_stage", !FinisherStage.Active && !Runtime.Descendants(NGame.Instance!).Any(n => n.Name == "SaberIntegratedFinisher"));
         return state.HittableEnemies.First();
     }
     private static async Task VerifyInteractions(NGame game, NCreature actor)
