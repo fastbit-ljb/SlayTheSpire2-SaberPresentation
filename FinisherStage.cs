@@ -30,7 +30,11 @@ internal static class FinisherStage
 
     private static Action? _cancel;
     internal static bool Active { get; private set; }
-    internal static bool LastActorAdvanced { get; private set; }
+    internal static float LastActorScreenDrift { get; private set; }
+    internal static float LastTargetScreenDrift { get; private set; }
+    internal static double LastVisibleBeamSeconds { get; private set; }
+    internal static double LastVisibleStageSeconds { get; private set; }
+    internal static int LastVisibleReleaseSamples { get; private set; }
     internal static bool LastTargetHit { get; private set; }
     internal static bool LastEnvironmentChanged { get; private set; }
     internal static float LastActorScaleMultiplier { get; private set; }
@@ -52,7 +56,11 @@ internal static class FinisherStage
         ReadyPresentation.Hide();
         using var music = AnimeMusic.PauseForCinematic();
         Active = true;
-        LastActorAdvanced = false;
+        LastActorScreenDrift = 0;
+        LastTargetScreenDrift = 0;
+        LastVisibleBeamSeconds = 0;
+        LastVisibleStageSeconds = 0;
+        LastVisibleReleaseSamples = 0;
         LastTargetHit = false;
         LastEnvironmentChanged = false;
         LastActorScaleMultiplier = 1f;
@@ -119,7 +127,7 @@ internal static class FinisherStage
                 Scale = Vector2.One * 1.075f,
                 ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
                 StretchMode = TextureRect.StretchModeEnum.KeepAspectCovered,
-                Modulate = new Color(0.20f, 0.36f, 0.62f, 0f),
+                Modulate = new Color(0.42f, 0.55f, 0.72f, 0f),
                 MouseFilter = Control.MouseFilterEnum.Ignore,
                 ZIndex = 0
             };
@@ -161,36 +169,19 @@ internal static class FinisherStage
             envIn.TweenProperty(background, "modulate:a", 1f, 0.20);
             envIn.TweenProperty(background, "scale", Vector2.One, 1.10)
                 .SetTrans(Tween.TransitionType.Cubic).SetEase(Tween.EaseType.Out);
-            envIn.TweenProperty(atmosphere, "color:a", 0.46f, 0.28);
+            envIn.TweenProperty(atmosphere, "color:a", 0.16f, 0.28);
 
             Vector2 actorStart = actorSnapshot.Node.Position;
-            Vector2 actorDestination = new(size.X * 0.37f, size.Y * 0.64f);
             Vector2 actorScale = actorSnapshot.Node.Scale;
-            Vector2 actorLargeScale = actorScale * 1.58f;
-            var advance = actorSnapshot.Node.CreateTween().SetParallel(true);
-            actorSnapshot.Motions.Add(advance);
-            advance.TweenProperty(actorSnapshot.Node, "position", actorDestination, 0.72)
-                .SetTrans(Tween.TransitionType.Cubic).SetEase(Tween.EaseType.Out);
-            advance.TweenProperty(actorSnapshot.Node, "scale", actorLargeScale, 0.72)
-                .SetTrans(Tween.TransitionType.Cubic).SetEase(Tween.EaseType.Out);
-
-            if (targetSnapshot != null)
-            {
-                Vector2 targetDestination = new(size.X * 0.73f, size.Y * 0.62f);
-                var targetMove = targetSnapshot.Node.CreateTween().SetParallel(true);
-                targetSnapshot.Motions.Add(targetMove);
-                targetMove.TweenProperty(targetSnapshot.Node, "position", targetDestination, 0.44)
-                    .SetTrans(Tween.TransitionType.Cubic).SetEase(Tween.EaseType.Out);
-                targetMove.TweenProperty(targetSnapshot.Node, "scale", targetSnapshot.Node.Scale * 1.12f, 0.44)
-                    .SetTrans(Tween.TransitionType.Cubic).SetEase(Tween.EaseType.Out);
-            }
+            Vector2? targetStart = targetSnapshot?.Node.Position;
+            // Excalibur is a planted, sustained release. The close-up comes
+            // from the cut-in camera; neither combatant slides to a stage mark.
 
             BodyAnimation(actor, "attack", 0.30f);
             await Fx.Delay(0.76);
             if (cancelled || !Valid(stage) || !Valid(actorSnapshot.Node)) return false;
-            LastActorAdvanced = actorSnapshot.Node.Position.X > actorStart.X + 20f;
             LastActorScaleMultiplier = actorSnapshot.Node.Scale.Length() / actorScale.Length();
-            LastEnvironmentChanged = background.Modulate.A > 0.95f && atmosphere.Color.A > 0.40f;
+            LastEnvironmentChanged = background.Modulate.A > 0.95f && atmosphere.Color.A > 0.12f;
             // Invisible Air: collect blue-white wind along the raised blade,
             // rather than placing an explosion on Saber's chest.
             var raisedBlade = actor.Visuals.SpineBody?.GetGlobalBoneTransform("Ys_wuqi1");
@@ -203,44 +194,55 @@ internal static class FinisherStage
             wind.CreateTween().TweenProperty(wind, "scale", wind.Scale * 0.48f, 0.28)
                 .SetTrans(Tween.TransitionType.Quad).SetEase(Tween.EaseType.In);
 #if SABER_TEST
-            _ = TaskHelper.RunSafely(TestHarness.CaptureAfter("finisher_actor_advance", 0.01));
+            _ = TaskHelper.RunSafely(TestHarness.CaptureAfter("finisher_stationary_charge", 0.01));
 #endif
             await Fx.Delay(0.34);
             if (cancelled || !Valid(stage)) return false;
             Voice.Play(actor, "np_charge", priority: true);
-            bool released = false, hitReached = false;
+            bool released = false, hitReached = false, strokePrepared = false;
+            void PrepareStroke()
+            {
+                if (strokePrepared || cancelled || !Valid(actor)) return;
+                strokePrepared = true;
+                // Prepare the forward/downward release behind the full-screen
+                // close-up. The actor is already in this pose when revealed.
+                BodyAnimation(actor, "attack_heavy", holdProgress: 0.40f);
+            }
             void Release()
             {
                 if (released || cancelled || !Valid(actor)) return;
                 released = true;
                 LastReleaseCount++;
                 var releaseLight = stage.CreateTween().SetParallel(true);
-                releaseLight.TweenProperty(background, "modulate", new Color(0.52f, 0.45f, 0.28f, 1f), 0.35);
-                releaseLight.TweenProperty(atmosphere, "color", new Color(0.18f, 0.10f, 0.015f, 0.20f), 0.35);
+                releaseLight.TweenProperty(background, "modulate", new Color(0.90f, 0.80f, 0.64f, 1f), 0.35);
+                releaseLight.TweenProperty(atmosphere, "color", new Color(0.18f, 0.10f, 0.015f, 0.04f), 0.35);
                 Voice.PlaySequence(actor, ["np_release", "np_end"], priority: true);
             }
             async Task Hit()
             {
                 if (hitReached || cancelled || !Valid(stage)) return;
                 hitReached = true;
-                // Skip the original skin's twisted sideways wind-up. The
-                // CG covers the short blend into its forward/downward stroke.
-                actorSnapshot.Node.Modulate = new Color(1, 1, 1, 0);
-                BodyAnimation(actor, "attack_heavy", startProgress: 0.25f);
-                await Fx.Delay(0.18);
+                if (!strokePrepared)
+                {
+                    PrepareStroke();
+                    await Fx.Delay(0.14);
+                }
                 if (cancelled || !Valid(stage) || !Valid(actorSnapshot.Node)) return;
                 using (var stroke = actor.Visuals.SpineBody?.GetAnimationState().GetCurrent(0))
-                    stroke?.SetTimeScale(0.8f);
+                    stroke?.SetTimeScale(0.11f);
                 actorSnapshot.Node.Modulate = Colors.White;
                 Vector2 center = actorSnapshot.Node.ToGlobal(actorSnapshot.HitLocal);
                 Vector2 weapon = SwordTip(actor, center);
                 LastEmitterOnForwardSword = weapon.X > center.X + 30f;
                 Vector2 impact = targetSnapshot != null && Valid(targetSnapshot.Node)
                     ? targetSnapshot.Node.ToGlobal(targetSnapshot.HitLocal) : new Vector2(size.X * 0.73f, size.Y * 0.59f);
-                Fx.Excalibur(effects, weapon, [impact], 0.88);
+                Fx.Excalibur(effects, weapon, [impact], 1.68,
+                    followOrigin: () => Valid(actor) && Valid(actorSnapshot.Node)
+                        ? SwordTip(actor, actorSnapshot.Node.ToGlobal(actorSnapshot.HitLocal)) : weapon);
                 var impactLight = background.CreateTween();
-                impactLight.TweenProperty(background, "modulate", new Color(0.78f, 0.62f, 0.36f, 1f), 0.06);
-                impactLight.TweenProperty(background, "modulate", new Color(0.24f, 0.36f, 0.58f, 1f), 0.95);
+                impactLight.TweenProperty(background, "modulate", new Color(1f, 0.91f, 0.75f, 1f), 0.08);
+                impactLight.TweenInterval(1.85);
+                impactLight.TweenProperty(background, "modulate", new Color(0.68f, 0.71f, 0.77f, 1f), 0.55);
                 LastTargetHit = targetSnapshot != null && Valid(targetSnapshot.Node);
                 if (LastTargetHit)
                 {
@@ -260,26 +262,61 @@ internal static class FinisherStage
                 }
 #if SABER_TEST
                 _ = TaskHelper.RunSafely(TestHarness.CaptureAfter("finisher_stage_hit", 0.08));
+                _ = TaskHelper.RunSafely(TestHarness.CaptureAfter("finisher_release_030", 0.30));
+                _ = TaskHelper.RunSafely(TestHarness.CaptureAfter("finisher_release_080", 0.80));
+                _ = TaskHelper.RunSafely(TestHarness.CaptureAfter("finisher_release_130", 1.30));
 #endif
             }
-            bool usedVideo = await PlayCg(stage, actorSnapshot, targetSnapshot, size, fallbackDuration, Release, Hit);
+            bool usedVideo = await PlayCg(stage, actorSnapshot, targetSnapshot, size, fallbackDuration, Release, PrepareStroke, Hit);
             if (cancelled || !Valid(stage)) return usedVideo;
             Release();
             if (!hitReached) { await Fx.Delay(0.13); await Hit(); }
-            await Fx.Delay(0.85);
+            if (cancelled || !Valid(stage)) return usedVideo;
+            // Measure the actual revealed stage and live beam, rather than
+            // keeping a hidden movie running and hoping the hit is visible.
+            ulong liveStart = Time.GetTicksMsec();
+            ulong previous = liveStart;
+            while (Time.GetTicksMsec() - liveStart < 2180)
+            {
+                await Fx.Delay(0.04);
+                if (cancelled || !Valid(stage)) return usedVideo;
+                ulong now = Time.GetTicksMsec();
+                double elapsed = (now - previous) / 1000.0;
+                previous = now;
+                LastActorScreenDrift = Math.Max(LastActorScreenDrift, actorSnapshot.Node.Position.DistanceTo(actorStart));
+                if (targetSnapshot != null && targetStart.HasValue)
+                    LastTargetScreenDrift = Math.Max(LastTargetScreenDrift, targetSnapshot.Node.Position.DistanceTo(targetStart.Value));
+                bool stageVisible = background.Modulate.A > 0.95f && background.Modulate.R > 0.75f
+                    && actorSnapshot.Node.Modulate.A > 0.95f
+                    && (targetSnapshot == null || targetSnapshot.Node.Modulate.A > 0.95f)
+                    && !stage.GetChildren().OfType<VideoStreamPlayer>().Any(v => v.Modulate.A > 0.05f);
+                if (stageVisible) LastVisibleStageSeconds += elapsed;
+                bool beamVisible = effects.GetChildren().OfType<Sprite2D>()
+                    .Any(s => s.Name == "SaberExcaliburBeam" && s.IsVisibleInTree());
+                if (stageVisible && beamVisible)
+                {
+                    LastVisibleBeamSeconds += elapsed;
+                    LastVisibleReleaseSamples++;
+                }
+            }
             if (cancelled || !Valid(stage)) return usedVideo;
 
-            // Recover through the screen-space home position before reparenting.
+            // Let the authored recovery raise the blade after the beam ends.
+            using (var recovery = actor.Visuals.SpineBody?.GetAnimationState().GetCurrent(0))
+            {
+                if (recovery != null)
+                {
+                    recovery.SetTrackTime(recovery.GetAnimationDuration() * 0.72f);
+                    recovery.SetTimeScale(1f);
+                }
+            }
+            await Fx.Delay(0.45);
+            if (cancelled || !Valid(stage)) return usedVideo;
             BodyAnimation(actor, "idle_loop", loop: true);
-            var returnHome = actorSnapshot.Node.CreateTween().SetParallel(true);
-            actorSnapshot.Motions.Add(returnHome);
-            returnHome.TweenProperty(actorSnapshot.Node, "transform", actorSnapshot.ScreenTransform, 0.40)
-                .SetTrans(Tween.TransitionType.Cubic).SetEase(Tween.EaseType.InOut);
 
             var outro = stage.CreateTween().SetParallel(true);
             outro.TweenProperty(background, "modulate:a", 0f, 0.40);
             outro.TweenProperty(atmosphere, "color:a", 0f, 0.40);
-            if (targetSnapshot != null) outro.TweenProperty(targetSnapshot.Node, "transform", targetSnapshot.ScreenTransform, 0.40);
             await Fx.Delay(0.42);
             return usedVideo;
         }
@@ -291,7 +328,7 @@ internal static class FinisherStage
     }
 
     private static async Task<bool> PlayCg(Control stage, VisualSnapshot actorSnapshot, VisualSnapshot? targetSnapshot,
-        Vector2 size, double fallbackDuration, Action release, Func<Task> hit)
+        Vector2 size, double fallbackDuration, Action release, Action prepareStroke, Func<Task> hit)
     {
         var actor = actorSnapshot.Node;
         var target = targetSnapshot?.Node;
@@ -312,8 +349,8 @@ internal static class FinisherStage
         };
         video.Set("expand", true);
         stage.AddChild(video);
-        // Keep the staged enemy over the CG so the eventual hit still belongs to
-        // the battle target rather than to an unrelated full-screen movie.
+        // World actors stay on their original battle marks. The movie provides
+        // the close-up; it gives the whole stage back before the actual beam.
         if (target != null) target.ZIndex = 32;
         actor.ZIndex = 34;
         video.Play();
@@ -342,12 +379,28 @@ internal static class FinisherStage
                 released = true;
                 release();
             }
+            if (LastVideoSeconds >= 7.10) prepareStroke();
             if (!hitReached && LastVideoSeconds >= 7.50)
             {
                 hitReached = true;
-                var handoff = video.CreateTween();
-                handoff.TweenProperty(video, "modulate:a", 0f, 0.22);
+#if SABER_TEST
+                _ = TaskHelper.RunSafely(TestHarness.CaptureHandoffSequence());
+#endif
+                var handoff = video.CreateTween().SetParallel(true);
+                handoff.TweenProperty(video, "modulate:a", 0f, 0.20);
+                handoff.TweenProperty(actor, "modulate:a", 1f, 0.20);
+                if (target != null) handoff.TweenProperty(target, "modulate:a", 1f, 0.20);
+                await Fx.Delay(0.26);
+                if (!Valid(stage) || !Valid(video)) return true;
+                video.Stop();
+                video.QueueFree();
+#if SABER_TEST
+                _ = TaskHelper.RunSafely(TestHarness.CaptureAfter("finisher_camelot_establish", 0.01));
+#endif
+                await Fx.Delay(0.18);
+                if (!Valid(stage)) return true;
                 await hit();
+                return true;
             }
             if (Input.IsActionJustPressed("ui_cancel")) video.Stop();
             await Fx.Delay(0.05);

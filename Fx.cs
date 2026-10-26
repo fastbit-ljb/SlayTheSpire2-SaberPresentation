@@ -87,7 +87,7 @@ internal static class Fx
         effect.CreateTween().TweenProperty(effect, "scale", effect.Scale * 2, 0.62).SetTrans(Tween.TransitionType.Cubic);
         CznAssets.Charge(parent, center);
     }
-    public static void Excalibur(Node parent, Vector2 from, Vector2[] targets, double hold = 0.13)
+    public static void Excalibur(Node parent, Vector2 from, Vector2[] targets, double hold = 0.13, Func<Vector2>? followOrigin = null)
     {
         LastExcaliburOrigin = from;
         LastExcaliburOriginSize = new Vector2(128, 156);
@@ -95,7 +95,9 @@ internal static class Fx
         Vector2 end = new(aim.X + 280, aim.Y);
         Vector2 axis = Local(parent, end) - Local(parent, from);
         Vector2 mid = from + (end - from) * 0.5f;
-        Painted(parent, mid, 2, new Vector2(axis.Length() * 1.12f, 245), 0.48, axis.Angle(), repeat: Math.Max(1, (int)Math.Ceiling(hold / 0.48)));
+        var beam = Painted(parent, mid, 2, new Vector2(axis.Length() * 1.12f, 245), 0.48, axis.Angle(), repeat: Math.Max(1, (int)Math.Ceiling(hold / 0.48)));
+        beam.Name = "SaberExcaliburBeam";
+        if (followOrigin != null) _ = TaskHelper.RunSafely(FollowBeam(beam, parent, end, followOrigin));
         var muzzle = Painted(parent, from, 1, LastExcaliburOriginSize, 0.34);
         muzzle.Modulate = new Color(1, 0.94f, 0.72f, 0.82f);
         foreach (var target in targets)
@@ -106,6 +108,18 @@ internal static class Fx
         Voice.Beam(parent);
         if (Settings.Current.ScreenShake) NGame.Instance?.ScreenShake(ShakeStrength.Medium, ShakeDuration.Normal);
         if (Settings.Current.ScreenFlash) Flash(parent);
+    }
+    private static async Task FollowBeam(Sprite2D beam, Node parent, Vector2 end, Func<Vector2> origin)
+    {
+        while (Valid(beam) && Valid(parent))
+        {
+            Vector2 from = origin();
+            Vector2 axis = Local(parent, end) - Local(parent, from);
+            beam.Position = Local(parent, (from + end) * 0.5f);
+            beam.Rotation = axis.Angle();
+            beam.Scale = new Vector2(axis.Length() * 1.12f, 245) / (beam.Texture.GetSize() / 4);
+            await Delay(0.016);
+        }
     }
     private static void Flash(Node parent)
     {

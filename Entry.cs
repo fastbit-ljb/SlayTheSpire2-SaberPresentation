@@ -23,7 +23,7 @@ public static class Entry
         Settings.Load();
         Standalone.Initialize();
         new Harmony("local.saber.presentation").PatchAll(typeof(Entry).Assembly);
-        Log.Info("[SaberPresentation] JP character presentation 0.3.6 initialized; integrated HSR Excalibur stage with blade-anchored wind, target response and environment lighting; original game UI retained.");
+        Log.Info("[SaberPresentation] JP character presentation 0.3.7 initialized; planted Excalibur cut-in, visible Camelot release and live sword-to-target beam; original game UI retained.");
 #if SABER_TEST
         if (MegaCrit.Sts2.Core.Helpers.CommandLineHelper.HasArg("saber-test"))
             _ = MegaCrit.Sts2.Core.Helpers.TaskHelper.RunSafely(SaberTestBootstrapPatch.StartWhenReady());

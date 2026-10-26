@@ -8,6 +8,7 @@ using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Logging;
 using MegaCrit.Sts2.Core.Map;
 using MegaCrit.Sts2.Core.Models;
@@ -31,10 +32,32 @@ namespace SaberPresentation;
 internal static class DemoHarness
 {
     private static int _take;
+    private static int _maxHandCards, _maxHandHolders;
+    private static int _finisherCountBefore;
+    private static bool _finisherVerified;
+    private static Player? _player;
+    private static bool Smoke => CommandLineHelper.HasArg("saber-demo-smoke");
     private static Label _caption = null!;
     private static string Marker => System.IO.Path.Combine(Standalone.Root, "demo-state.json");
-    private static void State(string phase) => System.IO.File.WriteAllText(Marker,
-        System.Text.Json.JsonSerializer.Serialize(new { take = _take, phase, fullscreen = DisplayServer.WindowGetMode().ToString() }));
+    private static void State(string phase)
+    {
+        int handCards = _player?.PlayerCombatState?.Hand.Cards.Count ?? 0;
+        int handHolders = NPlayerHand.Instance?.CardHolderContainer?.GetChildren().OfType<NHandCardHolder>().Count() ?? 0;
+        _maxHandCards = Math.Max(_maxHandCards, handCards);
+        _maxHandHolders = Math.Max(_maxHandHolders, handHolders);
+        var evidence = new
+        {
+            take = _take, phase, fullscreen = DisplayServer.WindowGetMode().ToString(),
+            smoke = Smoke, handCards, handHolders, maxHandCards = _maxHandCards, maxHandHolders = _maxHandHolders,
+            finisherVerified = _finisherVerified, killingBlowsThisTake = Runtime.KillingBlowCount - _finisherCountBefore,
+            integratedStageStarted = FinisherStage.LastStageStarted, integratedStageActive = FinisherStage.Active,
+            videoSeconds = FinisherStage.LastVideoSeconds, releaseCount = FinisherStage.LastReleaseCount,
+            targetHit = FinisherStage.LastTargetHit, emitterUsesSwordBone = FinisherStage.LastEmitterUsesSwordBone
+        };
+        System.IO.File.WriteAllText(Marker, System.Text.Json.JsonSerializer.Serialize(evidence));
+        Log.Info("[SaberDemo] " + System.Text.Json.JsonSerializer.Serialize(evidence));
+    }
+    private static Task Hold(double seconds) => Fx.Delay(Smoke ? Math.Min(seconds, 0.75) : seconds);
     internal static async Task StartWhenReady()
     {
         while (NGame.Instance == null) await Task.Delay(50);
@@ -69,17 +92,18 @@ internal static class DemoHarness
             await (Task)AccessTools.Method(typeof(NGame), "LoadMainMenu").Invoke(game, [false])!;
             _caption.Text = "Saber 全屏演示已就绪\nF8 开始／重播  ·  F9 隐藏提示\n开始后留 15 秒准备录制";
             State("ready");
-            await WaitForStart();
-            for (int second = 15; second > 0; second--)
+            if (!Smoke) await WaitForStart();
+            for (int second = Smoke ? 0 : 15; second > 0; second--)
             {
                 _caption.Text = $"Saber 演出展示将在 {second} 秒后开始";
                 State("countdown_" + second);
                 await Fx.Delay(1);
             }
             _caption.Hide();
-            await Fx.Delay(3);
+            await Hold(3);
             var character = ModelDb.Character<Ironclad>();
             var player = Player.CreateForNewRun(character, SaveManager.Instance.GenerateUnlockStateFromProgress(), 1UL);
+            _player = player;
             var acts = ActModel.GetDefaultList().Select(a => a.ToMutable()).ToList();
             acts[0] = ModelDb.Act<Overgrowth>().ToMutable();
             var run = RunState.CreateForNewRun([player], acts, [], GameMode.Standard, 0, "SABERRECORDING");
@@ -101,9 +125,18 @@ internal static class DemoHarness
             while (GodotObject.IsInstanceValid(game) && game.IsInsideTree())
             {
                 _take++;
+                _finisherVerified = false;
+                _finisherCountBefore = Runtime.KillingBlowCount;
                 _caption.Hide();
                 await Perform(combat, player);
                 State("complete");
+                if (Smoke)
+                {
+                    if (_take < 2) continue;
+                    Log.Info("[SaberDemo] TWO-TAKE SMOKE CHECKS PASSED");
+                    game.GetTree().Quit();
+                    return;
+                }
                 await Fx.Delay(5);
                 _caption.Text = "演示完成  ·  F8 重播  ·  F9 隐藏提示";
                 _caption.Show();
@@ -115,7 +148,12 @@ internal static class DemoHarness
                 }
             }
         }
-        catch (Exception ex) { State("error: " + ex.Message); Log.Error("[SaberDemo] " + ex); }
+        catch (Exception ex)
+        {
+            State("error: " + ex.Message);
+            Log.Error("[SaberDemo] " + ex);
+            if (Smoke) game.GetTree().Quit(1);
+        }
     }
     private static async Task WaitForStart()
     {
@@ -128,22 +166,37 @@ internal static class DemoHarness
     }
     private static async Task Perform(CombatState state, Player player)
     {
-        foreach (var enemy in state.HittableEnemies) { enemy.SetMaxHpInternal(200); enemy.SetCurrentHpInternal(200); }
-        if (state.HittableEnemies.Count < 3)
+        ReadyPresentation.Cancel(null);
+        // The recording profile reuses one battle across takes. Clear the native
+        // combat piles with their visual transitions, so discarded cards and
+        // hand holders cannot accumulate on replay. The live mod never does this.
+        await CardPileCmd.RemoveFromCombat(player.PlayerCombatState!.AllCards.ToArray());
+        await Fx.Delay(0.4);
+        if (NPlayerHand.Instance!.ActiveHolders.Count != 0)
+            throw new InvalidOperationException("Recording reset left stale hand holders.");
+        foreach (var creature in state.HittableEnemies.Append(player.Creature))
         {
-            var extra = await CreatureCmd.Add<TwoTailedRat>(state, "third");
+            foreach (var power in creature.Powers.ToArray()) await PowerCmd.Remove(power);
+            await CreatureCmd.LoseBlock(new BlockingPlayerChoiceContext(), creature, creature.Block, null);
+        }
+        foreach (var enemy in state.HittableEnemies) { enemy.SetMaxHpInternal(200); enemy.SetCurrentHpInternal(200); }
+        while (state.HittableEnemies.Count < 3)
+        {
+            string slot = new[] { "third", "fourth", "fifth" }
+                .First(name => !state.HittableEnemies.Any(enemy => enemy.SlotName == name));
+            var extra = await CreatureCmd.Add<TwoTailedRat>(state, slot);
             extra.SetMaxHpInternal(200); extra.SetCurrentHpInternal(200);
         }
         player.Creature.SetCurrentHpInternal(player.Creature.MaxHp);
         await CreatureCmd.LoseBlock(new BlockingPlayerChoiceContext(), player.Creature, player.Creature.Block, null);
-        await CardPileCmd.RemoveFromCombat(PileType.Hand.GetPile(player).Cards.ToArray(), true);
         var templates = new CardModel[] { ModelDb.Card<StrikeIronclad>(), ModelDb.Card<DefendIronclad>(),
             ModelDb.Card<PommelStrike>(), ModelDb.Card<Uppercut>(), ModelDb.Card<Hemokinesis>(),
             ModelDb.Card<TwinStrike>(), ModelDb.Card<Bash>(), ModelDb.Card<Whirlwind>(), ModelDb.Card<Bludgeon>() };
         var cards = templates.Select(t => state.CreateCard(t, player)).ToArray();
         foreach (var card in cards) await CardPileCmd.Add(card, PileType.Hand);
         var target = state.HittableEnemies.First();
-        await Fx.Delay(3);
+        State("take_reset");
+        await Hold(3);
         State("hover_attack");
         await Focus(cards[0], 4);
         State("hover_skill");
@@ -155,34 +208,42 @@ internal static class DemoHarness
             holder.EmitSignal(Control.SignalName.FocusEntered);
             var play = NMouseCardPlay.Create(holder, "saber_demo", false);
             NCombatRoom.Instance!.AddChild(play); play.Start();
-            await Fx.Delay(2.5); play.CancelPlayCard(); holder.CancelDrag();
+            await Hold(2.5); play.CancelPlayCard(); holder.CancelDrag();
             holder.EmitSignal(Control.SignalName.FocusExited);
         }
-        await Fx.Delay(2);
+        await Hold(2);
         foreach (int index in new[] { 0, 2, 3, 4, 5, 6, 7 })
         {
             State("attack_" + cards[index].Id.Entry);
             await Play(cards[index], target, index == 7 ? 3 : 1);
-            await Fx.Delay(2.8);
+            await Hold(2.8);
         }
         State("shield");
         await Play(cards[1], null);
-        await Fx.Delay(2);
+        await Hold(2);
         await CreatureCmd.Damage(new BlockingPlayerChoiceContext(), player.Creature, 2, ValueProp.Move, target);
-        await Fx.Delay(2.5);
+        await Hold(2.5);
         State("hurt");
         await CreatureCmd.Damage(new BlockingPlayerChoiceContext(), player.Creature, 8, ValueProp.Move, target);
-        await Fx.Delay(3);
+        await Hold(3);
         State("skill_aura");
         player.Creature.GetCreatureNode()!.SetAnimationTrigger("Cast");
-        await Fx.Delay(3);
+        await Hold(3);
         State("killing_blow");
-        target.SetCurrentHpInternal(16);
+        foreach (var power in target.Powers.ToArray()) await PowerCmd.Remove(power);
+        await CreatureCmd.LoseBlock(new BlockingPlayerChoiceContext(), target, target.Block, player.Creature);
+        target.SetCurrentHpInternal(1);
         await Focus(cards[8], 3);
         await Play(cards[8], target);
-        await Fx.Delay(5);
+        _finisherVerified = target.IsDead && Runtime.KillingBlowCount == _finisherCountBefore + 1
+            && Fx.LastCutInIntegrated && FinisherStage.LastStageStarted && FinisherStage.LastTargetHit
+            && FinisherStage.LastVideoSeconds > 7.45 && FinisherStage.LastReleaseCount == 1 && !FinisherStage.Active;
+        State("finisher_verified");
+        if (!_finisherVerified)
+            throw new InvalidOperationException("Recording did not complete one integrated Excalibur finisher; inspect demo-state.json.");
+        await Hold(5);
         ReadyPresentation.Cancel(null);
-        await Fx.Delay(2);
+        await Hold(2);
         Log.Info("[SaberDemo] TAKE " + _take + " COMPLETE");
     }
     private static NHandCardHolder? Holder(CardModel card) => Runtime.Descendants(NCombatRoom.Instance!)
@@ -191,7 +252,7 @@ internal static class DemoHarness
     {
         var holder = Holder(card);
         holder?.EmitSignal(Control.SignalName.FocusEntered);
-        await Fx.Delay(duration);
+        await Hold(duration);
         holder?.EmitSignal(Control.SignalName.FocusExited);
         await Fx.Delay(0.3);
     }
@@ -199,11 +260,14 @@ internal static class DemoHarness
     {
         var holder = Holder(card);
         holder?.EmitSignal(Control.SignalName.FocusEntered);
-        await Fx.Delay(1.6);
+        await Hold(1.6);
         await card.OnPlayWrapper(new BlockingPlayerChoiceContext(), target, true,
-            new ResourceInfo { EnergySpent = energy, EnergyValue = energy, StarsSpent = 0, StarValue = 0 }, true);
+            new ResourceInfo { EnergySpent = energy, EnergyValue = energy, StarsSpent = 0, StarValue = 0 });
         if (holder != null && GodotObject.IsInstanceValid(holder)) holder.EmitSignal(Control.SignalName.FocusExited);
         await Fx.Delay(0.8);
+        State("played_" + card.Id.Entry);
+        if (_maxHandCards > 10 || _maxHandHolders > 10)
+            throw new InvalidOperationException("Recording exceeded the native hand limit.");
     }
 }
 #endif

@@ -76,7 +76,9 @@ def main():
         if folder == "verification-standalone":
             new_checks += ["killing_blow_uses_animated_cg", "game_over_uses_animated_defeat_cg",
                            "defeat_video_advances_beyond_single_frame", "killing_blow_uses_integrated_battle_stage",
-                           "finisher_actor_advances_toward_screen_center", "finisher_actor_enlarges_during_advance",
+                           "finisher_actor_stays_on_original_battle_mark", "finisher_does_not_independently_resize_actor",
+                           "finisher_target_stays_on_original_mark_except_hit_recoil", "finisher_warm_camelot_is_visibly_revealed",
+                           "finisher_beam_is_visible_with_actor_and_target",
                            "finisher_environment_changes_with_timeline", "finisher_target_receives_stage_hit",
                            "finisher_emitter_follows_forward_sword", "finisher_emitter_uses_live_sword_bone",
                            "finisher_stage_releases_live_bodies", "finisher_releases_only_one_beam",
@@ -88,9 +90,15 @@ def main():
     finisher = json.loads((ROOT / "build/verification-finisher/results.json").read_text(encoding="utf-8"))
     assert finisher and all(r["passed"] for r in finisher)
     for check in ("finisher_test_window_is_fullscreen", "finisher_emitter_uses_live_sword_bone",
-                  "finisher_releases_only_one_beam", "finisher_cancel_cleans_stage"):
+                  "finisher_releases_only_one_beam", "finisher_cancel_cleans_stage",
+                  "finisher_actor_stays_on_original_battle_mark", "finisher_warm_camelot_is_visibly_revealed",
+                  "finisher_beam_is_visible_with_actor_and_target"):
         assert any(r["check"] == check and r["passed"] for r in finisher), "Missing fullscreen finisher proof: " + check
     suites.append({"suite": "verification-finisher", "passed": len(finisher), "failed": 0, "checks": finisher})
+    demo = json.loads((ROOT / "build/verification-demo/two-take-evidence.json").read_text(encoding="utf-8"))
+    assert demo["take"] == 2 and demo["phase"] == "complete" and demo["finisherVerified"]
+    assert demo["maxHandCards"] <= 10 and demo["maxHandHolders"] <= 10
+    assert demo["killingBlowsThisTake"] == 1 and demo["targetHit"] and demo["emitterUsesSwordBone"]
     media_qa = json.loads((ROOT / "build/hsr-fullscreen-media-qa.json").read_text(encoding="utf-8"))
     assert media_qa and all(r["blackBarsAbsent"] for r in media_qa)
     from pck_tool import extract
@@ -106,8 +114,9 @@ def main():
               "cardArtDefault": "Original game portraits; custom card art paused",
               "energyDisplay": "Native current/max energy, raised above the hand and portrait",
               "hoverBattlePose": "Attack hover: sword-charge pose; skill hover: sword planted guard; no combat VFX until played; leave/cancel restores idle",
-              "cinematics": "Official Honkai: Star Rail Saber 9-second Excalibur edit with synchronized JP Artoria voice; live actor advance/enlarge, staged target hit and environment timeline. Defeat: official FGO Memorial Movie 9.3-second animated clip",
+              "cinematics": "Official Honkai: Star Rail Saber Excalibur close-up with synchronized JP Artoria voice; planted original battle marks, fullscreen cut-in, warm Camelot reveal and sustained live sword-to-target beam. Defeat: official FGO Memorial Movie 9.3-second animated clip",
               "fullscreenCgEvidence": media_qa,
+              "demoReplayEvidence": demo,
               "saberLinkedSequence": "Blade-anchored Invisible Air gathers blue-white wind; JP Excalibur call turns environment gold; downstroke emits from live sword bone into actual target with flash/shake; ambient light and actor recover after the beam",
               "backgroundMusic": "EMIYA_UBW Extended instrumental; offline 30-minute loop; Saber runs only; voice duck and CG pause",
               "warnings": ["Original Saber exported resources contain stale UIDs; Godot resolves their included text paths.",

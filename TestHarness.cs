@@ -298,8 +298,12 @@ internal static class TestHarness
         Assert("real_lethal_strike_triggers_excalibur_once", target.IsDead && Runtime.KillingBlowCount == 1);
         Assert("killing_blow_uses_animated_cg", Fx.LastCutInUsedVideo);
         Assert("killing_blow_uses_integrated_battle_stage", Fx.LastCutInIntegrated);
-        Assert("finisher_actor_advances_toward_screen_center", FinisherStage.LastActorAdvanced);
-        Assert("finisher_actor_enlarges_during_advance", FinisherStage.LastActorScaleMultiplier >= 1.5f);
+        Assert("finisher_actor_stays_on_original_battle_mark", FinisherStage.LastActorScreenDrift < 1f);
+        Assert("finisher_does_not_independently_resize_actor", Math.Abs(FinisherStage.LastActorScaleMultiplier - 1f) < 0.01f);
+        Assert("finisher_target_stays_on_original_mark_except_hit_recoil", FinisherStage.LastTargetScreenDrift <= 30f);
+        Assert("finisher_warm_camelot_is_visibly_revealed", FinisherStage.LastVisibleStageSeconds >= 1.8);
+        Assert("finisher_beam_is_visible_with_actor_and_target", FinisherStage.LastVisibleBeamSeconds >= 1.55
+            && FinisherStage.LastVisibleReleaseSamples >= 20);
         Assert("finisher_environment_changes_with_timeline", FinisherStage.LastEnvironmentChanged);
         Assert("finisher_target_receives_stage_hit", FinisherStage.LastTargetHit);
         Assert("finisher_emitter_follows_forward_sword", FinisherStage.LastEmitterOnForwardSword);
@@ -615,6 +619,10 @@ internal static class TestHarness
     internal static async Task CaptureFinisherSequence()
     {
         for (int frame = 0; frame < 60; frame++) await CaptureAfter($"finisher_frame_{frame:D2}", 0.075);
+    }
+    internal static async Task CaptureHandoffSequence()
+    {
+        for (int frame = 0; frame < 12; frame++) await CaptureAfter($"finisher_handoff_{frame:D2}", 0.045);
     }
 }
 #endif
