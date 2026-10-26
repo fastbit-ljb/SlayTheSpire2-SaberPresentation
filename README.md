@@ -2,11 +2,15 @@
 
 只安装 **SaberPresentation** 一个文件夹即可运行，无前置模组。适配 Slay the Spire 2 v0.111.0，替换铁甲战士外观与角色演出，保留原有玩法与数值。
 
+[下载最新版安装包](https://github.com/fastbit-ljb/SlayTheSpire2-SaberPresentation/releases/latest) · [Steam 创意工坊订阅](https://steamcommunity.com/sharedfiles/filedetails/?id=3827762528) · [GitHub 源码](https://github.com/fastbit-ljb/SlayTheSpire2-SaberPresentation)
+
 ## 安装
 
 退出游戏后，将 `SaberPresentation-0.3.9.zip` 中的 `SaberPresentation` 文件夹放入游戏 `mods/`，启用并重启。
 
 从 0.3.0／0.3.1 升级时，用新文件夹替换旧文件夹，移除旧 `bundled/` 内的 CznCore、CznStyleUI、CznMainMenu 和 CznEnemySkin DLL/PCK。本机安装脚本会按文件名清理这些旧载荷，保留缓存和旧版成品以便回滚。
+
+本机开发环境也可用下列命令打包安装；源码构建前提见下文。
 
 ```powershell
 ./tools/package.ps1 -Install -EnableStandalone
@@ -64,6 +68,10 @@
 
 ## 开发与验证
 
+开发环境使用 PowerShell 7、.NET 9 SDK、Python 3 和 Pillow，并需安装游戏。当前工程引用、测试运行器与安装／验证脚本包含本机游戏路径，迁移时需按实际安装位置调整。
+
+完整资源包构建还需要未纳入 Git 的三个锁定输入：`build/source-cache/component-lock.json`、`build/source-cache/standalone-source.pck` 和 `build/bundled/CznCore.pck`。`prepare_standalone.py` 会校验其 SHA-256；输出清单 `STANDALONE_COMPONENTS.json` 不能代替输入锁。克隆源码后需自行准备相同版本的源资源缓存。Release 安装包已经包含运行所需资源，使用者无需这些开发输入。
+
 ```powershell
 python -X utf8 tools/prepare_assets.py
 python -X utf8 tools/prepare_standalone.py
@@ -71,13 +79,15 @@ dotnet build SaberPresentation.csproj -c Release -p:DefineConstants=SABER_TEST -
 ./tools/prepare_test_runner.ps1 -Standalone
 $env:APPDATA = "$PWD/build/test-appdata/Roaming"
 $env:SABER_TEST_ISOLATED = '1'
-./build/runner-standalone/SlayTheSpire2.exe --force-steam=off --saber-test --saber-standalone-test --windowed --resolution 1600x900
+./build/runner-standalone/SlayTheSpire2.exe --force-steam=off --saber-test --saber-standalone-test
 ```
 
 测试使用项目内独立 APPDATA 与显式隔离标记，不操作正常存档。正式 DLL 不含测试或演示入口。覆盖原生选牌、拖拽、取消、真实出牌、七类攻击、随机／群攻／多段、数值保持、28 段日配、两段动态 CG、角色归位、剑尖边界、特效清理、原版金币／卡框／能量／菜单与原生死亡结算。音乐检查包括解码、跨更新连续播放、原曲替换、音乐静音、日配压低、CG 暂停和恢复。
 
 在同一测试命令后加入 `--saber-hover-smoke` 可单独检查悬停进入过渡。它逐帧采样实际剑／手骨与 Spine 混合时钟，覆盖重复聚焦、混合中切牌、取消后立即重悬停及真实出牌；结果、采样和版本／测试 DLL 校验值写入 `build/verification-hover/`。
 
-构建使用 SHA-256 校验通过的本地源缓存，退订源模组后仍可构建。源码、新美术、提示词、来源与验证报告受 Git 管理，旧版标签可回滚；大型源缓存、测试运行器与成品 ZIP 留在本机，通过锁定清单和校验值记录。当前无远程仓库。
+测试截图使用全屏和屏幕原始分辨率，不缩放保存。v0.3.9 在 1920×1080 下通过悬停专项 172 项、完整战斗回归 168 项检查。
+
+源码、新美术、提示词与来源保存在 GitHub，旧版标签可回滚；大型源缓存和测试运行器留在本机。安装 ZIP、SHA-256 和验证报告通过 GitHub Releases 发布。第三方素材的来源与权利说明见 `THIRD_PARTY_NOTICES.md`。
 
 录制演示用 `./tools/start_demo.ps1`，独立存档、全屏启动；F8 开始／重播，F9 隐藏提示。演示每次清理原生手牌显示节点并核对真实斩杀，避免重播累积手牌。仅演示构建支持 `--saber-demo --saber-demo-smoke`，自动运行两次并校验舞台、日配时钟、命中与手牌上限，正式安装 DLL 不包含此入口。
