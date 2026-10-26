@@ -1,4 +1,4 @@
-# Saber 独立角色演出模组 0.3.9
+# Saber 独立角色演出模组 0.3.10
 
 只安装 **SaberPresentation** 一个文件夹即可运行，无前置模组。适配 Slay the Spire 2 v0.111.0，替换铁甲战士外观与角色演出，保留原有玩法与数值。
 
@@ -6,7 +6,7 @@
 
 ## 安装
 
-退出游戏后，将 `SaberPresentation-0.3.9.zip` 中的 `SaberPresentation` 文件夹放入游戏 `mods/`，启用并重启。
+退出游戏后，将 `SaberPresentation-0.3.10.zip` 中的 `SaberPresentation` 文件夹放入游戏 `mods/`，启用并重启。
 
 从 0.3.0／0.3.1 升级时，用新文件夹替换旧文件夹，移除旧 `bundled/` 内的 CznCore、CznStyleUI、CznMainMenu 和 CznEnemySkin DLL/PCK。本机安装脚本会按文件名清理这些旧载荷，保留缓存和旧版成品以便回滚。
 

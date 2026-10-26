@@ -655,6 +655,12 @@ def upright_guard_pose(original, cast, upright, config):
     # This source rig uses uniform scale. Preserve its authored size while
     # expressing grip positions on the sword.
     world_scale = math.sqrt(abs(parent["a"]*parent["d"] - parent["b"]*parent["c"]))
+    # The two native glove textures are wider than their palm markers. Close
+    # markers can satisfy the grip solve while one glove completely masks the
+    # other. Keep distinct upper/lower grips within the native hilt (3.5..40).
+    grip_separation = config["leftGripSwordX"] - config["rightGripSwordX"]
+    assert 3.5 < config["rightGripSwordX"] < config["leftGripSwordX"] < 40.0
+    assert grip_separation >= config["minimumGripSeparationSwordUnits"]
     arm_reports = []
     for names, palm_local, grip_x in (
         (("Ys_larm2", "Ys_larm1", "Ys_lhand2"), config["leftPalmLocal"], config["leftGripSwordX"]),
@@ -693,6 +699,10 @@ def upright_guard_pose(original, cast, upright, config):
                    "targetSwordWorldOrigin": origin, "swordOriginWorldOffset": list(offset),
                    "computedSwordLocalRotation": sword["rotation"], "targetSwordLocalXY": [sword["x"], sword["y"]],
                    "swordWorldScale": world_scale, "bodyAxes": axes, "armSolves": arm_reports,
+                   "gripSeparationSwordUnits": grip_separation,
+                   "gripSeparationWorld": grip_separation * world_scale,
+                   "minimumGripSeparationSwordUnits": config["minimumGripSeparationSwordUnits"],
+                   "gripOrderFromCrossguard": ["Ys_lhand2", "Ys_rhand"],
                    "armScaleSignReplacements": scale_replacements,
                    "allScaleSignsMatchUprightReference": True,
                    "armSubtreeBones": [bones[index]["name"] for index in sorted(arm_subtrees)],
@@ -926,6 +936,10 @@ def build_guard_animation(original: bytes, config):
         "allScaleSignsMatchUprightReference": pose["allScaleSignsMatchUprightReference"],
         "swordDrawsInFrontOfFace": True, "palmsDrawOverSwordGrip": True,
         "maximumSerializedPalmError": max(palm_errors),
+        "gripSeparationSwordUnits": pose["gripSeparationSwordUnits"],
+        "gripSeparationWorld": pose["gripSeparationWorld"],
+        "minimumGripSeparationSwordUnits": pose["minimumGripSeparationSwordUnits"],
+        "gripOrderFromCrossguard": pose["gripOrderFromCrossguard"],
         "handheld": True, "originMode": "pivot", "swordBone": config["swordBone"],
         "resourcePath": config["resourcePath"], "sourceSkeletonSha256": source_sha,
         "authoredSkeletonSha256": output_sha, "sourceBytes": len(original), "authoredBytes": len(output),

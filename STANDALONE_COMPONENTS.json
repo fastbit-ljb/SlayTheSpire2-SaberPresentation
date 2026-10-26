@@ -57,13 +57,20 @@
     "allScaleSignsMatchUprightReference": true,
     "swordDrawsInFrontOfFace": true,
     "palmsDrawOverSwordGrip": true,
-    "maximumSerializedPalmError": 2.7362246633539305e-06,
+    "maximumSerializedPalmError": 6.049938761911104e-06,
+    "gripSeparationSwordUnits": 21.0,
+    "gripSeparationWorld": 60.17310619354248,
+    "minimumGripSeparationSwordUnits": 20.0,
+    "gripOrderFromCrossguard": [
+      "Ys_lhand2",
+      "Ys_rhand"
+    ],
     "handheld": true,
     "originMode": "pivot",
     "swordBone": "Ys_wuqi1",
     "resourcePath": ".godot/imported/ironclad.skel-8e96930de153cfcb09ff2bbedd54ed5d.spskel",
     "sourceSkeletonSha256": "117533e057e9dd05c16e456cee49b7087aaf83fb7e028cd1b7b4afaf567dce41",
-    "authoredSkeletonSha256": "015382a343b1fded81c1d9a838b49abf571399a522975e8677d33b7baaf9550f",
+    "authoredSkeletonSha256": "7cbcb6c6a07f761cc7af7457085f2af416252b9f3f4070bc99f4b722aaf27534",
     "sourceBytes": 388864,
     "authoredBytes": 405709,
     "retainedNativeAnimations": [
@@ -82,13 +89,13 @@
     "authoredAnimationCount": 1,
     "combatEffectSlotsSuppressed": 66,
     "effectAttachmentsClearedFromTimeZero": true,
-    "targetSwordLocalRotation": 255.3492721882194,
+    "targetSwordLocalRotation": 255.06369209187113,
     "targetSwordLocalXY": [
-      14.384372823212816,
-      23.004683579572262
+      16.036863428002942,
+      28.773962682416503
     ],
     "swordOriginWorldOffset": [
-      0.0,
+      40.0,
       0.0
     ],
     "buildReport": "build/guard-pose-build.json"
@@ -712,6 +719,6 @@
     "file": "SaberPresentation.pck",
     "resources": 229,
     "bytes": 96856395,
-    "sha256": "984c3bff250905694a5280019dbbb0a6cc31b50af5a83f4f0e786ee4a2118050"
+    "sha256": "2cffaab7cd3a0cd5c1ee165ea302cbadefcb9891b7cc7adf538d784969a3233c"
   }
 }

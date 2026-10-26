@@ -11,7 +11,7 @@ internal static partial class TestHarness
     private sealed record HoverGuard(float BodySpan, float SwordAxisX, float SwordAxisY,
         float LeftGripDistance, float RightGripDistance, float PalmDistance, float BladeFaceDistance,
         float CrossguardBelowFace, float TipAboveFace, float TorsoAxisX, float TorsoAxisY,
-        float HeadAxisX, float HeadAxisY);
+        float HeadAxisX, float HeadAxisY, float SwordRightOfFace, float UpperHandGap);
 
     private static HoverGuard? ReadHoverGuard(MegaSprite spine)
     {
@@ -42,7 +42,8 @@ internal static partial class TestHarness
             leftPalm.DistanceTo(rightPalm), SegmentDistance(face.Origin, crossguard, tip),
             crossguard.Y - face.Origin.Y, face.Origin.Y - tip.Y,
             chest.X.Normalized().X, chest.X.Normalized().Y,
-            face.X.Normalized().X, face.X.Normalized().Y);
+            face.X.Normalized().X, face.X.Normalized().Y,
+            sword.Origin.X - face.Origin.X, rightPalm.Y - leftPalm.Y);
     }
 
     private static HoverGuardSlots ReadHoverGuardSlots(MegaSprite spine)
@@ -65,7 +66,7 @@ internal static partial class TestHarness
                     using var data = slot.Call("get_data").AsGodotObject();
                     if (data?.HasMethod("get_name") != true) { readable = false; continue; }
                     string name = data.Call("get_name").AsString();
-                    if (name is not ("nv27" or "wuqi2" or "wuqi3") && !IsGuardEffectSlot(name)) continue;
+                    if (name is not ("nv27" or "wuqi2" or "wuqi3" or "nv24" or "nv25" or "nv10") && !IsGuardEffectSlot(name)) continue;
                     if (!slot.HasMethod("get_attachment") || !slot.HasMethod("get_color"))
                     { readable = false; continue; }
                     using var attachment = slot.Call("get_attachment").AsGodotObject();
@@ -101,6 +102,10 @@ internal static partial class TestHarness
             && p.TorsoAxisY < -0.98f));
         Assert(name + "_front_guard_head_looks_forward", poses.All(p => Math.Abs(p.HeadAxisX) < 0.35f
             && p.HeadAxisY < -0.93f));
+        Assert(name + "_front_guard_sword_shifted_right", poses.All(p => p.SwordRightOfFace > p.BodySpan * 0.15f
+            && p.SwordRightOfFace < p.BodySpan * 0.3f));
+        Assert(name + "_front_guard_hands_visibly_separated", poses.All(p => p.PalmDistance > p.BodySpan * 0.28f
+            && p.UpperHandGap > p.BodySpan * 0.28f));
     }
 
     private static void CheckHoverGuardSlots(string name, HoverGuardSlots pose)
@@ -113,6 +118,8 @@ internal static partial class TestHarness
         Assert(name + "_has_no_cast_effect_attachments", pose.Slots.Count(s => IsGuardEffectSlot(s.Name)) == 66
             && pose.Slots.Any(s => s.Name.StartsWith("skill", StringComparison.OrdinalIgnoreCase))
             && pose.Slots.Where(s => IsGuardEffectSlot(s.Name)).All(s => s.Attachment == null));
+        Assert(name + "_both_native_gloves_visible", new[] { "nv24", "nv25", "nv10" }
+            .All(name => pose.Slots.Any(s => s.Name == name && s.Attachment != null && s.Alpha > 0.95f)));
     }
 }
 #endif

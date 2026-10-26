@@ -23,7 +23,7 @@ public static class Entry
         Settings.Load();
         Standalone.Initialize();
         new Harmony("local.saber.presentation").PatchAll(typeof(Entry).Assembly);
-        Log.Info("[SaberPresentation] JP character presentation 0.3.9 initialized; two-handed face-front sword guard, smooth hover entry and planted Excalibur cut-in; original game UI retained.");
+        Log.Info("[SaberPresentation] JP character presentation 0.3.10 initialized; two-handed face-front sword guard, smooth hover entry and planted Excalibur cut-in; original game UI retained.");
 #if SABER_TEST
         if (MegaCrit.Sts2.Core.Helpers.CommandLineHelper.HasArg("saber-test"))
             _ = MegaCrit.Sts2.Core.Helpers.TaskHelper.RunSafely(SaberTestBootstrapPatch.StartWhenReady());
