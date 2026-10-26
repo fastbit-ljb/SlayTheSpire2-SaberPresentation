@@ -1,6 +1,6 @@
 # Steam 创意工坊发布
 
-公开条目：[Saber 战斗演出 / Saber Combat Presentation](https://steamcommunity.com/sharedfiles/filedetails/?id=3827762528)。首次发布版本为 0.3.8；`published.json` 保存 Steam 返回的公开状态与上传载荷校验值。
+公开条目：[Saber 战斗演出 / Saber Combat Presentation](https://steamcommunity.com/sharedfiles/filedetails/?id=3827762528)。首次发布版本为 0.3.8，当前发布版本为 0.3.9；`published.json` 保存 Steam 返回的公开状态与上传载荷校验值。
 
 `workshop.json` 保存公开标题、说明、可见性、更新说明与依赖。`image.png` 和 `previews/` 均来自实际游戏截图。v0.3.9 的竖剑预览使用全屏 1920×1080 截图；竖剑与卡美洛预览仅转换为 JPEG 以满足 Steam 每张小于 1 MB 的要求，保持原始尺寸。完整 PNG 通过 GitHub Release 提供。
 
