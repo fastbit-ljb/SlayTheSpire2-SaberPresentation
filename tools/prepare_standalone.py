@@ -90,6 +90,8 @@ def main():
     if missing:
         raise RuntimeError('Unresolved character effect dependencies: ' + repr(sorted(missing)))
     assert not any('CznStyleUI' in p or 'CznMainMenu' in p or 'CznEnemySkin' in p or '/localization/' in p for p in files)
+    from prepare_guard_pose import prepare_guard_pose
+    authored_guard = prepare_guard_pose(files)
     write_pck(ROOT / 'build/SaberPresentation.pck', files)
     resources = [{'path': p, 'sha256': hashlib.sha256(files[p]).hexdigest()} for p in sorted(copied)]
     lock = {
@@ -98,6 +100,7 @@ def main():
         'nativeUiPreserved': True, 'localizationTablesMerged': 0,
         'excludedModules': ['CznStyleUI', 'CznMainMenu', 'CznEnemySkin', 'CznCore.dll', 'CznNineCharacter.dll'],
         'saberSkin': previous['saberSkin'],
+        'authoredGuardAnimation': authored_guard,
         'effectSourcePacks': [
             {'id': 'CznCore', 'author': core_manifest['author'], 'version': core_manifest['version'], 'workshop': core_manifest['workshop'], 'sourceSha256': sha(core_path)},
             {'id': 'CznNineCharacter', 'author': previous['nineEffects']['author'], 'version': '2.0.0-beta', 'workshop': previous['nineEffects']['workshop'], 'sourceSha256': previous['nineEffects']['sourceSha256']}

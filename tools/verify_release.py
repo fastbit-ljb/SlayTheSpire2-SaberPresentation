@@ -28,7 +28,7 @@ def hover_distance(a, b):
     other = {bone["Name"]: bone for bone in b["Bones"]}
     squared = []
     for bone in a["Bones"]:
-        if bone["Name"] not in ("Ys_wuqi1", "Ys_wuqi2", "Ys_rjian3", "Ys_rjian4"):
+        if bone["Name"] not in ("Ys_wuqi1", "Ys_wuqi2", "Ys_lhand2", "Ys_rhand"):
             continue
         target = other[bone["Name"]]
         squared.append(sum((bone[k] - target[k]) ** 2 for k in ("X", "Y"))
@@ -58,6 +58,20 @@ def main():
     assert lock["libraries"] == [] and lock["nativeUiPreserved"]
     assert not list(INSTALL.glob("bundled/*.dll")) and not list(INSTALL.glob("bundled/*.pck"))
     pack = read_pck(INSTALL / "SaberPresentation.pck")
+    from pck_tool import extract
+    guard_animation = lock["authoredGuardAnimation"]
+    assert guard_animation["animation"] == "saber_ready_guard"
+    assert guard_animation["retainedNativeAnimationBytes"] and guard_animation["nativeAnimationCount"] == 9
+    assert guard_animation["combatEffectSlotsSuppressed"] == 66
+    assert guard_animation["effectAttachmentsClearedFromTimeZero"] and guard_animation["handheld"]
+    assert guard_animation["uprightReferenceAnimation"] == "idle_loop" and guard_animation["heldProgress"] == 0
+    assert guard_animation["staticBonePose"] and guard_animation["maximumSerializedPalmError"] < 0.01
+    assert guard_animation["swordDrawsInFrontOfFace"] and guard_animation["palmsDrawOverSwordGrip"]
+    assert guard_animation["allScaleSignsMatchUprightReference"]
+    for body_part in ("torso", "head"):
+        axes = guard_animation["worldTorsoAndHeadAxes"][body_part]
+        assert abs(axes["serializedAxisDegrees"] - axes["uprightReferenceAxisDegrees"]) < 0.01
+    assert hashlib.sha256(extract(pack, guard_animation["resourcePath"])).hexdigest() == guard_animation["authoredSkeletonSha256"]
     assert not any(any(term in p for term in ("CznStyleUI", "CznMainMenu", "CznEnemySkin", "/localization/", "saber_card_atlas", "saber_lobby")) for p in pack["files"])
     assert len(lock["characterEffects"]["seedResources"]) == 24
     for resource in ("music/emiya_ubw.mp3", "video/excalibur_np.ogv", "video/saber_defeat.ogv",
@@ -102,6 +116,10 @@ def main():
             assert any(r["check"] == check and r["passed"] for r in results), "Stale suite evidence: " + check
         metadata_path = ROOT / "build" / folder / "run-metadata.json"
         metadata = json.loads(metadata_path.read_text(encoding="utf-8")) if metadata_path.exists() else {}
+        if folder == "verification-standalone":
+            assert metadata.get("version") == version, "Battle evidence is from another release"
+            assert metadata.get("assemblySha256") == sha(ROOT / "build/test-dll/SaberPresentation.dll"), "Battle evidence is from an older test build"
+            assert metadata.get("captureWindowMode") in ("Fullscreen", "ExclusiveFullscreen")
         suites.append({"suite": folder, "testedVersion": metadata.get("version"),
                        "passed": len(results), "failed": 0, "checks": results})
     hover_root = ROOT / "build/verification-hover"
@@ -109,6 +127,7 @@ def main():
     hover_metadata = json.loads((hover_root / "run-metadata.json").read_text(encoding="utf-8"))
     assert hover_metadata["version"] == version, "Hover evidence is from another release"
     assert hover_metadata["assemblySha256"] == sha(ROOT / "build/test-dll/SaberPresentation.dll"), "Hover evidence is from an older test build"
+    assert hover_metadata["captureWindowMode"] in ("Fullscreen", "ExclusiveFullscreen")
     hover_samples_path = hover_root / "hover-entry-samples.json"
     hover_samples = json.loads(hover_samples_path.read_text(encoding="utf-8"))
     assert hover_samples["sessions"] and all(s["frames"] for s in hover_samples["sessions"])
@@ -124,20 +143,30 @@ def main():
                                "maxReversePixels": reverse}
     assert hover and all(r["passed"] for r in hover), "Hover entry suite failed"
     for check in ("hover_entry_samples_live_sword_and_hand_bones",
+                  "capture_window_is_fullscreen", "capture_uses_native_screen_resolution",
                   "hover_idle_to_attack_sword_has_multiple_intermediate_poses",
                   "hover_idle_to_attack_hand_has_multiple_intermediate_poses",
+                  "hover_idle_to_attack_sword_has_no_entry_jump",
+                  "hover_idle_to_attack_hand_has_no_entry_jump",
                   "hover_idle_to_cast_sword_has_multiple_intermediate_poses",
                   "hover_idle_to_cast_hand_has_multiple_intermediate_poses",
                   "hover_idle_to_attack_duplicate_and_same_type_focus_keep_mix",
                   "hover_idle_to_cast_duplicate_and_same_type_focus_keep_mix",
                   "hover_idle_to_attack_native_same_type_transfer_has_no_visible_reset",
                   "hover_idle_to_cast_native_same_type_transfer_has_no_visible_reset",
+                  "hover_idle_to_attack_front_guard_stands_upright",
+                  "hover_idle_to_attack_front_guard_head_looks_forward",
+                  "hover_idle_to_attack_front_guard_both_palms_hold_handle",
+                  "hover_idle_to_attack_front_guard_blade_crosses_face",
+                  "hover_front_guard_one_visible_native_sword",
+                  "hover_front_guard_has_no_cast_effect_attachments",
                   "hover_native_switch_during_attack_mix_has_no_jump",
                   "hover_native_switch_during_cast_mix_has_no_jump",
                   "hover_cast_to_attack_sword_reaches_held_reference",
                   "hover_attack_to_cast_sword_reaches_held_reference",
                   "hover_cancel_attack_restores_idle_during_mix",
                   "hover_cancel_cast_restores_idle_during_mix",
+                  "hover_cancel_attack_mix_has_no_jump", "hover_cancel_cast_mix_has_no_jump",
                   "hover_cancel_immediate_rehover_sword_has_multiple_intermediate_poses",
                   "native_strike_damage_preserved"):
         assert any(r["check"] == check for r in hover), "Missing hover transition proof: " + check
@@ -169,6 +198,7 @@ def main():
               "totalPassed": sum(s["passed"] for s in suites),
               "currentVersionPassed": sum(s["passed"] for s in suites if s["testedVersion"] == version),
               "hoverRunEvidence": hover_metadata,
+              "authoredGuardAnimation": guard_animation,
               "hoverMotionEvidence": {"sha256": sha(hover_samples_path),
                                       "clock": hover_samples["clock"],
                                       "nativeSwitchMotion": switch_motion,
@@ -178,7 +208,7 @@ def main():
               "bundledCharacterEffectDependencies": len(lock["characterEffects"]["resources"]),
               "cardArtDefault": "Original game portraits; custom card art paused",
               "energyDisplay": "Native current/max energy, raised above the hand and portrait",
-              "hoverBattlePose": "0.28-second native Spine mix from current pose into a held sword-charge/grounded guard; repeated focus and same-type switches preserve the mix; no combat VFX until played; leave/cancel restores idle",
+              "hoverBattlePose": "0.28-second native Spine mix into an upright body with a forward-facing head and two-handed chest-level grip, sword vertical before the face; skills retain planted guard. Held sword stays on the original hand bone; all 66 combat-effect slots are empty in the ready clip. Leave/cancel restores idle.",
               "cinematics": "Official Honkai: Star Rail Saber Excalibur close-up with synchronized JP Artoria voice; planted original battle marks, fullscreen cut-in, warm Camelot reveal and sustained live sword-to-target beam. Defeat: official FGO Memorial Movie 9.3-second animated clip",
               "fullscreenCgEvidence": media_qa,
               "demoReplayEvidence": demo,

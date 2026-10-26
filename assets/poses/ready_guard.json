@@ -1,0 +1,45 @@
+{
+  "format": 1,
+  "resourcePath": ".godot/imported/ironclad.skel-8e96930de153cfcb09ff2bbedd54ed5d.spskel",
+  "sourceSkeletonSha256": "117533e057e9dd05c16e456cee49b7087aaf83fb7e028cd1b7b4afaf567dce41",
+  "sourceAnimation": "cast",
+  "animation": "saber_ready_guard",
+  "phase": 0.34,
+  "uprightReferenceAnimation": "idle_loop",
+  "uprightReferencePhase": 0.0,
+  "heldProgress": 0.0,
+  "armRootBones": ["Ys_larm2", "Ys_rarm2"],
+  "preserveUprightArmScaleSigns": true,
+  "handheld": true,
+  "originMode": "pivot",
+  "swordOriginWorldOffset": [0.0, 0.0],
+  "swordOriginFaceChestRatio": 0.95,
+  "leftPalmLocal": [8.82, 1.72],
+  "rightPalmLocal": [10.39, -3.41],
+  "leftGripSwordX": 22.0,
+  "rightGripSwordX": 10.0,
+  "foregroundSwordSlot": "nv27",
+  "foregroundGripSlots": ["Ys_lhand2", "nv25", "nv24", "nv10"],
+  "swordBone": "Ys_wuqi1",
+  "sourceOriginBone": "Ys_wuqi2",
+  "effectSlotNamePrefixes": [
+    "Eff",
+    "skill-"
+  ],
+  "effectBoneNamePrefixes": [
+    "Eff",
+    "skill_"
+  ],
+  "expectedEffectSlotCount": 66,
+  "nativeAnimations": [
+    "attack",
+    "attackvfff",
+    "attack_heavy",
+    "cast",
+    "die",
+    "hurt",
+    "idle_loop",
+    "relaxed_loop",
+    "relaxed_loop2"
+  ]
+}

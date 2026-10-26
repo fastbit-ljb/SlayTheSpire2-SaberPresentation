@@ -55,8 +55,11 @@ internal static partial class TestHarness
                 throw new Exception("Refusing to test outside the isolated user directory.");
             if (!CommandLineHelper.HasArg("saber-menu-test")) game.StartOnMainMenu = false;
             await game.GameStartupComplete;
-            if (CommandLineHelper.HasArg("saber-finisher-smoke")) DisplayServer.WindowSetMode(DisplayServer.WindowMode.Fullscreen);
-            else if (StandaloneOnly || CommandLineHelper.HasArg("saber-fix-smoke")) DisplayServer.WindowSetSize(new Vector2I(1920, 1080));
+            // Automated scenarios emit the native card signals themselves.
+            // Ignore physical mouse/controller focus while the test owns them.
+            game.GetViewport().GuiDisableInput = true;
+            if (StandaloneOnly || CommandLineHelper.HasArg("saber-fix-smoke"))
+                DisplayServer.WindowSetMode(DisplayServer.WindowMode.Fullscreen);
             await Fx.Delay(0.5);
             Log.Info("[SaberTest] Startup passed. Isolated user data: " + OS.GetUserDataDir());
             SaveManager.Instance.Progress.EnableFtues = false;
@@ -99,6 +102,16 @@ internal static partial class TestHarness
             RunManager.Instance.MapSelectionSynchronizer.OnLocationChanged(run.MapLocation);
             await RunManager.Instance.EnterRoomDebug(RoomType.Monster, MapPointType.Unassigned, ModelDb.Encounter<TwoTailedRatsNormal>().ToMutable());
             await Fx.Delay(4);
+            if (StandaloneOnly || CommandLineHelper.HasArg("saber-fix-smoke"))
+            {
+                // Run setup reapplies saved display options, so restore the
+                // requested capture surface after native room initialization.
+                DisplayServer.WindowSetMode(DisplayServer.WindowMode.Fullscreen);
+                await Fx.Delay(0.35);
+                Assert("capture_window_is_fullscreen", DisplayServer.WindowGetMode() is DisplayServer.WindowMode.Fullscreen or DisplayServer.WindowMode.ExclusiveFullscreen);
+                Assert("capture_uses_native_screen_resolution", game.GetViewport().GetTexture().GetSize()
+                    == DisplayServer.ScreenGetSize(DisplayServer.WindowGetCurrentScreen()));
+            }
             var state = CombatManager.Instance.DebugOnlyGetState()!;
             var node = player.Creature.GetCreatureNode()!;
             Assert("enemy_skin_module_absent", !AppDomain.CurrentDomain.GetAssemblies().Any(a => a.GetName().Name == "CznEnemySkin"));
@@ -252,6 +265,8 @@ internal static partial class TestHarness
                 version = typeof(TestHarness).Assembly.GetName().Version?.ToString(3),
                 assemblySha256 = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.IO.File.ReadAllBytes(assemblyPath))).ToLowerInvariant(),
                 completedUtc = DateTime.UtcNow,
+                captureResolution = game.GetViewport().GetTexture().GetSize().ToString(),
+                captureWindowMode = DisplayServer.WindowGetMode().ToString(),
                 arguments = System.Environment.GetCommandLineArgs(),
                 userDataDir = OS.GetUserDataDir()
             }, new JsonSerializerOptions { WriteIndented = true }));
@@ -377,8 +392,8 @@ internal static partial class TestHarness
         Assert("hover_native_art_resolution", ReadyPresentation.PortraitResolution.X >= 1024 && ReadyPresentation.PortraitResolution.Y >= 1536);
         Assert("hover_does_not_clone_battle_or_selection_spine", !Runtime.Descendants(game).Any(n => n.Name.ToString().Contains("HoverSpine")));
         Assert("attack_hover_holds_charge_pose", ReadyPresentation.BodyReady
-            && ReadyPresentation.BodyPoseClip == "attack"
-            && Math.Abs(ReadyPresentation.BodyPoseProgress - 0.30f) < 0.001f);
+            && ReadyPresentation.BodyPoseClip == ReadyPresentation.AttackReadyClip
+            && Math.Abs(ReadyPresentation.BodyPoseProgress - ReadyPresentation.AttackReadyProgress) < 0.001f);
         Vector2 portraitSample = ReadyPresentation.MeshSample;
         await Fx.Delay(0.28);
         Assert("anime_cloth_animates_while_hovered", portraitSample.DistanceTo(ReadyPresentation.MeshSample) > 0.01f);

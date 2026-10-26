@@ -14,6 +14,8 @@ namespace SaberPresentation;
 // perform the attack, matching the structure used by the CZN skins.
 internal static class ReadyPresentation
 {
+    internal const string AttackReadyClip = "saber_ready_guard";
+    internal const float AttackReadyProgress = 0.0f;
     private static NCombatRoom? _room;
     private static NCreature? _actor;
     private static Node2D? _screen, _portrait;
@@ -109,7 +111,7 @@ internal static class ReadyPresentation
     private static void ReadyBody(CardModel card)
     {
         if (!Settings.Current.ReadyBodyMotion || !Valid(_actor) || _acting || Runtime.IsAttacking(card.Owner.Creature)) return;
-        string clip = _pose == 0 ? "attack" : "cast";
+        string clip = _pose == 0 ? AttackReadyClip : "cast";
         var spine = _actor!.Visuals.SpineBody;
         if (spine == null || !spine.HasAnimation(clip)) return;
         var state = spine.GetAnimationState();
@@ -118,7 +120,7 @@ internal static class ReadyPresentation
         if (_readyBody && BodyPoseClip == clip && state.GetCurrentAnimationName() == clip) return;
         _readyBody = true;
         BodyPoseClip = clip;
-        BodyPoseProgress = _pose == 0 ? 0.30f : 0.90f;
+        BodyPoseProgress = _pose == 0 ? AttackReadyProgress : 0.90f;
         state.SetAnimation(clip, false);
         using var track = state.GetCurrent(0);
         if (track == null) return;

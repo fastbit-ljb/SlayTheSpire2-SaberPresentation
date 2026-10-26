@@ -21,6 +21,78 @@
     "sourceSha256": "9f3d59b753287099eba3f90ace50585b040a7a3d8edd57e833d6b0d8ff53be23",
     "includedResources": 38
   },
+  "authoredGuardAnimation": {
+    "animation": "saber_ready_guard",
+    "sourceAnimation": "cast",
+    "phase": 0.34,
+    "armSourceAnimation": "cast",
+    "armSourcePhase": 0.34,
+    "uprightReferenceAnimation": "idle_loop",
+    "uprightReferencePhase": 0.0,
+    "heldProgress": 0.0,
+    "staticBonePose": true,
+    "retainedIdleMeshDeform": true,
+    "worldTorsoAndHeadAxes": {
+      "torso": {
+        "bone": "Ys_xiongjia2",
+        "worldOrigin": [
+          43.72696194385017,
+          443.2593777323374
+        ],
+        "axisDegrees": 92.47448492044097,
+        "uprightReferenceAxisDegrees": 92.47448492044097,
+        "serializedAxisDegrees": 92.47448492050171
+      },
+      "head": {
+        "bone": "Ys_face",
+        "worldOrigin": [
+          8.4207271697437,
+          617.9160686757418
+        ],
+        "axisDegrees": 78.07052946084623,
+        "uprightReferenceAxisDegrees": 78.07052946084623,
+        "serializedAxisDegrees": 78.07052946090697
+      }
+    },
+    "allScaleSignsMatchUprightReference": true,
+    "swordDrawsInFrontOfFace": true,
+    "palmsDrawOverSwordGrip": true,
+    "maximumSerializedPalmError": 2.7362246633539305e-06,
+    "handheld": true,
+    "originMode": "pivot",
+    "swordBone": "Ys_wuqi1",
+    "resourcePath": ".godot/imported/ironclad.skel-8e96930de153cfcb09ff2bbedd54ed5d.spskel",
+    "sourceSkeletonSha256": "117533e057e9dd05c16e456cee49b7087aaf83fb7e028cd1b7b4afaf567dce41",
+    "authoredSkeletonSha256": "015382a343b1fded81c1d9a838b49abf571399a522975e8677d33b7baaf9550f",
+    "sourceBytes": 388864,
+    "authoredBytes": 405709,
+    "retainedNativeAnimations": [
+      "attack",
+      "attackvfff",
+      "attack_heavy",
+      "cast",
+      "die",
+      "hurt",
+      "idle_loop",
+      "relaxed_loop",
+      "relaxed_loop2"
+    ],
+    "retainedNativeAnimationBytes": true,
+    "nativeAnimationCount": 9,
+    "authoredAnimationCount": 1,
+    "combatEffectSlotsSuppressed": 66,
+    "effectAttachmentsClearedFromTimeZero": true,
+    "targetSwordLocalRotation": 255.3492721882194,
+    "targetSwordLocalXY": [
+      14.384372823212816,
+      23.004683579572262
+    ],
+    "swordOriginWorldOffset": [
+      0.0,
+      0.0
+    ],
+    "buildReport": "build/guard-pose-build.json"
+  },
   "effectSourcePacks": [
     {
       "id": "CznCore",
@@ -639,7 +711,7 @@
   "ownPack": {
     "file": "SaberPresentation.pck",
     "resources": 229,
-    "bytes": 96839550,
-    "sha256": "ba6f1b02c9d83188dcbf0a63b71d689a276c33aed7cb7503a3da6440132c8df0"
+    "bytes": 96856395,
+    "sha256": "984c3bff250905694a5280019dbbb0a6cc31b50af5a83f4f0e786ee4a2118050"
   }
 }
