@@ -1,0 +1,9 @@
+{
+  "title": "Saber 战斗演出 / Saber Combat Presentation",
+  "description": "[h1]Saber 独立角色演出[/h1]\n将铁甲战士的外观与战斗演出替换为 Saber，沿用原版卡组、伤害、费用与选敌逻辑。当前版本：0.3.8；已在 Slay the Spire 2 v0.111.0 验证。\n\n[h2]功能[/h2]\n[list]\n[*]卡牌悬停时显示分层动态立绘；场内角色平滑转入举剑蓄力或插剑守势。移开、取消与快速切牌均有连续过渡。\n[*]正式出牌时由场内 Saber 接管攻击，包含斩击、突刺、上挑、跃斩、连击、重劈及逐次命中特效。\n[*]实际击杀触发咖喱棒演出：原位蓄力、全屏动画特写、卡美洛远景与持续光束，随后收剑恢复。群攻、多段每张牌只演出一次。\n[*]28 段日语语音、动态败北演出、EMIYA 动漫纯音乐；日配时压低音乐，CG 时暂停。\n[*]保留原版金币、能量、卡框、卡图、地图、商店、菜单和敌人外观。\n[/list]\n\n[h2]安装与设置[/h2]\n订阅后在游戏的模组菜单启用 SaberPresentation，并重启游戏。仅需本模组，无前置依赖。其他替换铁甲战士外观的皮肤建议停用，以免互相覆盖。\n设置保存在 user://mod_configs/SaberPresentation.json，可调整悬停演出、配音、音乐、特效、CG 以及立绘大小和位置。\n\n[h2]素材与署名[/h2]\n非官方粉丝二创整合作品。原 Saber 皮肤作者：[url=https://steamcommunity.com/sharedfiles/filedetails/?id=3747659940]会画画的Small_day[/url]。角色特效素材来自 Pelleas 的 [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3826011578]CznCore[/url] 与 [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3815657213]CznNineCharacter[/url]。\n角色立绘与日配涉及 FGO／TYPE-MOON；宝具动画节选自《崩坏：星穹铁道》官方 Saber 演示；败北动画节选自 FGO Memorial Movie 2023；EMIYA 音乐署名 James Harris／Hideyuki Fukasawa／Aniplex。分层立绘补绘与部分绘制素材使用图像生成工具制作。\n原素材权利与作者署名保持不变。完整来源、逐文件校验、生成素材记录与提示词随模组提供，见 THIRD_PARTY_NOTICES.md、ASSET_SOURCES.json 与相关清单。\n\n[h2]English[/h2]\nA standalone Saber presentation mod for the Ironclad. Includes animated layered hover art, smooth battle-body ready poses, choreographed attacks, Japanese voice lines, a killing-blow Excalibur cinematic with a live Camelot beam stage, an animated defeat scene, and instrumental EMIYA music. Keeps vanilla gameplay, card art, UI and enemies. No required mods. Disable other Ironclad skin replacements to avoid conflicts. Version 0.3.8; tested on game v0.111.0. Full third-party credits and AI-assisted asset records are included.",
+  "visibility": "public",
+  "changeNote": "首次发布 v0.3.8：平滑悬停进入姿态、快速切牌与取消衔接；原位咖喱棒与可见卡美洛光束舞台。悬停专项 143 项及完整战斗回归 166 项检查通过。",
+  "tags": [],
+  "dependencies": [],
+  "contentDescriptors": []
+}

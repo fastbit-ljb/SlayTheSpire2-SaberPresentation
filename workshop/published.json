@@ -1,0 +1,27 @@
+{
+  "id": "3827762528",
+  "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3827762528",
+  "version": "0.3.8",
+  "title": "Saber 战斗演出 / Saber Combat Presentation",
+  "visibility": "public",
+  "fileSize": "97094614",
+  "steamUpdatedUnix": 1793030639,
+  "localVerifiedUtc": "2026-10-26T16:04:55.8570900Z",
+  "payloads": [
+    {
+      "name": "SaberPresentation.dll",
+      "size": 124416,
+      "sha256": "542ffa2e1c4d34ed16f069058935963472b2cf8ccbe1cfcd40d9723450b23901"
+    },
+    {
+      "name": "SaberPresentation.json",
+      "size": 587,
+      "sha256": "e59b551e013e5a20a386c30124b1329c99c5dc5277325948ad341164252a6d9c"
+    },
+    {
+      "name": "SaberPresentation.pck",
+      "size": 96839550,
+      "sha256": "ba6f1b02c9d83188dcbf0a63b71d689a276c33aed7cb7503a3da6440132c8df0"
+    }
+  ]
+}

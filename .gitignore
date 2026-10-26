@@ -2,6 +2,7 @@ bin/
 obj/
 build/
 __pycache__/
+mod-uploader.log
 dist/
 assets/video/*.mp4
 assets/music/*_source.m4a
