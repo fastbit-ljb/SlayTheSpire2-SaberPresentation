@@ -1,6 +1,7 @@
 """Audit the shipped ZIP/installation and preserve native game test evidence."""
 import hashlib
 import json
+import math
 from pathlib import Path
 import subprocess
 import zipfile
@@ -21,6 +22,19 @@ def sha_stream(stream):
 def sha(path):
     with path.open("rb") as f:
         return sha_stream(f)
+
+
+def hover_distance(a, b):
+    other = {bone["Name"]: bone for bone in b["Bones"]}
+    squared = []
+    for bone in a["Bones"]:
+        if bone["Name"] not in ("Ys_wuqi1", "Ys_wuqi2", "Ys_rjian3", "Ys_rjian4"):
+            continue
+        target = other[bone["Name"]]
+        squared.append(sum((bone[k] - target[k]) ** 2 for k in ("X", "Y"))
+                       + 80 ** 2 * sum((bone[k] - target[k]) ** 2 for k in ("AxisX", "AxisY")))
+    assert len(squared) == 4, "Missing live sword/hand measurements"
+    return math.sqrt(sum(squared) / len(squared))
 
 
 def main():
@@ -86,7 +100,49 @@ def main():
                            "finisher_cancel_restores_live_body_transforms", "finisher_cancel_cleans_stage"]
         for check in new_checks:
             assert any(r["check"] == check and r["passed"] for r in results), "Stale suite evidence: " + check
-        suites.append({"suite": folder, "passed": len(results), "failed": 0, "checks": results})
+        metadata_path = ROOT / "build" / folder / "run-metadata.json"
+        metadata = json.loads(metadata_path.read_text(encoding="utf-8")) if metadata_path.exists() else {}
+        suites.append({"suite": folder, "testedVersion": metadata.get("version"),
+                       "passed": len(results), "failed": 0, "checks": results})
+    hover_root = ROOT / "build/verification-hover"
+    hover = json.loads((hover_root / "results.json").read_text(encoding="utf-8"))
+    hover_metadata = json.loads((hover_root / "run-metadata.json").read_text(encoding="utf-8"))
+    assert hover_metadata["version"] == version, "Hover evidence is from another release"
+    assert hover_metadata["assemblySha256"] == sha(ROOT / "build/test-dll/SaberPresentation.dll"), "Hover evidence is from an older test build"
+    hover_samples_path = hover_root / "hover-entry-samples.json"
+    hover_samples = json.loads(hover_samples_path.read_text(encoding="utf-8"))
+    assert hover_samples["sessions"] and all(s["frames"] for s in hover_samples["sessions"])
+    sampled = {s["name"]: s["frames"] for s in hover_samples["sessions"]}
+    switch_motion = {}
+    for clip in ("attack", "cast"):
+        sequence = sampled[f"hover_native_switch_{clip}_before"][-1:] + sampled[f"hover_native_switch_{clip}_after"]
+        target = sampled[f"reference_{clip}"][0]
+        pairs = list(zip(sequence, sequence[1:]))
+        reverse = max(0, max(hover_distance(b, target) - hover_distance(a, target) for a, b in pairs))
+        assert reverse < 2, f"Native {clip} switch briefly jumps away from its held pose"
+        switch_motion[clip] = {"maxAdjacentStepPixels": max(hover_distance(a, b) for a, b in pairs),
+                               "maxReversePixels": reverse}
+    assert hover and all(r["passed"] for r in hover), "Hover entry suite failed"
+    for check in ("hover_entry_samples_live_sword_and_hand_bones",
+                  "hover_idle_to_attack_sword_has_multiple_intermediate_poses",
+                  "hover_idle_to_attack_hand_has_multiple_intermediate_poses",
+                  "hover_idle_to_cast_sword_has_multiple_intermediate_poses",
+                  "hover_idle_to_cast_hand_has_multiple_intermediate_poses",
+                  "hover_idle_to_attack_duplicate_and_same_type_focus_keep_mix",
+                  "hover_idle_to_cast_duplicate_and_same_type_focus_keep_mix",
+                  "hover_idle_to_attack_native_same_type_transfer_has_no_visible_reset",
+                  "hover_idle_to_cast_native_same_type_transfer_has_no_visible_reset",
+                  "hover_native_switch_during_attack_mix_has_no_jump",
+                  "hover_native_switch_during_cast_mix_has_no_jump",
+                  "hover_cast_to_attack_sword_reaches_held_reference",
+                  "hover_attack_to_cast_sword_reaches_held_reference",
+                  "hover_cancel_attack_restores_idle_during_mix",
+                  "hover_cancel_cast_restores_idle_during_mix",
+                  "hover_cancel_immediate_rehover_sword_has_multiple_intermediate_poses",
+                  "native_strike_damage_preserved"):
+        assert any(r["check"] == check for r in hover), "Missing hover transition proof: " + check
+    suites.append({"suite": "verification-hover", "testedVersion": hover_metadata["version"],
+                   "passed": len(hover), "failed": 0, "checks": hover})
     finisher = json.loads((ROOT / "build/verification-finisher/results.json").read_text(encoding="utf-8"))
     assert finisher and all(r["passed"] for r in finisher)
     for check in ("finisher_test_window_is_fullscreen", "finisher_emitter_uses_live_sword_bone",
@@ -94,7 +150,10 @@ def main():
                   "finisher_actor_stays_on_original_battle_mark", "finisher_warm_camelot_is_visibly_revealed",
                   "finisher_beam_is_visible_with_actor_and_target"):
         assert any(r["check"] == check and r["passed"] for r in finisher), "Missing fullscreen finisher proof: " + check
-    suites.append({"suite": "verification-finisher", "passed": len(finisher), "failed": 0, "checks": finisher})
+    finisher_metadata_path = ROOT / "build/verification-finisher/run-metadata.json"
+    finisher_metadata = json.loads(finisher_metadata_path.read_text(encoding="utf-8")) if finisher_metadata_path.exists() else {}
+    suites.append({"suite": "verification-finisher", "testedVersion": finisher_metadata.get("version"),
+                   "passed": len(finisher), "failed": 0, "checks": finisher})
     demo = json.loads((ROOT / "build/verification-demo/two-take-evidence.json").read_text(encoding="utf-8"))
     assert demo["take"] == 2 and demo["phase"] == "complete" and demo["finisherVerified"]
     assert demo["maxHandCards"] <= 10 and demo["maxHandHolders"] <= 10
@@ -108,12 +167,18 @@ def main():
               "packageBytes": archive.stat().st_size, "packageSha256": sha(archive),
               "verifiedArtifacts": artifacts, "tests": suites,
               "totalPassed": sum(s["passed"] for s in suites),
+              "currentVersionPassed": sum(s["passed"] for s in suites if s["testedVersion"] == version),
+              "hoverRunEvidence": hover_metadata,
+              "hoverMotionEvidence": {"sha256": sha(hover_samples_path),
+                                      "clock": hover_samples["clock"],
+                                      "nativeSwitchMotion": switch_motion,
+                                      "sessions": [{"name": s["name"], "frames": len(s["frames"])} for s in hover_samples["sessions"]]},
               "excludedModules": lock["excludedModules"],
               "foreignRuntimeAssemblies": [], "nativeUiPreserved": True,
               "bundledCharacterEffectDependencies": len(lock["characterEffects"]["resources"]),
               "cardArtDefault": "Original game portraits; custom card art paused",
               "energyDisplay": "Native current/max energy, raised above the hand and portrait",
-              "hoverBattlePose": "Attack hover: sword-charge pose; skill hover: sword planted guard; no combat VFX until played; leave/cancel restores idle",
+              "hoverBattlePose": "0.28-second native Spine mix from current pose into a held sword-charge/grounded guard; repeated focus and same-type switches preserve the mix; no combat VFX until played; leave/cancel restores idle",
               "cinematics": "Official Honkai: Star Rail Saber Excalibur close-up with synchronized JP Artoria voice; planted original battle marks, fullscreen cut-in, warm Camelot reveal and sustained live sword-to-target beam. Defeat: official FGO Memorial Movie 9.3-second animated clip",
               "fullscreenCgEvidence": media_qa,
               "demoReplayEvidence": demo,
@@ -126,7 +191,7 @@ def main():
     dest = ROOT / f"dist/verification-{version}.json"
     dest.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     (ROOT / f"dist/SaberPresentation-{version}.zip.sha256").write_text(report["packageSha256"] + "  " + archive.name + "\n", encoding="ascii")
-    print(f"Release verified: {len(artifacts)} payload files match ZIP and installation; {report['totalPassed']} native checks passed; no test harness in production DLL")
+    print(f"Release verified: {len(artifacts)} payload files match ZIP and installation; {report['currentVersionPassed']} current-version native checks passed ({report['totalPassed']} across all evidence); no test harness in production DLL")
 
 
 if __name__ == "__main__":

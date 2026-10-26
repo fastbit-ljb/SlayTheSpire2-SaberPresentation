@@ -28,13 +28,13 @@ using MegaCrit.Sts2.Core.ValueProps;
 
 namespace SaberPresentation;
 
-internal static class TestHarness
+internal static partial class TestHarness
 {
     private static bool WithAllMods => CommandLineHelper.HasArg("saber-all-test");
     private static bool StandaloneOnly => CommandLineHelper.HasArg("saber-standalone-test");
     private static bool WithTheme => StandaloneOnly || WithAllMods || CommandLineHelper.HasArg("saber-theme-test");
     private static bool WithCzn => WithTheme || CommandLineHelper.HasArg("saber-czn-test");
-    private static string Output => "D:/L/Study/mod/SaberPresentation/build/" + (CommandLineHelper.HasArg("saber-finisher-smoke") ? "verification-finisher" : CommandLineHelper.HasArg("saber-nine-reference") ? "nine-inspection" : CommandLineHelper.HasArg("saber-rig-preview") ? "verification-rig" : CommandLineHelper.HasArg("saber-fix-smoke") ? "verification-fix-hd" : CommandLineHelper.HasArg("saber-menu-test") ? "verification-menu" : StandaloneOnly ? "verification-standalone" : WithAllMods ? "verification-all" : WithTheme ? "verification-theme" : WithCzn ? "verification-czn" : "verification");
+    private static string Output => "D:/L/Study/mod/SaberPresentation/build/" + (CommandLineHelper.HasArg("saber-hover-smoke") ? "verification-hover" : CommandLineHelper.HasArg("saber-finisher-smoke") ? "verification-finisher" : CommandLineHelper.HasArg("saber-nine-reference") ? "nine-inspection" : CommandLineHelper.HasArg("saber-rig-preview") ? "verification-rig" : CommandLineHelper.HasArg("saber-fix-smoke") ? "verification-fix-hd" : CommandLineHelper.HasArg("saber-menu-test") ? "verification-menu" : StandaloneOnly ? "verification-standalone" : WithAllMods ? "verification-all" : WithTheme ? "verification-theme" : WithCzn ? "verification-czn" : "verification");
     private static readonly List<object> Results = [];
     private static readonly HashSet<string> Captured = [];
     private static bool _running;
@@ -109,6 +109,14 @@ internal static class TestHarness
                 Assert("raster_decodes_" + raster, Art.Texture(raster).GetWidth() >= 1000);
             Assert("official_excalibur_video_decodes", Art.ExcaliburVideo != null);
             Assert("animated_defeat_video_decodes", Art.DefeatVideo != null);
+            if (CommandLineHelper.HasArg("saber-hover-smoke"))
+            {
+                await VerifyHoverEntry(game, node, state, player);
+                await VerifyInteractions(game, node);
+                await VerifyHoverDuringReturn(game, node, state, player);
+                Log.Info("[SaberTest] HOVER SMOKE CHECKS PASSED");
+                return;
+            }
             if (CommandLineHelper.HasArg("saber-finisher-smoke"))
             {
                 // Run creation applies the saved display options. Select the
@@ -238,6 +246,15 @@ internal static class TestHarness
         finally
         {
             System.IO.File.WriteAllText(Output + "/results.json", JsonSerializer.Serialize(Results, new JsonSerializerOptions { WriteIndented = true }));
+            string assemblyPath = typeof(TestHarness).Assembly.Location;
+            System.IO.File.WriteAllText(Output + "/run-metadata.json", JsonSerializer.Serialize(new
+            {
+                version = typeof(TestHarness).Assembly.GetName().Version?.ToString(3),
+                assemblySha256 = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.IO.File.ReadAllBytes(assemblyPath))).ToLowerInvariant(),
+                completedUtc = DateTime.UtcNow,
+                arguments = System.Environment.GetCommandLineArgs(),
+                userDataDir = OS.GetUserDataDir()
+            }, new JsonSerializerOptions { WriteIndented = true }));
             await Fx.Delay(0.3);
             game.GetTree().Quit();
         }

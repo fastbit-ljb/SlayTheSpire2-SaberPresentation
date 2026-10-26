@@ -109,16 +109,23 @@ internal static class ReadyPresentation
     private static void ReadyBody(CardModel card)
     {
         if (!Settings.Current.ReadyBodyMotion || !Valid(_actor) || _acting || Runtime.IsAttacking(card.Owner.Creature)) return;
-        _readyBody = true;
-        BodyPoseClip = _pose == 0 ? "attack" : "cast";
-        BodyPoseProgress = _pose == 0 ? 0.30f : 0.90f;
+        string clip = _pose == 0 ? "attack" : "cast";
         var spine = _actor!.Visuals.SpineBody;
-        if (spine == null || !spine.HasAnimation(BodyPoseClip)) return;
+        if (spine == null || !spine.HasAnimation(clip)) return;
         var state = spine.GetAnimationState();
-        state.SetAnimation(BodyPoseClip, false);
+        // Native focus and hover effects can notify us for the same card.
+        // Keep the current mix running, including switches to another attack.
+        if (_readyBody && BodyPoseClip == clip && state.GetCurrentAnimationName() == clip) return;
+        _readyBody = true;
+        BodyPoseClip = clip;
+        BodyPoseProgress = _pose == 0 ? 0.30f : 0.90f;
+        state.SetAnimation(clip, false);
         using var track = state.GetCurrent(0);
         if (track == null) return;
-        track.SetMixDuration(0);
+        // Blend from the current skeleton into the held frame. Holding only the
+        // clip clock lets Spine's mix clock progress, without replaying the
+        // cast/attack clip's combat effects on hover.
+        track.SetMixDuration(0.28f);
         track.SetTrackTime(track.GetAnimationDuration() * BodyPoseProgress);
         track.SetTimeScale(0);
     }
