@@ -11,7 +11,8 @@ internal static partial class TestHarness
     private sealed record HoverGuard(float BodySpan, float SwordAxisX, float SwordAxisY,
         float LeftGripDistance, float RightGripDistance, float PalmDistance, float BladeFaceDistance,
         float CrossguardBelowFace, float TipAboveFace, float TorsoAxisX, float TorsoAxisY,
-        float HeadAxisX, float HeadAxisY, float SwordRightOfFace, float UpperHandGap);
+        float HeadAxisX, float HeadAxisY, float SwordRightOfFace, float UpperHandGap,
+        float LeftPalmAboveCrown, float RightPalmAboveCrown);
 
     private static HoverGuard? ReadHoverGuard(MegaSprite spine)
     {
@@ -28,8 +29,10 @@ internal static partial class TestHarness
         Vector2 pommel = sword * new Vector2(3.5f, 0);
         Vector2 crossguard = sword * new Vector2(40, 0);
         Vector2 tip = sword * new Vector2(206.7f, 0);
-        Vector2 leftPalm = left * new Vector2(8.82f, 1.72f);
-        Vector2 rightPalm = right * new Vector2(10.39f, -3.41f);
+        // Native get_global_bone_transform exposes Godot-local Y-down. The
+        // SHA-locked mesh/IK palm coordinates are Spine-local Y-up.
+        Vector2 leftPalm = left * new Vector2(8.82f, -1.72f);
+        Vector2 rightPalm = right * new Vector2(10.39f, 3.41f);
         float SegmentDistance(Vector2 point, Vector2 a, Vector2 b)
         {
             Vector2 segment = b - a;
@@ -43,7 +46,9 @@ internal static partial class TestHarness
             crossguard.Y - face.Origin.Y, face.Origin.Y - tip.Y,
             chest.X.Normalized().X, chest.X.Normalized().Y,
             face.X.Normalized().X, face.X.Normalized().Y,
-            sword.Origin.X - face.Origin.X, rightPalm.Y - leftPalm.Y);
+            sword.Origin.X - face.Origin.X, rightPalm.Y - leftPalm.Y,
+            face.Origin.Y - 1.34f * face.Origin.DistanceTo(chest.Origin) - leftPalm.Y,
+            face.Origin.Y - 1.34f * face.Origin.DistanceTo(chest.Origin) - rightPalm.Y);
     }
 
     private static HoverGuardSlots ReadHoverGuardSlots(MegaSprite spine)
@@ -96,16 +101,30 @@ internal static partial class TestHarness
         Assert(name + "_front_guard_blade_points_up", poses.All(p => p.SwordAxisY < -0.985f && Math.Abs(p.SwordAxisX) < 0.17f));
         Assert(name + "_front_guard_both_palms_hold_handle", poses.All(p => p.LeftGripDistance < p.BodySpan * 0.25f
             && p.RightGripDistance < p.BodySpan * 0.25f && p.PalmDistance < p.BodySpan * 0.4f));
-        Assert(name + "_front_guard_blade_crosses_face", poses.All(p => p.BladeFaceDistance < p.BodySpan * 0.35f
-            && p.CrossguardBelowFace > p.BodySpan * 0.2f && p.TipAboveFace > p.BodySpan * 0.25f));
+        Assert(name + "_both_hands_and_blade_above_crown", poses.All(p => p.LeftPalmAboveCrown > p.BodySpan * 0.04f
+            && p.RightPalmAboveCrown > p.BodySpan * 0.04f && p.TipAboveFace > p.BodySpan * 2f));
         Assert(name + "_front_guard_stands_upright", poses.All(p => Math.Abs(p.TorsoAxisX) < 0.12f
             && p.TorsoAxisY < -0.98f));
         Assert(name + "_front_guard_head_looks_forward", poses.All(p => Math.Abs(p.HeadAxisX) < 0.35f
             && p.HeadAxisY < -0.93f));
         Assert(name + "_front_guard_sword_shifted_right", poses.All(p => p.SwordRightOfFace > p.BodySpan * 0.15f
-            && p.SwordRightOfFace < p.BodySpan * 0.3f));
+            && p.SwordRightOfFace < p.BodySpan * 0.85f));
         Assert(name + "_front_guard_hands_visibly_separated", poses.All(p => p.PalmDistance > p.BodySpan * 0.28f
             && p.UpperHandGap > p.BodySpan * 0.28f));
+    }
+
+    private static void CheckChargeTrajectory(IReadOnlyList<HoverFrame> frames)
+    {
+        var settled = frames.Where(f => f.Seconds >= 0.3 && f.Guard != null).ToArray();
+        Assert("hover_charge_both_hands_rise_continuously", settled.Length >= 20
+            && settled[^1].Guard!.RightPalmAboveCrown - settled[0].Guard!.RightPalmAboveCrown > settled[0].Guard!.BodySpan
+            && settled.Zip(settled.Skip(1)).All(p => p.Second.Guard!.RightPalmAboveCrown >= p.First.Guard!.RightPalmAboveCrown - 0.5f));
+        Assert("hover_charge_palms_stay_on_handle_during_raise", settled.All(f => f.Guard!.LeftGripDistance < f.Guard.BodySpan * 0.05f
+            && f.Guard.RightGripDistance < f.Guard.BodySpan * 0.05f));
+        Assert("hover_charge_gold_has_intermediate_stages", settled.Count(f => f.GoldStrength is > 0.08f and < 0.55f && f.GoldVisible) >= 5);
+        Assert("hover_charge_gold_gathers_without_reset", settled.Zip(settled.Skip(1)).All(p => p.Second.GoldStrength >= p.First.GoldStrength - 0.005f)
+            && settled[^1].GoldStrength > 0.65f);
+        Assert("hover_charge_gold_follows_live_blade", settled.All(f => f.GoldAlignmentError is <= 0.5f));
     }
 
     private static void CheckHoverGuardSlots(string name, HoverGuardSlots pose)

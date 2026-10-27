@@ -14,12 +14,15 @@ namespace SaberPresentation;
 // perform the attack, matching the structure used by the CZN skins.
 internal static class ReadyPresentation
 {
-    internal const string AttackReadyClip = "saber_ready_guard";
-    internal const float AttackReadyProgress = 0.0f;
+    internal const string AttackGuardClip = "saber_ready_guard";
+    internal const string AttackReadyClip = "saber_raise_charge";
+    internal const float AttackReadyProgress = 1.0f;
+    internal const float AttackRaiseSeconds = 1.10f;
     private static NCombatRoom? _room;
     private static NCreature? _actor;
     private static Node2D? _screen, _portrait;
     private static PortraitRig? _rig;
+    private static SwordChargeGlow? _chargeGlow;
     private static SceneTree? _tree;
     private static CardModel? _card, _actionCard;
     private static bool _targeting, _readyBody, _acting;
@@ -39,6 +42,9 @@ internal static class ReadyPresentation
     internal static bool BodyReady => _readyBody;
     internal static string? BodyPoseClip { get; private set; }
     internal static float BodyPoseProgress { get; private set; }
+    internal static bool ChargeGlowVisible => _chargeGlow?.Visible == true;
+    internal static float ChargeStrength => _chargeGlow?.Strength ?? 0f;
+    internal static float ChargeAlignmentError => _chargeGlow?.AlignmentError ?? float.PositiveInfinity;
     internal static CardModel? Card => _card;
     internal static int Pose => _pose;
     internal static int FocusCount { get; private set; }
@@ -65,6 +71,7 @@ internal static class ReadyPresentation
         _rig = new PortraitRig(_portrait);
         _tree = _room.GetTree();
         _tree.ProcessFrame += Tick;
+        RenderingServer.FramePreDraw += UpdateBodyCharge;
         _room.TreeExiting += Cleanup;
         ApplyLayout();
         _portrait.Position = _home;
@@ -80,6 +87,33 @@ internal static class ReadyPresentation
     {
         if (!Visible || _rig == null) return;
         ApplyLayout();
+    }
+    private static void UpdateBodyCharge()
+    {
+        if (!_readyBody || BodyPoseClip != AttackReadyClip) return;
+        if (!Valid(_actor) || _actor!.Entity.IsDead) { ClearChargeGlow(); return; }
+        var spine = _actor.Visuals.SpineBody;
+        if (spine == null || spine.GetAnimationState().GetCurrentAnimationName() != AttackReadyClip)
+        {
+            ClearChargeGlow();
+            return;
+        }
+        using var track = spine.GetAnimationState().GetCurrent(0);
+        if (track == null) return;
+        float elapsed = track.GetTrackTime();
+        BodyPoseProgress = Math.Clamp(elapsed / AttackRaiseSeconds, 0f, 1f);
+        if (elapsed >= AttackRaiseSeconds)
+        {
+            track.SetTrackTime(AttackRaiseSeconds);
+            track.SetTimeScale(0);
+        }
+        _chargeGlow ??= new SwordChargeGlow(_actor, _room!.CombatVfxContainer);
+        _chargeGlow.Update(BodyPoseProgress);
+    }
+    private static void ClearChargeGlow()
+    {
+        _chargeGlow?.Clear();
+        _chargeGlow = null;
     }
     internal static void Focus(CardModel? card, bool targeting = false)
     {
@@ -120,22 +154,25 @@ internal static class ReadyPresentation
         if (_readyBody && BodyPoseClip == clip && state.GetCurrentAnimationName() == clip) return;
         _readyBody = true;
         BodyPoseClip = clip;
-        BodyPoseProgress = _pose == 0 ? AttackReadyProgress : 0.90f;
+        BodyPoseProgress = _pose == 0 ? 0f : 0.90f;
         state.SetAnimation(clip, false);
         using var track = state.GetCurrent(0);
         if (track == null) return;
-        // Blend from the current skeleton into the held frame. Holding only the
-        // clip clock lets Spine's mix clock progress, without replaying the
-        // cast/attack clip's combat effects on hover.
+        // Attacks raise the same hand-carried sword, then hold overhead.
+        // Skills keep their native planted guard without playing its effects.
         track.SetMixDuration(0.28f);
-        track.SetTrackTime(track.GetAnimationDuration() * BodyPoseProgress);
-        track.SetTimeScale(0);
+        track.SetTrackTime(_pose == 0 ? 0f : track.GetAnimationDuration() * BodyPoseProgress);
+        track.SetTimeScale(_pose == 0 ? 1f : 0f);
+        if (_pose != 0) ClearChargeGlow();
     }
     internal static void Unfocus(CardModel? card)
     {
         if (card != _card || _targeting || _acting) return;
-        RestoreBody();
         int token = ++_generation;
+        // Native navigation emits exit/enter in the same engine frame. Defer
+        // the release until those signals settle so another attack continues
+        // the current raise clock instead of starting at the chest again.
+        Callable.From(() => { if (token == _generation) RestoreBody(); }).CallDeferred();
         _ = TaskHelper.RunSafely(HideDelayed(token, 0.10));
     }
     private static async Task HideDelayed(int token, double delay)
@@ -210,6 +247,7 @@ internal static class ReadyPresentation
     }
     private static void RestoreBody()
     {
+        ClearChargeGlow();
         if (!_readyBody) return;
         _readyBody = false;
         BodyPoseClip = null;
@@ -225,6 +263,7 @@ internal static class ReadyPresentation
     }
     private static void ReleaseBodyForPlay()
     {
+        ClearChargeGlow();
         if (!_readyBody) return;
         _readyBody = false;
         BodyPoseClip = null;
@@ -239,6 +278,7 @@ internal static class ReadyPresentation
         ActionRetracted = false;
         RestoreBody();
         if (GodotObject.IsInstanceValid(_tree)) _tree!.ProcessFrame -= Tick;
+        RenderingServer.FramePreDraw -= UpdateBodyCharge;
         if (GodotObject.IsInstanceValid(_room)) _room!.TreeExiting -= Cleanup;
         _transition?.Kill();
         if (GodotObject.IsInstanceValid(_screen)) _screen!.QueueFree();

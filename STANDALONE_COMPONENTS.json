@@ -70,9 +70,9 @@
     "swordBone": "Ys_wuqi1",
     "resourcePath": ".godot/imported/ironclad.skel-8e96930de153cfcb09ff2bbedd54ed5d.spskel",
     "sourceSkeletonSha256": "117533e057e9dd05c16e456cee49b7087aaf83fb7e028cd1b7b4afaf567dce41",
-    "authoredSkeletonSha256": "7cbcb6c6a07f761cc7af7457085f2af416252b9f3f4070bc99f4b722aaf27534",
+    "authoredSkeletonSha256": "468cdcdb644f0af382d478447fe3f8aec4b364a76fa30acecffc033d1029e3b4",
     "sourceBytes": 388864,
-    "authoredBytes": 405709,
+    "authoredBytes": 438370,
     "retainedNativeAnimations": [
       "attack",
       "attackvfff",
@@ -86,7 +86,339 @@
     ],
     "retainedNativeAnimationBytes": true,
     "nativeAnimationCount": 9,
-    "authoredAnimationCount": 1,
+    "authoredAnimationCount": 2,
+    "raiseAnimation": {
+      "name": "saber_raise_charge",
+      "animation": "saber_raise_charge",
+      "bytes": 32661,
+      "sha256": "b8be13a8752f251bd3f7048b54d04e6d1a9b784e10e577942ac3b086d64eec63",
+      "duration": 1.3,
+      "raiseSeconds": 1.1,
+      "heldTime": 1.1,
+      "frames": 41,
+      "motionFrames": 40,
+      "sourceGuardAnimation": "saber_ready_guard",
+      "startSwordWorldOrigin": [
+        48.42072716974371,
+        448.6360650147516
+      ],
+      "endSwordWorldOrigin": [
+        138.4207271697437,
+        849.5623894749916
+      ],
+      "overheadOriginFaceChestRatio": 1.3,
+      "endSwordRightWorldOffset": 130.0,
+      "shoulderLiftWorld": 44.54736938447111,
+      "shoulderLiftFaceChestRatio": 0.25,
+      "headTopWorldY": 855.4910004809796,
+      "headTopSlot": "nv3",
+      "headTopAttachment": "nv3",
+      "headTopVertexIndex": 29,
+      "headTopOffsetFromFaceRatio": 1.333271386660458,
+      "headGeometrySource": "SHA-locked native default-skin mesh vertices transformed by idle t=0 bones",
+      "nativeHeadMeshes": [
+        {
+          "slot": "nv1",
+          "attachment": "nv1",
+          "meshPath": "nv1",
+          "weighted": true,
+          "vertexCount": 12,
+          "topVertexIndex": 6,
+          "topVertexWorld": [
+            -36.647740763811086,
+            784.6744757748586
+          ],
+          "sourceTopVertex": [
+            [
+              223,
+              4.395020008087158,
+              -41.664180755615234,
+              0.9240099787712097
+            ],
+            [
+              242,
+              130.98095703125,
+              241.64404296875,
+              0.07598999887704849
+            ]
+          ]
+        },
+        {
+          "slot": "nv2",
+          "attachment": "nv2",
+          "meshPath": "nv2",
+          "weighted": true,
+          "vertexCount": 14,
+          "topVertexIndex": 0,
+          "topVertexWorld": [
+            84.74773324638466,
+            836.4491934646883
+          ],
+          "sourceTopVertex": [
+            [
+              230,
+              26.604799270629883,
+              13.576290130615234,
+              0.9231799840927124
+            ],
+            [
+              231,
+              -4.374279975891113,
+              13.11719036102295,
+              0.0021800000686198473
+            ],
+            [
+              242,
+              208.4052734375,
+              38.94129943847656,
+              0.07464999705553055
+            ]
+          ]
+        },
+        {
+          "slot": "nv3",
+          "attachment": "nv3",
+          "meshPath": "nv3",
+          "weighted": true,
+          "vertexCount": 31,
+          "topVertexIndex": 29,
+          "topVertexWorld": [
+            23.665497720439117,
+            855.4910004809796
+          ],
+          "sourceTopVertex": [
+            [
+              228,
+              135.3475341796875,
+              5.711219787597656,
+              0.9633200168609619
+            ],
+            [
+              242,
+              245.5035400390625,
+              139.782958984375,
+              0.02930000051856041
+            ],
+            [
+              243,
+              246.0814208984375,
+              155.7557373046875,
+              0.007379999849945307
+            ]
+          ]
+        },
+        {
+          "slot": "nv4",
+          "attachment": "nv4",
+          "meshPath": "nv4",
+          "weighted": true,
+          "vertexCount": 33,
+          "topVertexIndex": 0,
+          "topVertexWorld": [
+            33.78890436854884,
+            806.4052739578528
+          ],
+          "sourceTopVertex": [
+            [
+              208,
+              60.087589263916016,
+              27.886959075927734,
+              0.8687499761581421
+            ],
+            [
+              242,
+              165.0460205078125,
+              125.68402862548828,
+              0.13124999403953552
+            ]
+          ]
+        },
+        {
+          "slot": "nv5",
+          "attachment": "nv5",
+          "meshPath": "nv5",
+          "weighted": true,
+          "vertexCount": 69,
+          "topVertexIndex": 0,
+          "topVertexWorld": [
+            44.130381268408115,
+            787.1277667153893
+          ],
+          "sourceTopVertex": [
+            [
+              207,
+              228.627685546875,
+              -19.80755043029785,
+              0.9879400134086609
+            ],
+            [
+              242,
+              133.150390625,
+              109.77568054199219,
+              0.01157000008970499
+            ],
+            [
+              243,
+              133.728271484375,
+              125.74844360351562,
+              0.0004799999878741801
+            ]
+          ]
+        },
+        {
+          "slot": "nv6",
+          "attachment": "nv6",
+          "meshPath": "nv6",
+          "weighted": true,
+          "vertexCount": 18,
+          "topVertexIndex": 16,
+          "topVertexWorld": [
+            63.17442905382302,
+            742.3710683801021
+          ],
+          "sourceTopVertex": [
+            [
+              218,
+              -4.715939998626709,
+              -18.959640502929688,
+              0.9242900013923645
+            ],
+            [
+              242,
+              59.297611236572266,
+              80.93448638916016,
+              0.049880001693964005
+            ],
+            [
+              243,
+              59.87548828125,
+              96.90725708007812,
+              0.025830000638961792
+            ]
+          ]
+        },
+        {
+          "slot": "nv7",
+          "attachment": "nv7",
+          "meshPath": "nv7",
+          "weighted": true,
+          "vertexCount": 19,
+          "topVertexIndex": 16,
+          "topVertexWorld": [
+            20.633177596840483,
+            815.4793219039544
+          ],
+          "sourceTopVertex": [
+            [
+              235,
+              53.463748931884766,
+              -139.0789794921875,
+              0.9259399771690369
+            ],
+            [
+              242,
+              180.4693603515625,
+              146.6732940673828,
+              0.004739999771118164
+            ],
+            [
+              243,
+              181.0472412109375,
+              162.64605712890625,
+              0.06932000070810318
+            ]
+          ]
+        },
+        {
+          "slot": "nv8",
+          "attachment": "nv8",
+          "meshPath": "nv8",
+          "weighted": true,
+          "vertexCount": 22,
+          "topVertexIndex": 0,
+          "topVertexWorld": [
+            -69.2636910912271,
+            735.0037837232809
+          ],
+          "sourceTopVertex": [
+            [
+              237,
+              -11.823789596557617,
+              -30.981449127197266,
+              0.8934800028800964
+            ],
+            [
+              243,
+              54.329471588134766,
+              313.0169372558594,
+              0.10651999711990356
+            ]
+          ]
+        }
+      ],
+      "swordOriginWorldOffset": [
+        40.0,
+        0.0
+      ],
+      "gripSeparationSwordUnits": 21.0,
+      "geometrySource": "Original native Saber bones, hand meshes, and sword; offline two-arm IK continuation",
+      "frozenIdleMeshDeform": true,
+      "frozenIdleMeshDeformTime": 0.0,
+      "combatEffectSlotsSuppressed": 66,
+      "effectAttachmentsClearedFromTimeZero": true,
+      "foregroundGripSlotNames": [
+        "nv23",
+        "nv11",
+        "nv27",
+        "Ys_lhand2",
+        "nv25",
+        "nv24",
+        "nv10"
+      ],
+      "foregroundArmSlotNames": [
+        "nv23",
+        "nv11"
+      ],
+      "forearmsDrawAboveHeadBeforeSword": true,
+      "backgroundUpperArmSlotNames": [
+        "nv22",
+        "nv12"
+      ],
+      "upperArmsDrawBehindHead": true,
+      "retainedNativeAnimations": [
+        "attack",
+        "attackvfff",
+        "attack_heavy",
+        "cast",
+        "die",
+        "hurt",
+        "idle_loop",
+        "relaxed_loop",
+        "relaxed_loop2"
+      ],
+      "retainedNativeAnimationBytes": true,
+      "sampleCount": 313,
+      "maximumInterpolatedPalmError": 0.518628729560481,
+      "maximumInterpolatedPalmErrorSwordUnits": 0.1809978578426603,
+      "interpolatedPalmErrorLimitSwordUnits": 0.2,
+      "maximumSwordOriginCurveError": 0.7818320605687102,
+      "maximumSwordAxisErrorDegrees": 1.76429749245699e-05,
+      "minimumWorldTransformDeterminant": 0.323165195293981,
+      "allScaleSignsMatchUprightReference": true,
+      "torsoAndHeadMatchUprightEverySample": true,
+      "startMatchesStaticGuard": true,
+      "finalPoseHeldThroughDuration": true,
+      "finalPalmsAboveFaceWorld": {
+        "Ys_lhand2": 311.8771255452017,
+        "Ys_rhand": 251.70404161653073
+      },
+      "finalPalmsAboveCrownWorld": {
+        "Ys_lhand2": 74.30219374021851,
+        "Ys_rhand": 14.12910981154755
+      },
+      "finalLowerPalmClearanceWorld": 14.12910981154755,
+      "monotonicSwordRaise": true
+    },
     "combatEffectSlotsSuppressed": 66,
     "effectAttachmentsClearedFromTimeZero": true,
     "targetSwordLocalRotation": 255.06369209187113,
@@ -718,7 +1050,7 @@
   "ownPack": {
     "file": "SaberPresentation.pck",
     "resources": 229,
-    "bytes": 96856395,
-    "sha256": "2cffaab7cd3a0cd5c1ee165ea302cbadefcb9891b7cc7adf538d784969a3233c"
+    "bytes": 96889056,
+    "sha256": "521aa232d52199da5cc9cfafec6db0574a55394141b085054a3d6f156ba8de8f"
   }
 }

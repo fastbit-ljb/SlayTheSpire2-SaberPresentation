@@ -34,7 +34,7 @@ internal static partial class TestHarness
     private static bool StandaloneOnly => CommandLineHelper.HasArg("saber-standalone-test");
     private static bool WithTheme => StandaloneOnly || WithAllMods || CommandLineHelper.HasArg("saber-theme-test");
     private static bool WithCzn => WithTheme || CommandLineHelper.HasArg("saber-czn-test");
-    private static string Output => "D:/L/Study/mod/SaberPresentation/build/" + (CommandLineHelper.HasArg("saber-hover-smoke") ? "verification-hover" : CommandLineHelper.HasArg("saber-finisher-smoke") ? "verification-finisher" : CommandLineHelper.HasArg("saber-nine-reference") ? "nine-inspection" : CommandLineHelper.HasArg("saber-rig-preview") ? "verification-rig" : CommandLineHelper.HasArg("saber-fix-smoke") ? "verification-fix-hd" : CommandLineHelper.HasArg("saber-menu-test") ? "verification-menu" : StandaloneOnly ? "verification-standalone" : WithAllMods ? "verification-all" : WithTheme ? "verification-theme" : WithCzn ? "verification-czn" : "verification");
+    private static string Output => "D:/L/Study/mod/SaberPresentation/build/" + (CommandLineHelper.HasArg("saber-charge-preview") ? "verification-charge-preview" : CommandLineHelper.HasArg("saber-hover-smoke") ? "verification-hover" : CommandLineHelper.HasArg("saber-finisher-smoke") ? "verification-finisher" : CommandLineHelper.HasArg("saber-nine-reference") ? "nine-inspection" : CommandLineHelper.HasArg("saber-rig-preview") ? "verification-rig" : CommandLineHelper.HasArg("saber-fix-smoke") ? "verification-fix-hd" : CommandLineHelper.HasArg("saber-menu-test") ? "verification-menu" : StandaloneOnly ? "verification-standalone" : WithAllMods ? "verification-all" : WithTheme ? "verification-theme" : WithCzn ? "verification-czn" : "verification");
     private static readonly List<object> Results = [];
     private static readonly HashSet<string> Captured = [];
     private static bool _running;
@@ -122,6 +122,11 @@ internal static partial class TestHarness
                 Assert("raster_decodes_" + raster, Art.Texture(raster).GetWidth() >= 1000);
             Assert("official_excalibur_video_decodes", Art.ExcaliburVideo != null);
             Assert("animated_defeat_video_decodes", Art.DefeatVideo != null);
+            if (CommandLineHelper.HasArg("saber-charge-preview"))
+            {
+                await VerifyChargePreview(game, node, state, player);
+                return;
+            }
             if (CommandLineHelper.HasArg("saber-hover-smoke"))
             {
                 await VerifyHoverEntry(game, node, state, player);
@@ -384,7 +389,7 @@ internal static partial class TestHarness
         var skill = hand.First(h => h.CardModel!.Type == CardType.Skill);
         int hp = actor.Entity.CurrentHp;
         attack.EmitSignal(Control.SignalName.FocusEntered);
-        await CaptureAfter("hover_attack", 0.35);
+        await CaptureAfter("hover_attack", ReadyPresentation.AttackRaiseSeconds + 0.2);
         Assert("native_card_focus_shows_portrait", ReadyPresentation.Visible && ReadyPresentation.Card == attack.CardModel);
         Assert("hover_uses_anime_portrait_art", ReadyPresentation.AnimePortraitReady
             && ReadyPresentation.PortraitSource?.EndsWith("/saber_rig_body_v1.png") == true);
@@ -425,6 +430,7 @@ internal static partial class TestHarness
             && Math.Abs(ReadyPresentation.BodyPoseProgress - 0.90f) < 0.001f);
         Assert("hover_pose_has_no_painted_combat_vfx", !Runtime.Descendants(game).Any(n => n.Name == "SaberPaintedEffect"));
         ReadyPresentation.Unfocus(skill.CardModel);
+        await Fx.Delay(0.03);
         Assert("mouse_leave_retracts_hover_pose", !ReadyPresentation.BodyReady && ReadyPresentation.BodyPoseClip == null);
         ReadyPresentation.Cancel(skill.CardModel);
         await Fx.Delay(0.16);
@@ -456,6 +462,8 @@ internal static partial class TestHarness
             && ReadyPresentation.ActionRetracted && !ReadyPresentation.Visible);
         Assert("portrait_textures_unchanged_through_ready_exit", portraitTextures == ReadyPresentation.TextureSignature);
         Assert("native_strike_damage_preserved", enemyHp - enemy.CurrentHp == 6);
+        Assert("card_play_releases_overhead_charge_and_gold", !ReadyPresentation.ChargeGlowVisible
+            && !Runtime.Descendants(game).Any(n => n.Name == "SaberSwordChargeGlow"));
     }
 
     private static async Task VerifyPortraitDeformation(NGame game)

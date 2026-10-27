@@ -1,7 +1,7 @@
-"""Append a native sword guard clip, preserving every original animation byte.
+"""Append native sword guard/raise clips, preserving original animation bytes.
 
 The imported .spskel is raw Spine 4.2 binary. All original native animation
-blocks remain byte-identical; only one authored clone is appended. The source
+blocks remain byte-identical; two authored clips are appended. The source
 skeleton is SHA-256 locked by assets/poses/ready_guard.json.
 """
 from __future__ import annotations
@@ -22,6 +22,7 @@ from pck_tool import extract, read_pck, write_pck
 ANIMATIONS = ["attack", "attackvfff", "attack_heavy", "cast", "die", "hurt",
               "idle_loop", "relaxed_loop", "relaxed_loop2"]
 CLONE_NAME = "saber_ready_guard"
+RAISE_NAME = "saber_raise_charge"
 SWORD_BONE = 38
 SWORD_SETUP_ROTATION = 79.2010498046875
 
@@ -78,7 +79,7 @@ class Reader:
         return value
 
 
-def read_setup_bones(data: bytes, with_slots=False):
+def read_setup_bones(data: bytes, with_slots=False, with_slot_end=False):
     reader = Reader(data)
     reader.skip(8)  # Hash.
     assert reader.string().startswith("4.2.")
@@ -114,6 +115,8 @@ def read_setup_bones(data: bytes, with_slots=False):
             reader.u8()
         slots.append({"index": index, "name": name, "bone": bone,
                       "boneName": bones[bone]["name"], "setupAttachmentIndex": attachment})
+    if with_slot_end:
+        return bones, slots, strings, reader.pos, nonessential
     return bones, slots, strings
 
 
@@ -431,7 +434,7 @@ def override_guard_slots(clone: bytes, slots, strings, config):
     targets[by_name["wuqi3"]] = 0
     targets[by_name["nv27"]] = strings.index("nv27") + 1
     reader = Reader(clone)
-    assert reader.string() == CLONE_NAME
+    assert reader.string() in (CLONE_NAME, RAISE_NAME)
     name_end = reader.pos
     capacity = reader.vi()
     groups, existing_slots = [], set()
@@ -531,7 +534,7 @@ REPORT = ROOT / "build/guard-pose-build.json"
 
 def clone_as_cast(clone):
     reader = Reader(clone)
-    assert reader.string() == CLONE_NAME
+    assert reader.string() in (CLONE_NAME, RAISE_NAME)
     return encoded_string("cast") + clone[reader.pos:]
 
 
@@ -822,23 +825,39 @@ def read_idle_tail_sections(animation, bone_end, slot_count):
 
 
 def override_guard_draw_order(clone, slots, config):
-    """Put the upright sword in front of the face, with palms over its grip."""
+    """Foreground the grip/forearms while retaining upper arms behind the head."""
     _, _, _, sections = read_cast_bone_tracks(clone_as_cast(clone), with_sections=True)
     # Renaming changes the header size, so obtain the native clone bone offset.
-    name_delta = len(encoded_string(CLONE_NAME)) - len(encoded_string("cast"))
+    header = Reader(clone)
+    animation_name = header.string()
+    assert animation_name in (CLONE_NAME, RAISE_NAME)
+    name_delta = len(encoded_string(animation_name)) - len(encoded_string("cast"))
     tail = read_idle_tail_sections(clone, sections["boneEnd"] + name_delta, len(slots))
     by_name = {slot["name"]: slot["index"] for slot in slots}
-    foreground_names = [config["foregroundSwordSlot"], *config["foregroundGripSlots"]]
+    arm_names = config["raiseAnimation"]["foregroundArmSlots"] if animation_name == RAISE_NAME else []
+    foreground_names = [*arm_names, config["foregroundSwordSlot"], *config["foregroundGripSlots"]]
     foreground = [by_name[name] for name in foreground_names]
     assert len(foreground) == len(set(foreground))
     desired = [index for index in range(len(slots)) if index not in foreground] + foreground
+    if arm_names:
+        arm_slots = [slot for slot in slots if slot["name"] in arm_names]
+        assert len(arm_slots) == 2
+        assert {slot["boneName"] for slot in arm_slots} == {"Ys_larm1", "Ys_rarm1"}
+        head_positions = [desired.index(by_name[name]) for name in config["raiseAnimation"]["visibleHeadSlots"]]
+        sword_position = desired.index(by_name[config["foregroundSwordSlot"]])
+        assert all(max(head_positions) < desired.index(slot["index"]) < sword_position for slot in arm_slots)
+        upper_arm_names = config["raiseAnimation"]["backgroundUpperArmSlots"]
+        upper_arm_slots = [slot for slot in slots if slot["name"] in upper_arm_names]
+        assert len(upper_arm_slots) == 2
+        assert {slot["boneName"] for slot in upper_arm_slots} == {"Ys_larm2", "Ys_rarm2"}
+        assert all(desired.index(slot["index"]) < min(head_positions) for slot in upper_arm_slots)
     destinations = {slot: desired.index(slot) for slot in foreground}
     offsets = [(slot, destinations[slot] - slot) for slot in sorted(foreground)]
     assert all(offset >= 0 for _, offset in offsets), "Foreground slots must move forward"
     draw_section = varint(1) + struct.pack(">f", 0.0) + varint(len(offsets))
     draw_section += b"".join(varint(slot) + varint(offset) for slot, offset in offsets)
     header = Reader(clone)
-    assert header.string() == CLONE_NAME
+    assert header.string() == animation_name
     name_end = header.pos
     capacity = header.vi()
     new_capacity = capacity + (0 if tail["drawKeys"] else 1)
@@ -853,12 +872,415 @@ def override_guard_draw_order(clone, slots, config):
     assert new_capacity == (authored["slotTimelineCount"] + authored["boneTimelineCount"]
                             + checked["attachmentTimelineCount"] + 1)
     return result, {"time": 0.0, "foregroundSlotNames": foreground_names,
+                    "foregroundArmSlotNames": arm_names,
+                    "forearmsDrawAboveHeadBeforeSword": bool(arm_names),
+                    "backgroundUpperArmSlotNames": upper_arm_names if arm_names else [],
+                    "upperArmsDrawBehindHead": bool(arm_names),
                     "foregroundSlotIndices": foreground, "offsets": offsets,
                     "outputDrawOrder": desired, "originalDrawKeyCount": len(tail["drawKeys"]),
                     "outputDrawKeyCount": 1, "outputTimelineCapacity": new_capacity,
                     "retainedIdleDeformBytes": len(original_deform),
                     "retainedIdleDeformSha256": hashlib.sha256(original_deform).hexdigest(),
                     "retainedIdleDeformByteIdentical": True}
+
+
+def place_upright_sword(bones, origin, previous_rotation):
+    """Express a world-vertical sword in its moving wrist's local space."""
+    sword = bones[SWORD_BONE]
+    parent = bones[sword["parent"]]
+    a, b, c, d = (parent[key] for key in ("a", "b", "c", "d"))
+    determinant = a*d - b*c
+    assert abs(determinant) > 1e-6
+    dx, dy = origin[0] - parent["wx"], origin[1] - parent["wy"]
+    sword["x"], sword["y"] = (d*dx - b*dy) / determinant, (-c*dx + a*dy) / determinant
+    rotation = math.degrees(math.atan2(a / determinant, -b / determinant))
+    sword["rotation"] = previous_rotation + (rotation - previous_rotation + 180) % 360 - 180
+    sword["scaleX"] = sword["scaleY"] = 1.0
+    sword["shearX"] = sword["shearY"] = 0.0
+    update_world_transforms(bones)
+
+
+def native_visible_head_envelope(original, bones, head_slots):
+    """Read the visible native head meshes, rather than guessing a bone top."""
+    _, slots, strings, slot_end, nonessential = read_setup_bones(original, True, True)
+    reader = Reader(original)
+    reader.pos = slot_end
+    assert reader.vi() == 0, "Unexpected source IK constraints"
+    for _ in range(reader.vi()):
+        reader.string()
+        reader.vi()
+        for _ in range(reader.vi()):
+            reader.vi()
+        reader.vi()
+        flags = reader.u8()
+        for mask in (8, 16, 32, 64, 128):
+            if flags & mask:
+                reader.skip(4)
+        flags = reader.u8()
+        for mask in (1, 2, 4, 8, 16, 32, 64):
+            if flags & mask:
+                reader.skip(4)
+    assert reader.vi() == reader.vi() == 0, "Unexpected source path/physics constraints"
+
+    def string_ref():
+        index = reader.vi()
+        return strings[index - 1] if index else None
+
+    def vertices(weighted):
+        count, result = reader.vi(), []
+        if not weighted:
+            return count, [[reader.f32(), reader.f32()] for _ in range(count)]
+        for _ in range(count):
+            result.append([[reader.vi(), reader.f32(), reader.f32(), reader.f32()]
+                           for _ in range(reader.vi())])
+        return count, result
+
+    envelopes = []
+    for _ in range(reader.vi()):  # Default skin slot groups.
+        slot = slots[reader.vi()]
+        for _ in range(reader.vi()):
+            attachment, flags = string_ref(), reader.u8()
+            name = string_ref() if flags & 8 else attachment
+            kind, mesh_vertices, weighted = flags & 7, None, False
+            if kind in (0, 2, 3):
+                path = string_ref() if flags & 16 else name
+                if flags & 32:
+                    reader.skip(4)
+                if flags & 64:
+                    for _ in range(4):
+                        reader.vi()
+            if kind == 0:
+                reader.skip(4 if flags & 128 else 0)
+                reader.skip(24)
+            elif kind in (1, 6):
+                if kind == 6:
+                    reader.vi()
+                vertices(flags & 16)
+                reader.skip(4 if nonessential else 0)
+            elif kind == 2:
+                hull = reader.vi()
+                weighted = bool(flags & 128)
+                count, mesh_vertices = vertices(weighted)
+                reader.skip(count * 8)  # Mesh UVs.
+                for _ in range((count * 2 - hull - 2) * 3):
+                    reader.vi()
+                if nonessential:
+                    for _ in range(reader.vi()):
+                        reader.vi()
+                    reader.skip(8)
+            elif kind == 3:
+                reader.vi()
+                string_ref()
+                reader.skip(8 if nonessential else 0)
+            elif kind == 4:
+                count, _ = vertices(flags & 64)
+                reader.skip((count * 2 // 6) * 4 + (4 if nonessential else 0))
+            elif kind == 5:
+                reader.skip(12 + (4 if nonessential else 0))
+            else:
+                raise AssertionError(f"Unknown native attachment type {kind}")
+            setup_attachment = strings[slot["setupAttachmentIndex"] - 1] if slot["setupAttachmentIndex"] else None
+            if slot["name"] not in head_slots or attachment != setup_attachment:
+                continue
+            assert kind == 2 and mesh_vertices, "Visible head geometry must be a native mesh"
+            world_vertices = []
+            for vertex in mesh_vertices:
+                if weighted:
+                    world_vertices.append([sum(point(bones[index], x, y)[axis] * weight
+                                               for index, x, y, weight in vertex) for axis in range(2)])
+                else:
+                    world_vertices.append(point(bones[slot["bone"]], *vertex))
+            top_index = max(range(len(world_vertices)), key=lambda index: world_vertices[index][1])
+            envelopes.append({"slot": slot["name"], "attachment": attachment, "meshPath": path,
+                              "weighted": weighted, "vertexCount": len(world_vertices),
+                              "topVertexIndex": top_index, "topVertexWorld": world_vertices[top_index],
+                              "sourceTopVertex": mesh_vertices[top_index]})
+    assert {envelope["slot"] for envelope in envelopes} == set(head_slots)
+    highest = max(envelopes, key=lambda envelope: envelope["topVertexWorld"][1])
+    face, chest = point(bones[124]), point(bones[34])
+    return {"source": "SHA-locked native default-skin mesh vertices transformed by idle t=0 bones",
+            "headTopWorldY": highest["topVertexWorld"][1], "headTopSlot": highest["slot"],
+            "headTopAttachment": highest["attachment"], "headTopVertexIndex": highest["topVertexIndex"],
+            "headTopOffsetFromFaceRatio": (highest["topVertexWorld"][1] - face[1]) / math.dist(face, chest),
+            "nativeHeadMeshes": envelopes}
+
+
+def build_raise_poses(original, setup, guard_bones, guard_pose, config):
+    """Solve a continuous chest-to-overhead motion without runtime IK."""
+    raise_config = config["raiseAnimation"]
+    assert raise_config["animation"] == RAISE_NAME
+    raise_seconds, duration = raise_config["raiseSeconds"], raise_config["duration"]
+    frame_count = raise_config["motionFrames"]
+    assert 24 <= frame_count <= 40 and 0 < raise_seconds < duration
+    face, chest = point(guard_bones[124]), point(guard_bones[34])
+    body_span = math.dist(face, chest)
+    start_origin = point(guard_bones[SWORD_BONE])
+    end_origin = [face[0] + raise_config["endSwordRightWorldOffset"],
+                  face[1] + raise_config["overheadOriginFaceChestRatio"] * body_span]
+    assert end_origin[1] > start_origin[1]
+    by_name = {bone["name"]: bone["index"] for bone in setup}
+    arm_groups = [(("Ys_larm2", "Ys_larm1", "Ys_lhand2"), config["leftPalmLocal"], config["leftGripSwordX"]),
+                  (("Ys_rarm2", "Ys_rarm1", "Ys_rhand"), config["rightPalmLocal"], config["rightGripSwordX"])]
+    previous = copy.deepcopy(guard_bones)
+    frames, reports = [], []
+    scale = guard_pose["swordWorldScale"]
+    shoulder_lift = raise_config["shoulderLiftFaceChestRatio"] * body_span
+    head_envelope = native_visible_head_envelope(original, guard_bones, raise_config["visibleHeadSlots"])
+    for index in range(frame_count):
+        key_fraction = index / (frame_count - 1)
+        # Spend more keys where the hands travel quickly. Uniform time keys
+        # waste samples at the eased ends and allow the two palms to separate
+        # during the middle of the lift.
+        sampling_weight = raise_config["progressSamplingWeight"]
+        assert 0.0 <= sampling_weight < 1.0
+        low, high = 0.0, 1.0
+        for _ in range(40):
+            fraction = (low + high) / 2
+            eased = fraction**3 * (10 + fraction * (-15 + 6*fraction))
+            metric = (1 - sampling_weight) * fraction + sampling_weight * eased
+            if metric < key_fraction:
+                low = fraction
+            else:
+                high = fraction
+        fraction = key_fraction if index in (0, frame_count - 1) else (low + high) / 2
+        # Quintic easing has zero speed and acceleration at both ends. The
+        # sampled linear Spine keys approximate it without a runtime tween.
+        eased = fraction**3 * (10 + fraction * (-15 + 6*fraction))
+        # Carry the blade sideways mainly after it clears the chest. Moving
+        # sideways too early sends the upper grip through the left shoulder's
+        # pivot, forcing a sharp folded-elbow turn during interpolation.
+        x_progress = eased ** raise_config["rightwardProgressExponent"]
+        origin = [start_origin[0] + (end_origin[0] - start_origin[0]) * x_progress,
+                  start_origin[1] + (end_origin[1] - start_origin[1]) * eased]
+        bones = copy.deepcopy(previous)
+        arm_reports = []
+        if index:
+            for root_name in config["armRootBones"]:
+                root_index = by_name[root_name]
+                bone, reference = bones[root_index], guard_bones[root_index]
+                parent = bones[bone["parent"]]
+                determinant = parent["a"]*parent["d"] - parent["b"]*parent["c"]
+                world_lift = shoulder_lift * eased
+                bone["x"] = reference["x"] - parent["b"] * world_lift / determinant
+                bone["y"] = reference["y"] + parent["a"] * world_lift / determinant
+            update_world_transforms(bones)
+            for names, palm_local, grip_x in arm_groups:
+                target = [origin[0], origin[1] + grip_x * scale]
+                arm_reports.append(solve_palm_target(bones, *(by_name[name] for name in names), palm_local, target))
+            for bone, old in zip(bones, previous):
+                bone["rotation"] = old["rotation"] + (bone["rotation"] - old["rotation"] + 180) % 360 - 180
+            update_world_transforms(bones)
+            place_upright_sword(bones, origin, previous[SWORD_BONE]["rotation"])
+        else:
+            assert math.dist(origin, start_origin) < 1e-9
+        for bone, reference in zip(bones, guard_bones):
+            for field in ("scaleX", "scaleY"):
+                assert bone[field] == reference[field] and bone[field] != 0
+            assert abs(bone["rotation"] - previous[bone["index"]]["rotation"]) < 30.0
+        for body_index in (34, 124):
+            assert math.dist(point(bones[body_index]), point(guard_bones[body_index])) < 1e-9
+            assert abs(bones[body_index]["a"] - guard_bones[body_index]["a"]) < 1e-9
+            assert abs(bones[body_index]["c"] - guard_bones[body_index]["c"]) < 1e-9
+        frames.append({"time": raise_seconds * fraction, "bones": bones})
+        reports.append({"time": raise_seconds * fraction, "easedProgress": eased,
+                        "targetSwordWorldOrigin": origin, "armSolves": arm_reports})
+        previous = bones
+    frames.append({"time": duration, "bones": copy.deepcopy(previous)})
+    assert all(point(previous[by_name[names[2]]], *palm)[1] > face[1]
+               for names, palm, _ in arm_groups)
+    return frames, {"animation": RAISE_NAME, "raiseSeconds": raise_seconds,
+                    "duration": duration, "heldTime": raise_seconds,
+                    "motionFrames": frame_count, "frames": len(frames),
+                    "startSwordWorldOrigin": start_origin, "endSwordWorldOrigin": end_origin,
+                    "bodySpan": body_span, "sourceGuardAnimation": CLONE_NAME,
+                    "shoulderLiftWorld": shoulder_lift,
+                    "shoulderLiftFaceChestRatio": raise_config["shoulderLiftFaceChestRatio"],
+                    **head_envelope,
+                    "easing": "quintic smoothstep sampled with linear Spine keys",
+                    "progressSamplingWeight": raise_config["progressSamplingWeight"],
+                    "swordOriginWorldOffset": config["swordOriginWorldOffset"],
+                    "endSwordRightWorldOffset": raise_config["endSwordRightWorldOffset"],
+                    "rightwardProgressExponent": raise_config["rightwardProgressExponent"],
+                    "overheadOriginFaceChestRatio": raise_config["overheadOriginFaceChestRatio"],
+                    "frameSolves": reports}
+
+
+def frozen_idle_tail(animation, bone_end):
+    """Freeze native idle mesh deforms at t=0 for the new raise clip only.
+
+    Keeping idle's later deform keys would silently extend the clip beyond its
+    explicit 1.30 s hold. The static guard keeps its original idle tail bytes.
+    """
+    reader = Reader(animation)
+    reader.pos = bone_end
+    constraints = bytes([0, 0, 0, 0])
+    for kind in ("IK", "transform", "path", "physics"):
+        assert reader.vi() == 0, f"Unexpected {kind} timelines in upright reference"
+    skins = []
+    timeline_count = 0
+    for _ in range(reader.vi()):
+        skin, slots = reader.vi(), []
+        for _ in range(reader.vi()):
+            slot, attachments = reader.vi(), []
+            for _ in range(reader.vi()):
+                attachment, kind, frame_count = reader.vi(), reader.u8(), reader.vi()
+                assert frame_count > 0
+                if kind == 1:
+                    first = reader.data[reader.pos:reader.pos + 12]
+                    first_time = struct.unpack_from(">f", first)[0]
+                    assert first_time >= 0.0
+                    reader.skip(frame_count * 12)
+                    track = bytes([kind]) + varint(1) + first if first_time == 0.0 else None
+                else:
+                    assert kind == 0
+                    reader.vi()  # Bezier count.
+                    first_time = reader.f32()
+                    assert first_time >= 0.0
+                    first_payload = None
+                    for frame in range(frame_count):
+                        start = reader.pos
+                        count = reader.vi()
+                        if count:
+                            reader.vi()
+                            reader.skip(count * 4)
+                        if first_payload is None:
+                            first_payload = reader.data[start:reader.pos]
+                        if frame + 1 < frame_count:
+                            reader.skip(4)
+                            curve = reader.u8()
+                            assert curve in (0, 1, 2)
+                            if curve == 2:
+                                reader.skip(16)
+                    track = (bytes([kind]) + varint(1) + varint(0) + struct.pack(">f", 0.0) + first_payload
+                             if first_time == 0.0 else None)
+                if track is not None:
+                    timeline_count += 1
+                    attachments.append(varint(attachment) + track)
+            if attachments:
+                slots.append(varint(slot) + varint(len(attachments)) + b"".join(attachments))
+        if slots:
+            skins.append(varint(skin) + varint(len(slots)) + b"".join(slots))
+    # The upright reference has no native draw order or events. The authored
+    # foreground hand/sword draw order is appended by the shared helper.
+    assert reader.vi() == reader.vi() == 0
+    assert reader.pos == len(animation)
+    return constraints + varint(len(skins)) + b"".join(skins) + bytes([0, 0]), timeline_count
+
+
+def serialize_raise_animation(upright, setup, frames):
+    """Serialize authored local transforms; every animated key is linear."""
+    upright = animation_as_cast(upright)
+    _, _, _, sections = read_cast_bone_tracks(upright, with_sections=True)
+    header = Reader(upright)
+    header.string()
+    header.vi()
+    slots = upright[header.pos:sections["boneStart"]]
+    # This source's idle attachment keys are all at zero. Assert that property
+    # instead of inheriting a late blink or combat attachment switch.
+    _, _, attachments = read_cast_bone_tracks(upright)
+    assert all(key["time"] == 0.0 for key in attachments)
+    groups, moving_timelines = [], []
+    for reference in setup:
+        bone_index, timelines = reference["index"], []
+        for kind, fields in ((0, ("rotation",)), (1, ("x", "y")),
+                             (4, ("scaleX", "scaleY")), (7, ("shearX", "shearY"))):
+            values = []
+            for frame in frames:
+                bone = frame["bones"][bone_index]
+                values.append([bone[field] / reference[field] if field.startswith("scale")
+                               else bone[field] - reference[field] for field in fields])
+            moving = any(values[index] != values[0] for index in range(1, len(values)))
+            keys = list(zip(frames, values)) if moving else [(frames[0], values[0])]
+            timeline = bytes([kind]) + varint(len(keys)) + varint(0)
+            for index, (frame, key_values) in enumerate(keys):
+                timeline += struct.pack(">" + "f" * (1 + len(key_values)), frame["time"], *key_values)
+                if index:
+                    timeline += bytes([0])  # Linear curve for preceding key.
+            timelines.append(timeline)
+            if moving:
+                moving_timelines.append({"bone": reference["name"], "type": kind, "keys": len(keys)})
+        groups.append(varint(bone_index) + varint(len(timelines)) + b"".join(timelines))
+    tail, deform_count = frozen_idle_tail(upright, sections["boneEnd"])
+    capacity = sections["slotTimelineCount"] + len(groups) * 4 + deform_count
+    clone = (encoded_string(RAISE_NAME) + varint(capacity) + slots + varint(len(groups))
+             + b"".join(groups) + tail)
+    return clone, {"movingTimelines": moving_timelines, "boneTimelineCount": len(groups) * 4,
+                   "frozenIdleMeshDeform": True, "frozenDeformTime": 0.0,
+                   "frozenDeformTimelineCount": deform_count, "timelineCapacity": capacity,
+                   "motionKeyCount": len(frames) - 1, "holdKeyTime": frames[-1]["time"]}
+
+
+def validate_raise_animation(clone, setup, guard_bones, config, pose_report):
+    """Densely check the serialized motion, including in-between frame grips."""
+    tracks, duration, _ = read_cast_bone_tracks(animation_as_cast(clone))
+    raise_config = config["raiseAnimation"]
+    assert abs(duration - raise_config["duration"]) < 1e-6
+    by_name = {bone["name"]: bone["index"] for bone in setup}
+    reference_axes = {index: math.degrees(math.atan2(guard_bones[index]["c"], guard_bones[index]["a"]))
+                      for index in (34, 124)}
+    sample_count = (raise_config["motionFrames"] - 1) * raise_config["validationSubframes"] + 1
+    max_palm_error = max_origin_error = max_axis_error = 0.0
+    min_determinant = math.inf
+    frames = []
+    previous_y = -math.inf
+    for sample in range(sample_count):
+        fraction = sample / (sample_count - 1)
+        time = raise_config["raiseSeconds"] * fraction
+        bones = evaluate_pose(setup, tracks, time)
+        sword = bones[SWORD_BONE]
+        origin = point(sword)
+        eased = fraction**3 * (10 + fraction * (-15 + 6*fraction))
+        progress = (eased ** raise_config["rightwardProgressExponent"], eased)
+        expected_origin = [pose_report["startSwordWorldOrigin"][axis] +
+                           (pose_report["endSwordWorldOrigin"][axis] - pose_report["startSwordWorldOrigin"][axis]) * progress[axis]
+                           for axis in range(2)]
+        max_origin_error = max(max_origin_error, math.dist(origin, expected_origin))
+        assert origin[1] + 0.001 >= previous_y, "Authored sword reverses during raise"
+        previous_y = origin[1]
+        axis_error = abs(math.degrees(math.atan2(sword["c"], sword["a"])) - 90.0)
+        max_axis_error = max(max_axis_error, axis_error)
+        assert axis_error < 0.001
+        palm_errors = []
+        for hand_name, palm, grip in (("Ys_lhand2", config["leftPalmLocal"], config["leftGripSwordX"]),
+                                      ("Ys_rhand", config["rightPalmLocal"], config["rightGripSwordX"])):
+            palm_errors.append(math.dist(point(bones[by_name[hand_name]], *palm), point(sword, grip, 0)))
+        max_palm_error = max(max_palm_error, *palm_errors)
+        for index, axis in reference_axes.items():
+            assert math.dist(point(bones[index]), point(guard_bones[index])) < 0.001
+            assert abs(math.degrees(math.atan2(bones[index]["c"], bones[index]["a"])) - axis) < 0.001
+        for bone, reference in zip(bones, guard_bones):
+            determinant = abs(bone["a"]*bone["d"] - bone["b"]*bone["c"])
+            min_determinant = min(min_determinant, determinant)
+            assert determinant > 1e-6
+            assert bone["scaleX"] * reference["scaleX"] > 0 and bone["scaleY"] * reference["scaleY"] > 0
+        frames.append({"time": time, "swordOriginWorld": origin, "palmErrors": palm_errors})
+    sword_scale = math.sqrt(abs(guard_bones[SWORD_BONE]["a"] * guard_bones[SWORD_BONE]["d"]
+                               - guard_bones[SWORD_BONE]["b"] * guard_bones[SWORD_BONE]["c"]))
+    palm_error_sword_units = max_palm_error / sword_scale
+    assert palm_error_sword_units < raise_config["interpolatedPalmErrorLimitSwordUnits"], palm_error_sword_units
+    start = evaluate_pose(setup, tracks, 0.0)
+    assert all(math.dist(point(a), point(b)) < 0.001 for a, b in zip(start, guard_bones))
+    held = evaluate_pose(setup, tracks, raise_config["raiseSeconds"])
+    for time in (raise_config["raiseSeconds"] + 0.05, duration):
+        frozen = evaluate_pose(setup, tracks, time)
+        assert all(math.dist(point(a), point(b)) < 0.001 for a, b in zip(frozen, held))
+    final_face_y = point(held[124])[1]
+    above_face = {name: point(held[by_name[name]], *palm)[1] - final_face_y
+                  for name, palm in (("Ys_lhand2", config["leftPalmLocal"]), ("Ys_rhand", config["rightPalmLocal"]))}
+    assert min(above_face.values()) > 0
+    crown_clearance = {name: point(held[by_name[name]], *palm)[1] - pose_report["headTopWorldY"]
+                       for name, palm in (("Ys_lhand2", config["leftPalmLocal"]), ("Ys_rhand", config["rightPalmLocal"]))}
+    assert min(crown_clearance.values()) > 0, "Both palms must rise above the visible native crown"
+    return {"sampleCount": sample_count, "maximumInterpolatedPalmError": max_palm_error,
+            "maximumInterpolatedPalmErrorSwordUnits": palm_error_sword_units,
+            "interpolatedPalmErrorLimitSwordUnits": raise_config["interpolatedPalmErrorLimitSwordUnits"],
+            "maximumSwordOriginCurveError": max_origin_error, "maximumSwordAxisErrorDegrees": max_axis_error,
+            "minimumWorldTransformDeterminant": min_determinant, "allScaleSignsMatchUprightReference": True,
+            "torsoAndHeadMatchUprightEverySample": True, "startMatchesStaticGuard": True,
+            "finalPoseHeldThroughDuration": True, "finalPalmsAboveFaceWorld": above_face,
+            "finalPalmsAboveCrownWorld": crown_clearance,
+            "finalLowerPalmClearanceWorld": min(crown_clearance.values()),
+            "monotonicSwordRaise": True, "frameErrors": frames}
 
 
 def build_guard_animation(original: bytes, config):
@@ -913,11 +1335,21 @@ def build_guard_animation(original: bytes, config):
         frame = evaluate_pose(setup, guard_tracks, time)
         assert all(math.dist(point(a), point(b)) < 0.001 for a, b in zip(frame, pose_bones))
 
+    raise_frames, raise_pose_report = build_raise_poses(original, setup, authored_bones, pose, config)
+    raise_clone, raise_serialization = serialize_raise_animation(upright, setup, raise_frames)
+    raise_clone, raise_slot_report = override_guard_slots(raise_clone, slots, strings, config)
+    raise_clone, raise_draw_report = override_guard_draw_order(raise_clone, slots, config)
+    raise_validation = validate_raise_animation(raise_clone, setup, pose_bones, config, raise_pose_report)
+    _, _, raise_attachments = read_cast_bone_tracks(animation_as_cast(raise_clone))
+    for slot, target in raise_slot_report["attachmentOverridesFromTimeZero"].items():
+        keys = [entry for entry in raise_attachments if entry["slot"] == int(slot)]
+        assert len(keys) == 1 and keys[0]["time"] == 0 and keys[0]["attachmentIndex"] == target
+
     output = bytearray(original)
-    output[count_pos] = len(ANIMATIONS) + 1
-    output += clone
+    output[count_pos] = len(ANIMATIONS) + 2
+    output += clone + raise_clone
     output = bytes(output)
-    assert len(output) == len(original) + len(clone)
+    assert len(output) == len(original) + len(clone) + len(raise_clone)
     assert output[:count_pos] == original[:count_pos]
     assert output[count_pos + 1:len(original)] == original[count_pos + 1:]
     preserved = []
@@ -926,6 +1358,41 @@ def build_guard_animation(original: bytes, config):
         preserved.append({"name": name, "start": start, "end": end,
                           "sha256": hashlib.sha256(original[start:end]).hexdigest()})
     output_sha = hashlib.sha256(output).hexdigest()
+    raise_metadata = {
+        "name": RAISE_NAME, "animation": RAISE_NAME,
+        "bytes": len(raise_clone), "sha256": hashlib.sha256(raise_clone).hexdigest(),
+        "duration": config["raiseAnimation"]["duration"],
+        "raiseSeconds": config["raiseAnimation"]["raiseSeconds"],
+        "heldTime": config["raiseAnimation"]["raiseSeconds"],
+        "frames": len(raise_frames), "motionFrames": config["raiseAnimation"]["motionFrames"],
+        "sourceGuardAnimation": CLONE_NAME,
+        "startSwordWorldOrigin": raise_pose_report["startSwordWorldOrigin"],
+        "endSwordWorldOrigin": raise_pose_report["endSwordWorldOrigin"],
+        "overheadOriginFaceChestRatio": config["raiseAnimation"]["overheadOriginFaceChestRatio"],
+        "endSwordRightWorldOffset": config["raiseAnimation"]["endSwordRightWorldOffset"],
+        "shoulderLiftWorld": raise_pose_report["shoulderLiftWorld"],
+        "shoulderLiftFaceChestRatio": raise_pose_report["shoulderLiftFaceChestRatio"],
+        "headTopWorldY": raise_pose_report["headTopWorldY"],
+        "headTopSlot": raise_pose_report["headTopSlot"],
+        "headTopAttachment": raise_pose_report["headTopAttachment"],
+        "headTopVertexIndex": raise_pose_report["headTopVertexIndex"],
+        "headTopOffsetFromFaceRatio": raise_pose_report["headTopOffsetFromFaceRatio"],
+        "headGeometrySource": raise_pose_report["source"],
+        "nativeHeadMeshes": raise_pose_report["nativeHeadMeshes"],
+        "swordOriginWorldOffset": config["swordOriginWorldOffset"],
+        "gripSeparationSwordUnits": pose["gripSeparationSwordUnits"],
+        "geometrySource": "Original native Saber bones, hand meshes, and sword; offline two-arm IK continuation",
+        "frozenIdleMeshDeform": True, "frozenIdleMeshDeformTime": 0.0,
+        "combatEffectSlotsSuppressed": raise_slot_report["effectSlotCount"],
+        "effectAttachmentsClearedFromTimeZero": True,
+        "foregroundGripSlotNames": raise_draw_report["foregroundSlotNames"],
+        "foregroundArmSlotNames": raise_draw_report["foregroundArmSlotNames"],
+        "forearmsDrawAboveHeadBeforeSword": raise_draw_report["forearmsDrawAboveHeadBeforeSword"],
+        "backgroundUpperArmSlotNames": raise_draw_report["backgroundUpperArmSlotNames"],
+        "upperArmsDrawBehindHead": raise_draw_report["upperArmsDrawBehindHead"],
+        "retainedNativeAnimations": ANIMATIONS, "retainedNativeAnimationBytes": True,
+        **{key: value for key, value in raise_validation.items() if key != "frameErrors"},
+    }
     metadata = {
         "animation": CLONE_NAME, "sourceAnimation": "cast", "phase": config["phase"],
         "armSourceAnimation": "cast", "armSourcePhase": config["phase"],
@@ -944,7 +1411,8 @@ def build_guard_animation(original: bytes, config):
         "resourcePath": config["resourcePath"], "sourceSkeletonSha256": source_sha,
         "authoredSkeletonSha256": output_sha, "sourceBytes": len(original), "authoredBytes": len(output),
         "retainedNativeAnimations": ANIMATIONS, "retainedNativeAnimationBytes": True,
-        "nativeAnimationCount": len(ANIMATIONS), "authoredAnimationCount": 1,
+        "nativeAnimationCount": len(ANIMATIONS), "authoredAnimationCount": 2,
+        "raiseAnimation": raise_metadata,
         "combatEffectSlotsSuppressed": slot_report["effectSlotCount"],
         "effectAttachmentsClearedFromTimeZero": True,
         "targetSwordLocalRotation": rotation, "targetSwordLocalXY": translation,
@@ -956,6 +1424,10 @@ def build_guard_animation(original: bytes, config):
         "castStart": cast_start, "castEnd": cast_end,
         "uprightStart": upright_start, "uprightEnd": upright_end,
         "cloneStart": len(original), "cloneBytes": len(clone),
+        "raiseCloneStart": len(original) + len(clone), "raiseCloneBytes": len(raise_clone),
+        "raisePose": raise_pose_report, "raiseBoneTimelines": raise_serialization,
+        "raiseSlotOverrides": raise_slot_report, "raiseDrawOrderOverride": raise_draw_report,
+        "raiseValidation": raise_validation,
         "phaseTarget": pose, "staticBoneTimelines": static_report,
         "slotOverrides": slot_report, "drawOrderOverride": draw_report,
         "preservedOriginalAnimations": preserved,
@@ -1001,7 +1473,8 @@ def main():
     assert verified["files"][path][2] == hashlib.md5(files[path]).digest()
     assert extract(read_pck(args.source_pck), path) == original
     print(json.dumps({"pack": str(pck_path), "report": str(REPORT),
-                      "animation": metadata["animation"], "bytes": metadata["authoredBytes"],
+                      "animations": [metadata["animation"], metadata["raiseAnimation"]["animation"]],
+                      "bytes": metadata["authoredBytes"],
                       "effectSlotsSuppressed": metadata["combatEffectSlotsSuppressed"],
                       "nativeAnimationsPreserved": metadata["nativeAnimationCount"]}, indent=2))
 

@@ -68,6 +68,14 @@ def main():
     assert guard_animation["staticBonePose"] and guard_animation["maximumSerializedPalmError"] < 0.01
     assert guard_animation["swordDrawsInFrontOfFace"] and guard_animation["palmsDrawOverSwordGrip"]
     assert guard_animation["allScaleSignsMatchUprightReference"]
+    assert guard_animation["gripSeparationSwordUnits"] >= 20 and guard_animation["authoredAnimationCount"] == 2
+    raise_animation = guard_animation["raiseAnimation"]
+    assert raise_animation["animation"] == "saber_raise_charge" and raise_animation["raiseSeconds"] == 1.1
+    assert raise_animation["duration"] > raise_animation["heldTime"] == 1.1
+    assert raise_animation["maximumInterpolatedPalmErrorSwordUnits"] < 0.2
+    assert raise_animation["finalLowerPalmClearanceWorld"] > 10
+    assert raise_animation["allScaleSignsMatchUprightReference"] and raise_animation["torsoAndHeadMatchUprightEverySample"]
+    assert raise_animation["startMatchesStaticGuard"] and raise_animation["finalPoseHeldThroughDuration"]
     for body_part in ("torso", "head"):
         axes = guard_animation["worldTorsoAndHeadAxes"][body_part]
         assert abs(axes["serializedAxisDegrees"] - axes["uprightReferenceAxisDegrees"]) < 0.01
@@ -157,7 +165,11 @@ def main():
                   "hover_idle_to_attack_front_guard_stands_upright",
                   "hover_idle_to_attack_front_guard_head_looks_forward",
                   "hover_idle_to_attack_front_guard_both_palms_hold_handle",
-                  "hover_idle_to_attack_front_guard_blade_crosses_face",
+                  "hover_idle_to_attack_both_hands_and_blade_above_crown",
+                  "hover_charge_both_hands_rise_continuously", "hover_charge_palms_stay_on_handle_during_raise",
+                  "hover_charge_gold_has_intermediate_stages", "hover_charge_gold_gathers_without_reset",
+                  "hover_charge_gold_follows_live_blade", "hover_cancel_charge_400_clears_gold_and_returns_idle",
+                  "hover_cancel_charge_780_clears_gold_and_returns_idle", "card_play_releases_overhead_charge_and_gold",
                   "hover_front_guard_one_visible_native_sword",
                   "hover_front_guard_has_no_cast_effect_attachments",
                   "hover_native_switch_during_attack_mix_has_no_jump",
@@ -172,6 +184,16 @@ def main():
         assert any(r["check"] == check for r in hover), "Missing hover transition proof: " + check
     suites.append({"suite": "verification-hover", "testedVersion": hover_metadata["version"],
                    "passed": len(hover), "failed": 0, "checks": hover})
+    charge_root = ROOT / "build/verification-charge-preview"
+    charge_metadata = json.loads((charge_root / "run-metadata.json").read_text(encoding="utf-8"))
+    charge_checks = json.loads((charge_root / "results.json").read_text(encoding="utf-8"))
+    charge_samples = json.loads((charge_root / "charge-preview-samples.json").read_text(encoding="utf-8"))
+    assert charge_metadata["version"] == version and charge_metadata["assemblySha256"] == sha(ROOT / "build/test-dll/SaberPresentation.dll")
+    assert charge_checks and all(c["passed"] for c in charge_checks)
+    assert charge_samples["normalParentRestored"] and charge_samples["normalTransformRestored"] and charge_samples["normalSizeRestored"]
+    assert len(charge_samples["pixels"]) == 4 and charge_samples["pixels"][-1]["WarmChangedPixels"] > charge_samples["pixels"][0]["WarmChangedPixels"] * 1.5
+    suites.append({"suite": "verification-charge-preview", "testedVersion": version,
+                   "passed": len(charge_checks), "failed": 0, "checks": charge_checks})
     finisher = json.loads((ROOT / "build/verification-finisher/results.json").read_text(encoding="utf-8"))
     assert finisher and all(r["passed"] for r in finisher)
     for check in ("finisher_test_window_is_fullscreen", "finisher_emitter_uses_live_sword_bone",
@@ -198,6 +220,11 @@ def main():
               "totalPassed": sum(s["passed"] for s in suites),
               "currentVersionPassed": sum(s["passed"] for s in suites if s["testedVersion"] == version),
               "hoverRunEvidence": hover_metadata,
+              "chargePreviewEvidence": {"metadata": charge_metadata,
+                                        "previewOnlyScaleMultiplier": charge_samples["previewOnlyScaleMultiplier"],
+                                        "normalSizeRestored": charge_samples["normalSizeRestored"],
+                                        "normalTransformRestored": charge_samples["normalTransformRestored"],
+                                        "renderedGoldPixelMeasurements": charge_samples["pixels"]},
               "authoredGuardAnimation": guard_animation,
               "hoverMotionEvidence": {"sha256": sha(hover_samples_path),
                                       "clock": hover_samples["clock"],
@@ -208,7 +235,7 @@ def main():
               "bundledCharacterEffectDependencies": len(lock["characterEffects"]["resources"]),
               "cardArtDefault": "Original game portraits; custom card art paused",
               "energyDisplay": "Native current/max energy, raised above the hand and portrait",
-              "hoverBattlePose": "0.28-second native Spine mix into an upright body with a forward-facing head and two-handed chest-level grip, sword vertical before the face; skills retain planted guard. Held sword stays on the original hand bone; all 66 combat-effect slots are empty in the ready clip. Leave/cancel restores idle.",
+              "hoverBattlePose": "Attacks blend in and raise the two-hand sword from chest to above the actual native crown over 1.10 seconds, then hold. Blade gold progressively gathers from guard to tip, following the actual blade surface. Torso/head stay upright; same-type focus preserves the clock; leave/cancel/skill/play clear gold. Native nine clips and static guard preserved. Skills retain planted guard.",
               "cinematics": "Official Honkai: Star Rail Saber Excalibur close-up with synchronized JP Artoria voice; planted original battle marks, fullscreen cut-in, warm Camelot reveal and sustained live sword-to-target beam. Defeat: official FGO Memorial Movie 9.3-second animated clip",
               "fullscreenCgEvidence": media_qa,
               "demoReplayEvidence": demo,

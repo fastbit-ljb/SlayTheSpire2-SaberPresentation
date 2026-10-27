@@ -16,7 +16,8 @@ internal static partial class TestHarness
     private sealed record HoverBone(string Name, float X, float Y, float AxisX, float AxisY);
     private sealed record HoverFrame(double Seconds, string? Animation, ulong EntryWrapperId,
         double? MixTime, double? MixDuration, double? TrackTime, double? TimeScale,
-        bool Ready, string? ReadyClip, float ReadyProgress, float BodyX, float BodyY, HoverBone[] Bones, HoverGuard? Guard);
+        bool Ready, string? ReadyClip, float ReadyProgress, float BodyX, float BodyY, HoverBone[] Bones, HoverGuard? Guard,
+        float GoldStrength, bool GoldVisible, float? GoldAlignmentError);
 
     private static readonly string[] HoverBoneNames =
         ["wuqi3", "wuqi2o", "Ys_wuqi2", "Ys_wuqi1", "jian", "Ys_rjian4", "Ys_rjian3",
@@ -43,7 +44,9 @@ internal static partial class TestHarness
             Scalar("get_mix_time"), Scalar("get_mix_duration"), Scalar("get_track_time"), Scalar("get_time_scale"),
             ReadyPresentation.BodyReady, ReadyPresentation.BodyPoseClip, ReadyPresentation.BodyPoseProgress,
             actor.Visuals.Body.Position.X, actor.Visuals.Body.Position.Y, bones.ToArray(),
-            clip == ReadyPresentation.AttackReadyClip ? ReadHoverGuard(spine) : null);
+            clip == ReadyPresentation.AttackReadyClip ? ReadHoverGuard(spine) : null,
+            ReadyPresentation.ChargeStrength, ReadyPresentation.ChargeGlowVisible,
+            float.IsFinite(ReadyPresentation.ChargeAlignmentError) ? ReadyPresentation.ChargeAlignmentError : null);
     }
 
     private static double HoverDistance(HoverFrame a, HoverFrame b, string group = "all")
@@ -157,6 +160,7 @@ internal static partial class TestHarness
             if (clocks.Length > 1) Assert(name + "_held_clip_clock_does_not_drift", clocks.Max(f => f.TrackTime!.Value) - clocks.Min(f => f.TrackTime!.Value) < 0.002);
             Assert(name + "_body_stays_home", frames.All(f => new Vector2(f.BodyX, f.BodyY).DistanceTo(home) < 0.5f));
             if (clip == ReadyPresentation.AttackReadyClip) CheckHoverGuard(name, tail);
+            else Assert(name + "_has_no_attack_charge_glow", tail.All(f => !f.GoldVisible && f.GoldStrength == 0f));
         }
 
         try
@@ -181,7 +185,7 @@ internal static partial class TestHarness
                 bool retained = true;
                 int notifications = 0;
                 var earlyScreenshot = CaptureAfter(name + "_early", 0.11);
-                var samples = await Observe(name, 0.62, seconds =>
+                var samples = await Observe(name, useAttack ? 1.5 : 0.62, seconds =>
                 {
                     if (notifications >= 4 || seconds < 0.035 + notifications * 0.04) return;
                     // Both a duplicate native focus event and a different card
@@ -201,6 +205,7 @@ internal static partial class TestHarness
                 });
                 Assert(name + "_duplicate_and_same_type_focus_keep_mix", notifications == 4 && retained);
                 CheckBlend(name, samples, source, target, clip, useAttack ? ReadyPresentation.AttackReadyProgress : 0.90f);
+                if (useAttack) CheckChargeTrajectory(samples);
                 await earlyScreenshot;
                 await CaptureAfter(name + "_held", 0.001);
                 if (useAttack)
@@ -232,9 +237,13 @@ internal static partial class TestHarness
                 var idle = ReadHoverFrame(actor, Time.GetTicksUsec());
                 ReadyPresentation.Focus(card);
                 var entering = await Observe("hover_native_switch_" + clip + "_before", 0.08);
+                var transferClock = ReadHoverFrame(actor, Time.GetTicksUsec());
                 ReadyPresentation.Unfocus(card);
                 ReadyPresentation.Focus(alternate);
-                var switched = await Observe("hover_native_switch_" + clip + "_after", 0.45);
+                var continuedClock = ReadHoverFrame(actor, Time.GetTicksUsec());
+                Assert("hover_native_switch_" + clip + "_does_not_restart_clip_clock",
+                    !transferClock.TrackTime.HasValue || continuedClock.TrackTime >= transferClock.TrackTime - 0.002);
+                var switched = await Observe("hover_native_switch_" + clip + "_after", useAttack ? 1.35 : 0.45);
                 var sequence = new[] { entering[^1] }.Concat(switched).ToArray();
                 double span = HoverDistance(idle, target);
                 Assert("hover_native_switch_during_" + clip + "_mix_has_no_jump",
@@ -251,7 +260,7 @@ internal static partial class TestHarness
                 string name = toAttack ? "hover_cast_to_attack" : "hover_attack_to_cast";
                 var source = ReadHoverFrame(actor, Time.GetTicksUsec());
                 ReadyPresentation.Focus(toAttack ? attack : cast);
-                var samples = await Observe(name, 0.62);
+                var samples = await Observe(name, toAttack ? 1.5 : 0.62);
                 Assert(name + "_selects_new_animation", samples[0].Animation == clip && samples[0].Animation != source.Animation);
                 CheckBlend(name, samples, source, toAttack ? attackReference : castReference, clip,
                     toAttack ? ReadyPresentation.AttackReadyProgress : 0.90f);
@@ -278,6 +287,25 @@ internal static partial class TestHarness
                 Assert("hover_cancel_" + clip + "_bones_return_to_idle", HoverDistance(cancelled[^1], idle) < 14);
                 if (cancelled[^1].TimeScale.HasValue)
                     Assert("hover_cancel_" + clip + "_releases_clip_clock", cancelled[^1].TimeScale > 0.9);
+            }
+
+            foreach (double elapsed in new[] { 0.40, 0.78 })
+            {
+                string name = "hover_cancel_charge_" + (int)(elapsed * 1000);
+                await ResetIdle();
+                var idle = ReadHoverFrame(actor, Time.GetTicksUsec());
+                ReadyPresentation.Focus(attack);
+                await Observe(name + "_before", elapsed);
+                var source = ReadHoverFrame(actor, Time.GetTicksUsec());
+                ReadyPresentation.Cancel(attack);
+                var after = await Observe(name + "_after", 0.35);
+                var sequence = new[] { source }.Concat(after).ToArray();
+                double span = HoverDistance(source, idle);
+                Assert(name + "_returns_without_jump", sequence.Zip(sequence.Skip(1)).All(p =>
+                    HoverDistance(p.First, p.Second) < Math.Max(3, span * 0.45)));
+                Assert(name + "_clears_gold_and_returns_idle", after[^1].Animation == "idle_loop"
+                    && !ReadyPresentation.BodyReady && !ReadyPresentation.ChargeGlowVisible
+                    && !Runtime.Descendants(game).Any(n => n.Name == "SaberSwordChargeGlow"));
             }
 
             await ResetIdle();
